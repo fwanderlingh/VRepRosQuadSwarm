@@ -1,0 +1,6 @@
+<launch>
+  <node name="kernelNode"          pkg="quadcopter_ctrl" type="kernelNode" output="screen"/>
+  <node name="quadcopterRosCtrl_0" pkg="quadcopter_ctrl" type="quadcopterRosCtrl" args="0" output="screen"/>
+  <node name="quadcopterRosCtrl_1" pkg="quadcopter_ctrl" type="quadcopterRosCtrl" args="1" output="screen"/> 
+  <node name="quadcopterRosCtrl_2" pkg="quadcopter_ctrl" type="quadcopterRosCtrl" args="2" output="screen"/> 
+</launch>
