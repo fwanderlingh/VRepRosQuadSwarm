@@ -225,8 +225,6 @@ void VrpGreedyAstar::solve(){
   std::cin.get();
 
 
-  int insertIndex;
-
   while(unvisitedNodes.size() > 0){
 
     // Delta increments initialisation
@@ -248,39 +246,38 @@ void VrpGreedyAstar::solve(){
         liMin = FLT_MAX;
         for (itc = (itr->begin()+1); itc != itr->end(); ++itc){        // In every position p (reversed)
 
+          pathTentative = *itr;
+          vector<int>::iterator iTent = pathTentative.begin() + (itc - itr->begin());
+
           //cout << (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) << endl;
           //cout << (dist(graphNodes[*itc-1], graphNodes[unvisitedNodes[v]])) << endl;
           //std::cin.get();
 
-          if( (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) <= minDist   &&
-              (dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) <= minDist ){  ///NEAREST NEIGHBOUR - NOT IMPROVING MUCH THE RESULT (disabled "|| 1", enabled "|| 0")
+          if( (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) <= minDist*3   &&
+              (dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) <= minDist*3 ){  ///NEAREST NEIGHBOUR - NOT IMPROVING MUCH THE RESULT (disabled "|| 1", enabled "|| 0")
 
-            insertIndex = (int)(itc - itr->begin());        // This is necessary to avoid modifying the current path
-                                                            // vector (which is NOT allowed since we're iterating
-                                                            // inside it), and keep track of the insertion index.
-            pathTentative = *itr;
-            vector<int>::iterator iTent = pathTentative.begin() + insertIndex;
-            float tentPathLenght;
 
             pathTentative.insert(iTent, unvisitedNodes[v]);
-            tentPathLenght = pathLength(graphNodes, pathTentative);
 
-            if(tentPathLenght < liMin){
-              liMin = tentPathLenght;
-
-              // * Objective Function * //
-              deltavip = liMin - bigL;
-
-              if(deltavip < deltaBest){
-                deltaBest = deltavip;
-                choice.set_vip(v, itr, itc);
-              }//End Check Global Best
-            }//End Check Local Best
-          }///DISTANCE CHECK - work in progress
-          else{
+          }else{
             vector<int> wayThere, wayBack;
 
+
           }
+
+          float tentPathLenght = pathLength(graphNodes, pathTentative);
+
+          if(tentPathLenght < liMin){
+            liMin = tentPathLenght;
+
+            // * Objective Function * //
+            deltavip = liMin - bigL;
+
+            if(deltavip < deltaBest){
+              deltaBest = deltavip;
+              choice.set_vip(v, itr, itc);
+            }//End Check Global Best
+          }//End Check Local Best
         } // END P(positions)
       } // END I (robots)
     } // END V (nodes)

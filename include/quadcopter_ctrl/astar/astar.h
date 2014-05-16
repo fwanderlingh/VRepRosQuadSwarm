@@ -38,8 +38,8 @@ public:
    */
   struct AStarResult {
     int * path; // the path format:
-    // [X1Y1X2Y2X3Y3.....XnYn]
-    // interleaving X,Y coordinate
+    // [V1,V2,V3,V4,...,Vn]
+    // where V are the nodes that form the path
     int num_nodes;
     ~AStarResult()
     {
