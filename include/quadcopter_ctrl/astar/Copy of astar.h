@@ -1,5 +1,5 @@
 /*******************************************************************************
- * DANIEL'S ALGORITHM IMPLEMENTAIONS slightly edited and fixed by MEROSSS
+ * DANIEL'S ALGORITHM IMPLEMENTAIONS
  *
  *  /\  |  _   _  ._ o _|_ |_  ._ _   _ 
  * /--\ | (_| (_) |  |  |_ | | | | | _> 
@@ -125,7 +125,7 @@ public:
       }
 
       openset.delete_min();
-      m_closedset(cx, cy) = true;
+      m_closedset(cy, cx) = true;
 
       // for each neighbor
       int nx, ny;
@@ -135,26 +135,26 @@ public:
           if (ny<0 || ny>=(int)nrow) continue;
 
           // except the wall;
-          if(m_grid(nx,ny) == WALL) continue;
+          if(m_grid(ny,nx) == WALL) continue;
           // except the cur itself
           if(nx == cx && ny==cy) continue;
           // if neighbour in the closed set
-          if(m_closedset(nx,ny)) continue;
+          if(m_closedset(ny,nx)) continue;
 
-          float tentative = g_score(cx,cy);
+          float tentative = g_score(cy,cx);
           if (nx == cx || ny == cy) {
-            tentative += 1 + m_grid(nx,ny);
+            tentative += 1 + m_grid(ny,nx);
           } else {
-            tentative += (1 + m_grid(nx,ny)) * SQRT2;
+            tentative += (1 + m_grid(ny,nx)) * SQRT2;
           }
 
           // if neighbour not in the openset or dist < g_score[neighbour]
-          if (!openset.contains(nx*ncol+ny) || tentative < g_score(nx,ny)) {
+          if (!openset.contains(nx*ncol+ny) || tentative < g_score(ny,nx)) {
             came_from[nx*ncol+ny] = cx*ncol+cy; // record path
-            g_score(nx,ny) = tentative;
-            f_score(nx,ny) = tentative + estimate(nx,ny,x2,y2);
+            g_score(ny,nx) = tentative;
+            f_score(ny,nx) = tentative + estimate(nx,ny,x2,y2);
             if (!openset.contains(nx*ncol+ny)) {
-              openset.insert(f_score(nx,ny), nx*ncol+ny);
+              openset.insert(f_score(ny,nx), nx*ncol+ny);
             }
           }
         }

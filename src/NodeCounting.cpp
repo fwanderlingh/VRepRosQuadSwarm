@@ -142,8 +142,8 @@ void NodeCounting::findNext(){
     int bestCount = INT_MAX;
     int bestNeighbour = currentNode;
 
-    int current_j = currentNode%gridSizeY;
     int current_i = currentNode/gridSizeY;
+    int current_j = currentNode%gridSizeY;
 
     for(int i_shift=-1; i_shift<=1; ++i_shift){
       for(int j_shift=-1; j_shift<=1; ++j_shift){
