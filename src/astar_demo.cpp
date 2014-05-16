@@ -11,7 +11,11 @@ int main(void)
 {
 	using namespace alg;
 
-	Array2D<unsigned char> grid(N,N);
+
+
+	//Array2D<unsigned char> grid(N,N);
+	Array2D<unsigned char> grid;
+	grid.resize(N,N);
 	grid.clear(0);
 	srand(time(NULL));
 	int i,j;
@@ -21,8 +25,8 @@ int main(void)
 		grid(i,3*N/4) = AStar::WALL;
 	}
 
-	grid(0,0) = 0;
-	grid(N-1,N-1) = 0;
+	//grid(0,0) = 0;
+	//grid(N-1,N-1) = 0;
 
 	printf("search a path from (0,0) to (%d,%d)\n", N-1,N-1);
 	for	(i=0;i<N;i++) {

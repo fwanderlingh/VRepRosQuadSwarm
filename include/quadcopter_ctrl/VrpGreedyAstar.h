@@ -11,27 +11,12 @@
 #include <vector>
 #include <fstream>
 #include <cstring>
-#include "graphNodeStruct.h"
-
+#include "graphStructs.h"
+#include "astar.h"
+#include "2darray.h"
 
 using std::vector;
 
-struct vip{
-  int v;                                // Vertex (node) index (of the unvisited list)
-  vector< vector<int> >::iterator i;    // Index of Path (#robots)
-  vector<int>::iterator p;              // Position index inside the path
-
-  void set_vip( int nodeIndex,
-                 vector< vector<int> >::iterator pathIndex,
-                 vector<int>::iterator position ){
-    v = nodeIndex;
-    i = pathIndex;
-    p = position;
-  }
-};
-
-
-/// CLASS ///
 
 class VrpGreedyAstar
 {
@@ -57,18 +42,21 @@ class VrpGreedyAstar
   vector<int>::iterator itc;
   vector<int>::size_type v;
 
+  alg::Array2D<unsigned char> astar_grid;  /* Grid contains the same data as access_vec but the A* algorithm
+                                         * only accepts Array2D<unsigned char> type as input. */
+
   float pathLength(vector<graphNode> graph, vector<int> &pathToEvaluate);
-  void loadMatrixFile(std::ifstream &access_mat);
+  void loadMatrixFile(std::string acc_matrix_path);
   void createCycles();
   float dist(graphNode &a, graphNode &b);
+  void init();
 
 
 public:
   VrpGreedyAstar();
-  VrpGreedyAstar(std::ifstream &access_mat);
-  VrpGreedyAstar(std::ifstream &access_mat, int agents);
+  VrpGreedyAstar(std::string acc_matrix_path);
+  VrpGreedyAstar(std::string acc_matrix_path, int agents);
   virtual ~VrpGreedyAstar();
-  void init();
   void solve();
   void copyPathsTo(vector< vector<int> > &);
   void copyGraphTo(vector< graphNode > &);

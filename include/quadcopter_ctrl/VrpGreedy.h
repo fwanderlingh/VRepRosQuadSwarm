@@ -11,27 +11,11 @@
 #include <vector>
 #include <fstream>
 #include <cstring>
-#include "graphNodeStruct.h"
+#include "graphStructs.h"
 
 
 using std::vector;
 
-struct vip{
-  int v;                                // Vertex (node) index (of the unvisited list)
-  vector< vector<int> >::iterator i;    // Index of Path (#robots)
-  vector<int>::iterator p;              // Position index inside the path
-
-  void set_vip( int nodeIndex,
-                 vector< vector<int> >::iterator pathIndex,
-                 vector<int>::iterator position ){
-    v = nodeIndex;
-    i = pathIndex;
-    p = position;
-  }
-};
-
-
-/// CLASS ///
 
 class VrpGreedy
 {
@@ -58,15 +42,15 @@ class VrpGreedy
   vector<int>::size_type v;
 
   float pathLength(vector<graphNode> graph, vector<int> &pathToEvaluate);
-  void loadMatrixFile(std::ifstream &access_mat);
+  void loadMatrixFile(std::string acc_matrix_path);
   void createCycles();
   float dist(graphNode &a, graphNode &b);
 
 
 public:
   VrpGreedy();
-  VrpGreedy(std::ifstream &access_mat);
-  VrpGreedy(std::ifstream &access_mat, int agents);
+  VrpGreedy(std::string acc_matrix_path);
+  VrpGreedy(std::string acc_matrix_path, int agents);
   virtual ~VrpGreedy();
   void init();
   void solve();

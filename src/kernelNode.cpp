@@ -17,6 +17,7 @@
 #include <sstream>
 #include "termColors.h"
 #include "VrpGreedy.h"
+#include "VrpGreedyAstar.h"
 #include <fstream>
 #include <unistd.h>
 
@@ -28,6 +29,7 @@ using std::vector;
 
 
 std::string get_selfpath(void);
+void savePathsToFile(std::vector< vector<int> > &pathVec, vector<graphNode> &graph, std::string folder_save_path);
 
 int completed = 0;
 
@@ -48,52 +50,24 @@ int main(int argc, char **argv)
   }
   int num_robots = (*(argv[1]) - '0');
 
-  std::ifstream access_matrix;
   std::string filename = "access_mat_subs";
-
   std::string folder_path = get_selfpath();
-  std::string file_path = folder_path + "/" + filename;
+  std::string acc_matrix_path = folder_path + "/" + filename;
 
-  access_matrix.open( file_path.c_str() );
-  if( !access_matrix.is_open() ){
-    cout << "File not found! (sure is the executable folder?)" << endl;
-  }
-
-  VrpGreedy myVrp(access_matrix, num_robots);    //Constructor inputs are (mapToExplore, numOfAgents)
+  VrpGreedy myVrp(acc_matrix_path, num_robots);    //Constructor inputs are (mapToExplore, numOfAgents)
   myVrp.solve();
 
-  vector< vector<int> > Paths;
-  vector<graphNode> graphNodes;
-  myVrp.copyPathsTo(Paths);
-  myVrp.copyGraphTo(graphNodes);
 
-  ///  SAVE PATHS TO FILE  ///
-  std::cout << "Writing \"Paths\" to files..." << endl;
+  VrpGreedyAstar myVrpAstar(acc_matrix_path, num_robots);
+  myVrpAstar.solve();
 
-  //std::cin.get();
 
-  for (std::vector< vector<int> >::iterator itr = Paths.begin(); itr != Paths.end(); ++itr){
+  vector< vector<int> > pathVec;
+  vector<graphNode> graph;
+  myVrp.copyPathsTo(pathVec);
+  myVrp.copyGraphTo(graph);
 
-    std::ofstream pathfile;
-
-    char pathIndex[INTSTRSIZE];
-    sprintf(pathIndex, "%d", (int)(itr - Paths.begin()) );
-
-    std::string pathfileName(pathIndex);
-    pathfileName = folder_path + "/path_"  + pathfileName;
-
-    pathfile.open ( pathfileName.c_str() );
-    for (std::vector<int>::iterator itc = itr->begin(); itc != itr->end(); ++itc){
-      pathfile << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
-      //cout << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
-      pathfile << '\n';
-      //cout << endl;
-    }
-
-    //cout << endl;
-    pathfile.close();
-
-  }
+  savePathsToFile(pathVec, graph, folder_path);
 
   ros::init(argc, argv, "kernelNode");
   ros::NodeHandle n;
@@ -148,7 +122,33 @@ std::string get_selfpath() {
     }
 }
 
+void savePathsToFile(std::vector< vector<int> > &Paths,  vector<graphNode> &graphNodes, std::string folder_save_path){
+  ///  SAVE PATHS TO FILE  ///
 
+
+    for (std::vector< vector<int> >::iterator itr = Paths.begin(); itr != Paths.end(); ++itr){
+
+      std::ofstream pathfile;
+
+      /** Getting path index from iterator and converting it into string : **/
+      char pathIndex[INTSTRSIZE];
+      sprintf(pathIndex, "%d", (int)(itr - Paths.begin()) );
+      std::string pathfileName(pathIndex);
+      pathfileName = folder_save_path + "/path_"  + pathfileName;
+
+      pathfile.open ( pathfileName.c_str() );
+      for (std::vector<int>::iterator itc = itr->begin(); itc != itr->end(); ++itc){
+        pathfile << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
+        //cout << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
+        pathfile << '\n';
+        //cout << endl;
+      }
+      //cout << endl;
+      pathfile.close();
+
+    }
+    std::cout << "\"Paths\" files created!" << endl;
+}
 
 
 

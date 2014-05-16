@@ -53,15 +53,15 @@ VrpGreedy::VrpGreedy() : gridSizeX(DEF_GRID_X),
 }
 
 
-VrpGreedy::VrpGreedy(std::ifstream & INFILE) : numAgents(DEF_NUM_ROB)
+VrpGreedy::VrpGreedy(std::string acc_matrix_path) : numAgents(DEF_NUM_ROB)
 {
-  loadMatrixFile(INFILE);
+  loadMatrixFile(acc_matrix_path);
 }
 
 
-VrpGreedy::VrpGreedy(std::ifstream & INFILE, int agents)
+VrpGreedy::VrpGreedy(std::string acc_matrix_path, int agents)
 {
-  loadMatrixFile(INFILE);
+  loadMatrixFile(acc_matrix_path);
   numAgents = agents;
 }
 
@@ -85,7 +85,13 @@ float VrpGreedy::pathLength(vector<graphNode> graph, vector<int> &path){
 }
 
 
-void VrpGreedy::loadMatrixFile(std::ifstream &access_mat){
+void VrpGreedy::loadMatrixFile(std::string acc_matrix_path){
+  /**
+   * Here gridSizeX and gridSizeY are deducted from the size of the input matrix file
+   */
+
+  std::ifstream access_mat;
+  access_mat.open( acc_matrix_path.c_str() );
 
   if( access_mat.is_open() ) {
     int val;
@@ -95,10 +101,10 @@ void VrpGreedy::loadMatrixFile(std::ifstream &access_mat){
       access_vec.push_back( val );
     }
 
-    access_mat.close();
-
     gridSizeX = num_nl;
     gridSizeY = access_vec.size()/num_nl;
+
+    access_mat.close();
 
   }
   else{ cout << "Error reading file!" << endl; }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * DANIEL'S ALGORITHM IMPLEMENTAIONS
+ * DANIEL'S ALGORITHM IMPLEMENTATIONS
  *
  *  /\  |  _   _  ._ o _|_ |_  ._ _   _ 
  * /--\ | (_| (_) |  |  |_ | | | | | _> 
@@ -24,16 +24,25 @@ namespace alg {
 			private:
 				uint32_t NR;		// num of rows
 				uint32_t NC;		// num of columns
-				T * m_data;			// the place where the array resides.
+				T * m_data;		// the place where the array resides.
 
 			public:
+				Array2D(): NR(0), NC(0) {
+				  m_data = new T;
+				}
 				/**
-				 * construct an array of size [nrow,col]
+				 * construct an array of size [nrow,ncol]
 				 */
 				Array2D(uint32_t nrow, uint32_t ncol) {
 					NR = nrow;
 					NC = ncol;	
 					m_data = new T[nrow*ncol];
+				}
+
+				void resize(uint32_t nrow, uint32_t ncol) {
+				  NR = nrow;
+                                  NC = ncol;
+                                  m_data = new T[nrow*ncol];
 				}
 
 				/**

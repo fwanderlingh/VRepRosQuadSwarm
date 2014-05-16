@@ -115,6 +115,7 @@ include_directories(
 add_library(PathPlanningAlg src/PathPlanningAlg.cpp)
 add_library(VrpGreedy src/VrpGreedy.cpp)
 add_library(NodeCounting src/NodeCounting.cpp)
+add_library(VrpGreedyAstar src/VrpGreedyAstar.cpp)
 
 ## Declare a cpp executable
 # add_executable(beginner_tutorials_node src/beginner_tutorials_node.cpp)
@@ -147,12 +148,12 @@ target_link_libraries(astar_demo ${catkin_LIBRARIES})
 add_dependencies(astar_demo ${catkin_EXPORTED_TARGETS})
 
 
-
 # target_link_libraries(quadcopterRosCtrl Cao)  #creation this line took the shit out of me
 
 target_link_libraries(quadcopterRosCtrl PathPlanningAlg)
 target_link_libraries(quadcopterRosCtrl VrpGreedy)
 target_link_libraries(kernelNode VrpGreedy)
+target_link_libraries(kernelNode VrpGreedyAstar)
 target_link_libraries(quadNodeCount PathPlanningAlg)
 target_link_libraries(quadNodeCount NodeCounting)
 

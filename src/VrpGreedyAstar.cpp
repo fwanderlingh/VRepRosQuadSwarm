@@ -15,7 +15,6 @@
 #include <cassert>
 #include <cmath>
 #include <ctime>
-#include "astar.h"
 
 
 #define STARTNODE 5
@@ -31,6 +30,8 @@ using std::cout;
 using std::endl;
 using std::vector;
 
+using namespace alg;
+
 
 VrpGreedyAstar::VrpGreedyAstar() : gridSizeX(DEF_GRID_X),
                             gridSizeY(DEF_GRID_Y),
@@ -42,7 +43,10 @@ VrpGreedyAstar::VrpGreedyAstar() : gridSizeX(DEF_GRID_X),
   cout << "- Default grid is empty" << endl;
   cout << "- " << numAgents << " Robots" << endl;
 
-  access_vec.resize(gridSizeX*gridSizeY, 0);
+  access_vec.resize(gridSizeX*gridSizeY,0);
+
+  astar_grid.resize(gridSizeX, gridSizeY);
+  astar_grid.clear(1);
 
   // Parameters initialisation
   deltaBest = FLT_MAX;
@@ -54,15 +58,15 @@ VrpGreedyAstar::VrpGreedyAstar() : gridSizeX(DEF_GRID_X),
 }
 
 
-VrpGreedyAstar::VrpGreedyAstar(std::ifstream & INFILE) : numAgents(DEF_NUM_ROB)
+VrpGreedyAstar::VrpGreedyAstar(std::string acc_matrix_path) : numAgents(DEF_NUM_ROB)
 {
-  loadMatrixFile(INFILE);
+  loadMatrixFile(acc_matrix_path);
 }
 
 
-VrpGreedyAstar::VrpGreedyAstar(std::ifstream & INFILE, int agents)
+VrpGreedyAstar::VrpGreedyAstar(std::string acc_matrix_path, int agents)
 {
-  loadMatrixFile(INFILE);
+  loadMatrixFile(acc_matrix_path);
   numAgents = agents;
 }
 
@@ -86,7 +90,13 @@ float VrpGreedyAstar::pathLength(vector<graphNode> graph, vector<int> &path){
 }
 
 
-void VrpGreedyAstar::loadMatrixFile(std::ifstream &access_mat){
+void VrpGreedyAstar::loadMatrixFile(std::string acc_matrix_path){
+/**
+ * Here gridSizeX and gridSizeY are deducted from the size of the input matrix file
+ */
+
+  std::ifstream access_mat;
+  access_mat.open( acc_matrix_path.c_str() );
 
   if( access_mat.is_open() ) {
     int val;
@@ -96,10 +106,11 @@ void VrpGreedyAstar::loadMatrixFile(std::ifstream &access_mat){
       access_vec.push_back( val );
     }
 
-    access_mat.close();
 
     gridSizeX = num_nl;
     gridSizeY = access_vec.size()/num_nl;
+
+    access_mat.close();
 
   }
   else{ cout << "Error reading file!" << endl; }
@@ -109,10 +120,13 @@ void VrpGreedyAstar::loadMatrixFile(std::ifstream &access_mat){
 
 void VrpGreedyAstar::init(){
 
+  srand(time(NULL));    ///Here just because of the Astar class
+
   cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
 
   graphNodes.resize(gridSizeX*gridSizeY);
-
+  astar_grid.resize(gridSizeX, gridSizeY);
+  astar_grid.clear((unsigned char)AStar::WALL);
   unvisitedNodes.reserve( graphNodes.size() );
 
   access_vec.at(STARTNODE) = 1;    //STARTNODE is set as start for all the agents
@@ -126,10 +140,19 @@ void VrpGreedyAstar::init(){
       //cout << (int)graphNodes.at((i*gridSizeY) + j).occupied << " ";
       if (graphNodes.at((i*gridSizeY)+ j).occupied == 0){
         unvisitedNodes.push_back((i*gridSizeY) + j); //Adding the free nodes to the list of unvisited
+        astar_grid(i,j) = 0;
       }
     }
     //cout << endl;
   }
+
+  for     (int i=0;i<gridSizeX;i++) {
+            for(int j=0;j<gridSizeY;j++){
+                    if (astar_grid(i,j) == AStar::WALL) { printf("■ "); }
+                    else printf(". ");
+            }
+            printf("\n");
+    }
 
   minDist = (dist(graphNodes.at(0), graphNodes.at(1)) + FLT_MIN)*SQRT2;
   cout << "minDist=" << minDist << endl;
@@ -197,6 +220,9 @@ void VrpGreedyAstar::createCycles(){
 void VrpGreedyAstar::solve(){
 
   init();
+
+  std::cin.get();
+
 
   int insertIndex;
 

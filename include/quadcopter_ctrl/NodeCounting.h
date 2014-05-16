@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <fstream>
-#include "graphNodeStruct.h"
+#include "graphStructs.h"
 
 using std::vector;
 
