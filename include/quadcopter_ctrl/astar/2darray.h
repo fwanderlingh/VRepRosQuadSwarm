@@ -40,6 +40,7 @@ namespace alg {
 				}
 
 				void resize(uint32_t nrow, uint32_t ncol) {
+				  delete m_data;
 				  NR = nrow;
                                   NC = ncol;
                                   m_data = new T[nrow*ncol];

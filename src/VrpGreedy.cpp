@@ -117,7 +117,6 @@ void VrpGreedy::init(){
   cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
 
   graphNodes.resize(gridSizeX*gridSizeY);
-
   unvisitedNodes.reserve( graphNodes.size() );
 
   access_vec.at(STARTNODE) = 1;    //STARTNODE is set as start for all the agents
@@ -149,9 +148,7 @@ void VrpGreedy::init(){
 
   Paths.reserve( graphNodes.size() * numAgents);
 
-
   createCycles();
-
 }
 
 
@@ -207,6 +204,15 @@ void VrpGreedy::solve(){
 
   while(unvisitedNodes.size() > 0){
 
+    std::cout << "The contents of Paths are:" << endl;
+    for (itr = Paths.begin(); itr != Paths.end(); ++itr){
+      cout << "#" << itr - Paths.begin() << ": ";
+      for (itc = itr->begin(); itc != itr->end(); ++itc){
+          std::cout << *itc << ' ';
+      }
+      std::cout << '\n';
+    }
+
     // Delta increments initialisation
     deltaBest = FLT_MAX;
     deltavip = FLT_MAX;
@@ -259,6 +265,8 @@ void VrpGreedy::solve(){
         } // END P(positions)
       } // END I (robots)
     } // END V (nodes)
+
+
 
     choice.i->insert(choice.p, unvisitedNodes[choice.v]);   // Inserting chosen best node
 

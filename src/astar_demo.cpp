@@ -7,104 +7,109 @@
 
 #define INTSTRSIZE ((CHAR_BIT * sizeof(int) - 1) / 3 + 2)
 
-#define N 15
-
 #define MARK 0xEE
 
 using namespace alg;
 
 void printMap(Array2D<unsigned char> & grid);
 
+int N = 0;
 std::vector<std::string> rainbow;
 
-int main(void)
+int main(int argc, char **argv)
 {
+  if(argc<2){
+    printf("%s** argv[1] is empty! Provide size of grid! **%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
+  }
 
-	//Array2D<unsigned char> grid(N,N);
-	Array2D<unsigned char> grid;
-	grid.resize(N,N);
-	grid.clear(0);
-	srand(time(NULL));
-	int i,j;
+  //strtol(const char *restrict string, char **restrict tailptr, int base);
+  N = strtol(argv[1], NULL, 0);
 
-	///CONVEX OBSTACLE
-/*
-        for     (i=N/4;i<=3*N/4;i++) {
-                grid(3*N/4,i) = AStar::WALL;
-                grid(i,3*N/4) = AStar::WALL;
-        }*/
-	/// SNAKE PATH
-	for (i=0;i*2<N;i++) {
+  Array2D<unsigned char> grid;
+  grid.resize(N,N);
+  grid.clear(0);
+  srand(time(NULL));
+  int i,j;
+
+  ///CONVEX OBSTACLE
+
+  for     (i=N/4;i<=3*N/4;i++) {
+    grid(3*N/4,i) = AStar::WALL;
+    grid(i,3*N/4) = AStar::WALL;
+  }
+  /// SNAKE PATH
+  /*	for (i=0;i*2<N;i++) {
 	  for (j=0;j<N;j++)
 		if(i%2 == 0 && j>2) { grid(i*2,j) = AStar::WALL; }
 		else if(i%2 == 1 && j<N-2) { grid(i*2,j) = AStar::WALL; }
 	}
-
-	///CHESS-BOARD PATTERN
-/*
+   */
+  ///CHESS-BOARD PATTERN
+  /*
         for (i=0;i<N;i++) {
           for (j=1;j<N-1;j++)
                 if(i%2 == 1 && j%2 == 1) { grid(i,j) = AStar::WALL; }
         }
-*/
-	uint32_t start = 0;
-	uint32_t target = N*N-1;
+   */
+  uint32_t start = 0;
+  uint32_t target = N*N-1;
 
-	grid(start/N,start%N) = 'S';
-	grid(target/N,target%N) = 'T';
+  grid(start/N,start%N) = 'S';
+  grid(target/N,target%N) = 'T';
 
-	printf("search a path from %d to %d\n", start, target);
+  printf("search a path from %d to %d\n", start, target);
 
-	printMap(grid);
-        printf("\n");
+  printMap(grid);
+  printf("\n");
 
-	AStar astar(grid);
-	AStar::AStarResult * as = astar.run(start, target);
+  AStar astar(grid);
+  AStar::AStarResult * as = astar.run(start, target);
 
-	//rainbow.resize(as->num_nodes);
-	//char index[INTSTRSIZE];
+  //rainbow.resize(as->num_nodes);
+  //char index[INTSTRSIZE];
 
-	int numNodes = as->num_nodes;
+  int numNodes = as->num_nodes;
 
-	if(as->num_nodes > 0){
-          printf("Shortest path is: ");
-          printf("%d ",start);
-          for(i=0;i<as->num_nodes;i++){
-                  printf("%d ",as->path[i]);
-                  grid((as->path[i])/N,(as->path[i])%N) = MARK;
+  if(as->num_nodes > 0){
+    printf("Shortest path is: ");
+    printf("%s%d%s ",TC_YELLOW, start, TC_NONE);
+    for(i=0;i<as->num_nodes;i++){
+      printf("%d ",as->path[i]);
+      grid((as->path[i])/N,(as->path[i])%N) = MARK;
 
-                  //float colorIndex = (i*6)/numNodes+31;
-                  //sprintf(index, "%d", (int)colorIndex);
-                  //std::string indexString(index);
-                  //rainbow.at(i) = "\e[1;" + indexString + "m";
+      //float colorIndex = (i*6)/numNodes+31;
+      //sprintf(index, "%d", (int)colorIndex);
+      //std::string indexString(index);
+      //rainbow.at(i) = "\e[1;" + indexString + "m";
 
-          }
-          printf("%d ",target);
-          printf("\n");
+    }
+    printf("%s%d%s ",TC_YELLOW, target, TC_NONE);
+    printf("\n");
 
-          printMap(grid);
+    printMap(grid);
 
-          printf("\n");
-	}else{
-	 printf("There exist no free path!\n");
-	}
+    printf("\n");
+  }else{
+    printf("There exist no free path!\n");
+  }
 
-	
-	return 0;
+
+  return 0;
 }
 
 void printMap(Array2D<unsigned char> & grid){
 
   int ci = 0;
-    for     (int i=0;i<N;i++) {
-            for(int j=0;j<N;j++){
-                    if (grid(i,j) == AStar::WALL) { printf("■ "); }
-                    else if (grid(i,j) == MARK) {printf("%sX%s ", TC_GREEN, TC_NONE);}
-                    else if (grid(i,j) == 'S') {printf("S ");}
-                    else if (grid(i,j) == 'T') {printf("T ");}
-                    else printf(". ");
-            }
-            printf("\n");
+  for     (int i=0;i<N;i++) {
+    for(int j=0;j<N;j++){
+      if (grid(i,j) == AStar::WALL) { printf("■ "); }
+      else if (grid(i,j) == MARK) {printf("%sX%s ", TC_GREEN, TC_NONE);}
+      else if (grid(i,j) == 'S') {printf("%sS%s ",TC_YELLOW, TC_NONE);}
+      else if (grid(i,j) == 'T') {printf("%sT%s ",TC_YELLOW, TC_NONE);}
+      else printf(". ");
     }
+    printf("\n");
+  }
 
 }

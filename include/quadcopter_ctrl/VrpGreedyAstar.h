@@ -23,12 +23,15 @@ class VrpGreedyAstar
   int gridSizeX;
   int gridSizeY;
   int numAgents;
+  bool neighbourAvailable;
   vector<graphNode> graphNodes;
   vector<int> unvisitedNodes;
   vector<int> access_vec;
   vector<int> path;
   vector< vector<int> > Paths;
   vector<int> pathTentative;
+  vector<int> astarTent;
+  vector<int> bestAstar;
   vip choice;
   float deltaBest;
   float deltavip;
@@ -38,6 +41,7 @@ class VrpGreedyAstar
 
   float minDist; //distance between two adjacent blocks
 
+  vector< vector<int> >::iterator it;
   vector< vector<int> >::iterator itr;
   vector<int>::iterator itc;
   vector<int>::size_type v;
@@ -45,11 +49,13 @@ class VrpGreedyAstar
   alg::Array2D<unsigned char> astar_grid;  /* Grid contains the same data as access_vec but the A* algorithm
                                          * only accepts Array2D<unsigned char> type as input. */
 
-  float pathLength(vector<graphNode> graph, vector<int> &pathToEvaluate);
+  void checkBest(bool neighbour);
+  float pathLength(vector<int> &pathToEvaluate);
   void loadMatrixFile(std::string acc_matrix_path);
   void createCycles();
   float dist(graphNode &a, graphNode &b);
   void init();
+  void printTentative();
 
 
 public:

@@ -19,6 +19,7 @@ using std::vector;
 
 class VrpGreedy
 {
+
   int gridSizeX;
   int gridSizeY;
   int numAgents;

@@ -33,13 +33,24 @@ struct vip{
   int v;                                // Vertex (node) index (of the unvisited list)
   std::vector< std::vector<int> >::iterator i;    // Index of Path (#robots)
   std::vector<int>::iterator p;              // Position index inside the path
+  bool neighb;
 
   void set_vip( int nodeIndex,
                  std::vector< std::vector<int> >::iterator pathIndex,
-                 std::vector<int>::iterator position ){
+                 std::vector<int>::iterator position){
     v = nodeIndex;
     i = pathIndex;
     p = position;
+  }
+
+  void set_vipn( int nodeIndex,
+                 std::vector< std::vector<int> >::iterator pathIndex,
+                 std::vector<int>::iterator position,
+                 bool neighbour){
+    v = nodeIndex;
+    i = pathIndex;
+    p = position;
+    neighb = neighbour;
   }
 };
 

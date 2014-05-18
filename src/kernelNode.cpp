@@ -48,14 +48,14 @@ int main(int argc, char **argv)
     printf("%s** argv[1] is empty! Provide size of swarm! **%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-  int num_robots = (*(argv[1]) - '0');
+  int num_robots = strtol(argv[1], NULL, 0);
 
   std::string filename = "access_mat_subs";
   std::string folder_path = get_selfpath();
   std::string acc_matrix_path = folder_path + "/" + filename;
 
   VrpGreedy myVrp(acc_matrix_path, num_robots);    //Constructor inputs are (mapToExplore, numOfAgents)
-  myVrp.solve();
+  //myVrp.solve();
 
 
   VrpGreedyAstar myVrpAstar(acc_matrix_path, num_robots);
@@ -64,8 +64,8 @@ int main(int argc, char **argv)
 
   vector< vector<int> > pathVec;
   vector<graphNode> graph;
-  myVrp.copyPathsTo(pathVec);
-  myVrp.copyGraphTo(graph);
+  myVrpAstar.copyPathsTo(pathVec);
+  myVrpAstar.copyGraphTo(graph);
 
   savePathsToFile(pathVec, graph, folder_path);
 
