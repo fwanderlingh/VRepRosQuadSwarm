@@ -1,5 +1,0 @@
-<launch>
-  <node name="quadNodeCount_0" pkg="quadcopter_ctrl" type="quadNodeCount" args="0" output="screen"/>
-  <node name="quadNodeCount_1" pkg="quadcopter_ctrl" type="quadNodeCount" args="1" output="screen"/> 
-  <node name="quadNodeCount_2" pkg="quadcopter_ctrl" type="quadNodeCount" args="2" output="screen"/> 
-</launch>
