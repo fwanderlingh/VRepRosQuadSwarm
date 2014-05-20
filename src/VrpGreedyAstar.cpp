@@ -30,7 +30,6 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-using namespace alg;
 
 
 VrpGreedyAstar::VrpGreedyAstar() :
@@ -47,8 +46,6 @@ VrpGreedyAstar::VrpGreedyAstar() :
 
   access_vec.resize(gridSizeX*gridSizeY,0);
 
-  astar_grid.resize(gridSizeX, gridSizeY);
-  astar_grid.clear(1);
 
   // Parameters initialisation
   deltaBest = FLT_MAX;
@@ -124,6 +121,8 @@ void VrpGreedyAstar::loadMatrixFile(std::string acc_matrix_path){
   }
   else{ cout << "Error reading file!" << endl; }
 
+
+
 }
 
 
@@ -139,8 +138,6 @@ void VrpGreedyAstar::init(){
 
   graphNodes.resize(gridSizeX*gridSizeY);
   unvisitedNodes.reserve( graphNodes.size() );
-  astar_grid.resize(gridSizeX, gridSizeY);
-  astar_grid.clear((unsigned char)AStar::WALL);
 
 
   /// Graph initialisation - to every node is assigned a position
@@ -151,22 +148,11 @@ void VrpGreedyAstar::init(){
       //cout << (int)graphNodes.at((i*gridSizeY) + j).occupied << " ";
       if (graphNodes.at((i*gridSizeY)+ j).occupied == 0 && ((i*gridSizeY)+ j) != STARTNODE){
         unvisitedNodes.push_back((i*gridSizeY) + j); //Adding the free nodes to the list of unvisited
-        astar_grid(i,j) = 0;
       }
     }
     //cout << endl;
   }
-  astar_grid(STARTNODE/gridSizeY,STARTNODE%gridSizeY) = 0;
-/// PRINT ASTAR MAP
 
-  for     (int i=0;i<gridSizeX;i++) {
-            for(int j=0;j<gridSizeY;j++){
-                    if (astar_grid(i,j) == AStar::WALL) { printf("■ "); }
-                    else printf(". ");
-            }
-            printf("\n");
-    }
-    std::cin.get();
 
   minDist = (dist(graphNodes.at(0), graphNodes.at(1)) + FLT_MIN)*SQRT2;
   cout << "minDist=" << minDist << endl;
@@ -196,7 +182,6 @@ void VrpGreedyAstar::createCycles(){
    */
 
   int insertIndex;
-
 
       for (itr = Paths.begin(); itr != Paths.end(); ++itr){            // On every path i
 
@@ -232,11 +217,20 @@ void VrpGreedyAstar::createCycles(){
 void VrpGreedyAstar::solve(){
 
   init();
-
   pathTentative.reserve(gridSizeX*gridSizeY);
-  astarTent.reserve(gridSizeX*gridSizeY);
-  AStar astar(astar_grid);
-  uint32_t start1, start2, target;
+
+  /// Here we adapt out access_vec to the format of the Astar class:
+  /// a wall is represented with a "9" instead of a "1" as we do.
+  /// For more info see the Astar class "NOTES ON THE INPUT MAP".
+  std::vector<int> astar_vec(access_vec);
+  std::transform(astar_vec.begin(), astar_vec.end(),
+                  astar_vec.begin(), std::bind1st(std::multiplies<int>(),9));
+
+  Astar astar(astar_vec, gridSizeX, gridSizeY);
+
+
+  astar.printMap();
+  int start1, start2, target;
 
 
   while(unvisitedNodes.size() > 0){
@@ -274,15 +268,16 @@ void VrpGreedyAstar::solve(){
           pathTentative = *itr;
           vector<int>::iterator iTent = pathTentative.begin() + (itc - itr->begin());
 
-          //cout << (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) << endl;
-          //cout << (dist(graphNodes[*itc-1], graphNodes[unvisitedNodes[v]])) << endl;
-          //std::cin.get();
+
+//            cout << (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) << endl;
+//            cout << (dist(graphNodes[*itc-1], graphNodes[unvisitedNodes[v]])) << endl;
+//            std::cin.get();
+
 
           /// Following if: If node is adjacent to path just insert it ///
           if( ( dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]]) ) <= minDist   &&
               ( dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]]) ) <= minDist ){
 
-            //cout << "Booh" << endl;
             pathTentative.insert(iTent, unvisitedNodes[v]);
 
             checkBest(1);
@@ -292,36 +287,32 @@ void VrpGreedyAstar::solve(){
           /// Otherwise: calculate the shortest traversable path to "get there and go back" ///
           else{
 
-            //printTentative();
-
             //cout << "A* in progress! :)" <<  endl;
-
             //cout << "_ Insert position = " << (itc - itr->begin()) << " _" << endl;
 
-            /** In the first astar.run() we calculate the "way there" path,
-             * while in the second run() we calculate the "way back".
-             */
+            /// In the first astar.run() we calculate the "way there" path,
+            ///  while in the second run() we calculate the "way back".
+
 
             target = unvisitedNodes[v];
             astarTent.clear();
 
 
-            if((dist(graphNodes[*(itc-1)], graphNodes[unvisitedNodes[v]])) > minDist){
+            if((dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) > minDist){
 
               start1 = *(itc-1);
               //cout << "Target:" << target << " start_1:" << start1 << endl;
 
-              AStar::AStarResult * as;
-              as = astar.run(start1, target);
+
+              astar.run(start1, target);
               //cout << "way there: ";
-              for(int i=0; i<as->num_nodes; i++){
-                //cout << as->path[i] << " ";
-                astarTent.push_back(as->path[i]);
+              for(int i=1; i<astar.path.size()-1; i++){
+                //cout << astar.path[i] << " ";
+                astarTent.push_back(astar.path[i]);
               }
               //cout << endl;
-              delete as;
-            }
 
+            }
 
             //cout << "Inserting target node " <<  unvisitedNodes[v] << endl;
             astarTent.push_back(unvisitedNodes[v]);
@@ -332,41 +323,32 @@ void VrpGreedyAstar::solve(){
               start2 = *itc;
               //cout << "Target:" << target << " start_2:" << start2 << endl;
 
-              AStar::AStarResult * as;
-              as = astar.run(target, start2);
-
-              //cout << "Tentative size:" << pathTentative.size() << " (capacity=" << pathTentative.capacity() << ")" << endl;
-              //std::cin.get();
+              astar.run(target, start2);
               //cout << "way back: ";
-              for(int i=0; i<as->num_nodes; i++){
-                //cout << "Inserting" << as->path[i] << " in index: " << (iTent+(padding+1+i) - pathTentative.begin()) << endl;
-                //cout << as->path[i] << " ";
-                astarTent.push_back(as->path[i]);
+              for(int i=1; i<astar.path.size()-1; i++){
+                //cout << astar.path[i] << " ";
+                astarTent.push_back(astar.path[i]);
               }
-             // cout << endl;
-              delete as;
+              //cout << endl;
             }
-
             pathTentative.insert(iTent, astarTent.begin(), astarTent.end());
-            //cout << "Final ";
-            //printTentative();
 
             checkBest(0);
 
           }
 
 
-
         } // END P(positions)
       } // END I (robots)
     } // END V (nodes)
+
 
     if(choice.neighb == 1){
       /// Inserting chosen best node v, in position p, in path of robot i
       choice.i->insert(choice.p, unvisitedNodes[choice.v]);
     }else{
       /// Inserting chosen best node v, along with all the path to reach it
-      choice.i->insert(choice.p, bestAstar.begin(), bestAstar.end());
+      choice.i->insert(choice.p, choice.astarPath.begin(), choice.astarPath.end());
     }
 
     unvisitedNodes.erase(unvisitedNodes.begin() + choice.v);     // Delete it from list of unvisited
@@ -396,8 +378,7 @@ void VrpGreedyAstar::solve(){
 float VrpGreedyAstar::dist(graphNode &a, graphNode &b){
 
   float dist = sqrt ( pow(a.posx - b.posx, 2.0) +
-                      pow(a.posy - b.posy, 2.0) +
-                      pow(a.posz - b.posz, 2.0) );
+                      pow(a.posy - b.posy, 2.0) );
 
   //cout << "Dist=" << dist << endl;
   return dist;
@@ -417,7 +398,7 @@ void VrpGreedyAstar::checkBest(bool isNeighbour){
       deltaBest = deltavip;
       choice.set_vipn(v, itr, itc, isNeighbour);
       if(!isNeighbour){
-        bestAstar = astarTent;
+        choice.astarPath = astarTent;
       }
     }//End Check Global Best
   }//End Check Local Best

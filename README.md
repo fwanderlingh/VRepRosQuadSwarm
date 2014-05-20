@@ -1,6 +1,20 @@
 VRepRosQuadControl
 ==================
+
+Summary
+-------
+
 This is a framework to control a series of quadcopters simulated in Vrep by using ROS publisher/subscribers.
+
+Compilation
+===========
+
+To build the following package you will need [ROS](http://wiki.ros.org/ROS) to be installed and clone this repository in the src of a new [catkin package](http://wiki.ros.org/ROS/Tutorials/catkin/CreatingPackage). (section in progress - further explanation will be added)
+
+
+Details
+=======
+
 The are two algorithms developed:
 
 1) VRP Greedy (paths generated offline before start)

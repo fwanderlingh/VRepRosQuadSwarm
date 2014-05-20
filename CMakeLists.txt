@@ -143,9 +143,7 @@ add_executable(quadNodeCount src/quadNodeCount.cpp)
 target_link_libraries(quadNodeCount ${catkin_LIBRARIES})
 add_dependencies(quadNodeCount ${catkin_EXPORTED_TARGETS})
 
-add_executable(astar_demo src/astar_demo.cpp)
-target_link_libraries(astar_demo ${catkin_LIBRARIES})
-add_dependencies(astar_demo ${catkin_EXPORTED_TARGETS})
+
 
 
 # target_link_libraries(quadcopterRosCtrl Cao)  #creation this line took the shit out of me

@@ -5,15 +5,14 @@
  *      Author: francescow
  */
 
-#ifndef VrpGreedyAstarASTAR_H_
-#define VrpGreedyAstarASTAR_H_
+#ifndef VRPGREEDYASTAR_H_
+#define VRPGREEDYASTAR_H_
 
 #include <vector>
 #include <fstream>
 #include <cstring>
 #include "graphStructs.h"
-#include "astar.h"
-#include "2darray.h"
+#include "Astar.h"
 
 using std::vector;
 
@@ -46,8 +45,7 @@ class VrpGreedyAstar
   vector<int>::iterator itc;
   vector<int>::size_type v;
 
-  alg::Array2D<unsigned char> astar_grid;  /* Grid contains the same data as access_vec but the A* algorithm
-                                         * only accepts Array2D<unsigned char> type as input. */
+
 
   void checkBest(bool neighbour);
   float pathLength(vector<int> &pathToEvaluate);
@@ -73,4 +71,4 @@ public:
 
 
 
-#endif /* VrpGreedyAstarASTAR_H_ */
+#endif /* VRPGREEDYASTAR_H_ */
