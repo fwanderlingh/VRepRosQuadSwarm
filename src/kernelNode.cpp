@@ -35,7 +35,7 @@ int completed = 0;
 
 void completedSignal(const std_msgs::Int64::ConstPtr& control)
 {
-  if(control->data == 1) completed++; /// A node controller sends one when it finishes the path
+	if(control->data == 1) completed++; /// A node controller sends one when it finishes the path
 
 }
 
@@ -43,111 +43,111 @@ void completedSignal(const std_msgs::Int64::ConstPtr& control)
 int main(int argc, char **argv)
 {
 
-  /// argv[1] contains the size of the swarm, e.g. the number of robots to be controlled
-  if(argc<2){
-    printf("%s** argv[1] is empty! Provide size of swarm! **%s\n", TC_RED, TC_NONE);
-    exit(EXIT_FAILURE);
-  }
-  int num_robots = strtol(argv[1], NULL, 0);
+	/// argv[1] contains the size of the swarm, e.g. the number of robots to be controlled
+	if(argc<2){
+		printf("%s** argv[1] is empty! Provide size of swarm! **%s\n", TC_RED, TC_NONE);
+		exit(EXIT_FAILURE);
+	}
+	int num_robots = strtol(argv[1], NULL, 0);
 
-  std::string filename = "access_mat_subs";
-  std::string folder_path = get_selfpath();
-  std::string acc_matrix_path = folder_path + "/" + filename;
+	std::string filename = "access_mat_subs";
+	std::string folder_path = get_selfpath();
+	std::string acc_matrix_path = folder_path + "/" + filename;
 
-  VrpGreedy myVrp(acc_matrix_path, num_robots);    //Constructor inputs are (mapToExplore, numOfAgents)
-  //myVrp.solve();
-
-
-  VrpGreedyAstar myVrpAstar(acc_matrix_path, num_robots);
-  myVrpAstar.solve();
+	VrpGreedy myVrp(acc_matrix_path, num_robots);    //Constructor inputs are (mapToExplore, numOfAgents)
+	//myVrp.solve();
 
 
-  vector< vector<int> > pathVec;
-  vector<graphNode> graph;
-  myVrpAstar.copyPathsTo(pathVec);
-  myVrpAstar.copyGraphTo(graph);
-
-  savePathsToFile(pathVec, graph, folder_path);
-
-  ros::init(argc, argv, "kernelNode");
-  ros::NodeHandle n;
-
-  ros::Publisher ctrlSignal_pub = n.advertise<std_msgs::Int64>("quadCtrlSignal", 100);
-  ros::Subscriber pathCompleted_sub = n.subscribe("pathCompleted", 10, completedSignal);
-
-  ros::Rate loop_rate(0.5); //0.5 Hertz
-
-  std_msgs::Int64 controlSignal;
-  controlSignal.data = 1;
-
-  int firstrun = 1;
+	VrpGreedyAstar myVrpAstar(acc_matrix_path, num_robots);
+	myVrpAstar.solve();
 
 
-  while (ros::ok())
-  {
-    if(firstrun){
-      ctrlSignal_pub.publish(controlSignal);
-      cout << "Start control triggered!" << endl;
-      firstrun = 0;
-    }
+	vector< vector<int> > pathVec;
+	vector<graphNode> graph;
+	myVrpAstar.copyPathsTo(pathVec);
+	myVrpAstar.copyGraphTo(graph);
 
-    if( completed < num_robots){
-      ctrlSignal_pub.publish(controlSignal);
+	savePathsToFile(pathVec, graph, folder_path);
 
-    }else{
-      printf("%sAll paths covered!%s\n", TC_GREEN, TC_NONE);
-      ros::shutdown();
-    }
+	ros::init(argc, argv, "kernelNode");
+	ros::NodeHandle n;
 
-    ros::spinOnce();
-    loop_rate.sleep();
+	ros::Publisher ctrlSignal_pub = n.advertise<std_msgs::Int64>("quadCtrlSignal", 100);
+	ros::Subscriber pathCompleted_sub = n.subscribe("pathCompleted", 10, completedSignal);
 
-  }
+	ros::Rate loop_rate(0.5); //0.5 Hertz
 
-  return 0;
+	std_msgs::Int64 controlSignal;
+	controlSignal.data = 1;
+
+	int firstrun = 1;
+
+
+	while (ros::ok())
+	{
+		if(firstrun){
+			ctrlSignal_pub.publish(controlSignal);
+			cout << "Start control triggered!" << endl;
+			firstrun = 0;
+		}
+
+		if( completed < num_robots){
+			ctrlSignal_pub.publish(controlSignal);
+
+		}else{
+			printf("%sAll paths covered!%s\n", TC_GREEN, TC_NONE);
+			ros::shutdown();
+		}
+
+		ros::spinOnce();
+		loop_rate.sleep();
+
+	}
+
+	return 0;
 }
 
 
 std::string get_selfpath() {
-    char buff[2048];
-    ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
-    if (len != -1) {
-      buff[len] = '\0';
-      std::string path(buff);   ///Here the executable name is still in
-      std::string::size_type t = path.find_last_of("/");   // Here we find the last "/"
-      path = path.substr(0,t);                             // and remove the rest (exe name)
-      return path;
-    } else {
-     printf("Cannot determine file path!\n");
-    }
+	char buff[2048];
+	ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
+	if (len != -1) {
+		buff[len] = '\0';
+		std::string path(buff);   ///Here the executable name is still in
+		std::string::size_type t = path.find_last_of("/");   // Here we find the last "/"
+		path = path.substr(0,t);                             // and remove the rest (exe name)
+		return path;
+	} else {
+		printf("Cannot determine file path!\n");
+	}
 }
 
 void savePathsToFile(std::vector< vector<int> > &Paths,  vector<graphNode> &graphNodes, std::string folder_save_path){
-  ///  SAVE PATHS TO FILE  ///
+	///  SAVE PATHS TO FILE  ///
 
 
-    for (std::vector< vector<int> >::iterator itr = Paths.begin(); itr != Paths.end(); ++itr){
+	for (std::vector< vector<int> >::iterator itr = Paths.begin(); itr != Paths.end(); ++itr){
 
-      std::ofstream pathfile;
+		std::ofstream pathfile;
 
-      /** Getting path index from iterator and converting it into string : **/
-      char pathIndex[INTSTRSIZE];
-      sprintf(pathIndex, "%d", (int)(itr - Paths.begin()) );
-      std::string pathfileName(pathIndex);
-      pathfileName = folder_save_path + "/path_"  + pathfileName;
+		/** Getting path index from iterator and converting it into string : **/
+		char pathIndex[INTSTRSIZE];
+		sprintf(pathIndex, "%d", (int)(itr - Paths.begin()) );
+		std::string pathfileName(pathIndex);
+		pathfileName = folder_save_path + "/path_"  + pathfileName;
 
-      pathfile.open ( pathfileName.c_str() );
-      for (std::vector<int>::iterator itc = itr->begin(); itc != itr->end(); ++itc){
-        pathfile << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
-        //cout << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
-        pathfile << '\n';
-        //cout << endl;
-      }
-      //cout << endl;
-      pathfile.close();
+		pathfile.open ( pathfileName.c_str() );
+		for (std::vector<int>::iterator itc = itr->begin(); itc != itr->end(); ++itc){
+			pathfile << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
+			//cout << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
+			pathfile << '\n';
+			//cout << endl;
+		}
+		//cout << endl;
+		pathfile.close();
 
-    }
-    std::cout << "\"Paths\" files created!" << endl;
+	}
+	std::cout << "\"Paths\" files created!" << endl;
 }
 
 
