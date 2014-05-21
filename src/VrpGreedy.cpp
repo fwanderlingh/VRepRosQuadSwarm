@@ -19,8 +19,9 @@
 
 #define STARTNODE 5
 #define MAX_FOV 2
-#define SQRT2 1.4143 /// Ceiled to avoid failure in check condition in "solve()"
-                      /// due to small decimal errors.
+#define SQRT2 1.4143
+/// Ceiled to avoid failure in check condition in "solve()"
+/// due to small decimal errors.
 
 #define DEF_GRID_X 4
 #define DEF_GRID_Y 4
@@ -32,10 +33,10 @@ using std::vector;
 
 
 VrpGreedy::VrpGreedy() : gridSizeX(DEF_GRID_X),
-                            gridSizeY(DEF_GRID_Y),
-                            numAgents(DEF_NUM_ROB),  // Default Initialisation
-                            minDist(FLT_MAX),
-                            v(0)
+    gridSizeY(DEF_GRID_Y),
+    numAgents(DEF_NUM_ROB),  // Default Initialisation
+    minDist(FLT_MAX),
+    v(0)
 {
   cout << "Default configuration:" << endl;
   cout << "- Default grid is empty" << endl;
@@ -142,7 +143,7 @@ void VrpGreedy::init(){
   path.push_back(STARTNODE);       // Every path initially is just 2 nodes: Start + End(=start)
   path.push_back(STARTNODE);
 
-    for(int i = 0; i < numAgents; i++){
+  for(int i = 0; i < numAgents; i++){
     Paths.push_back(path); // Define a path for every agent
   }
 
@@ -156,42 +157,42 @@ void VrpGreedy::createCycles(){
 
   ///////////// Create initial cycles //////////////////////////////////////////
 
-    /* To understand the need for the initial cycle: consider that the initial path
-     * is (0,0), the next best path for the Greedy solver cannot be (0,1,0) which has
-     * length=2, but (0,0,1) which has length=1. So it will not produce a circular
-     * solution. By inserting the first element in the middle (see **), we solve this problem.
-     */
+  /* To understand the need for the initial cycle: consider that the initial path
+   * is (0,0), the next best path for the Greedy solver cannot be (0,1,0) which has
+   * length=2, but (0,0,1) which has length=1. So it will not produce a circular
+   * solution. By inserting the first element in the middle (see **), we solve this problem.
+   */
 
   int insertIndex;
 
 
-      for (itr = Paths.begin(); itr != Paths.end(); ++itr){            // On every path i
+  for (itr = Paths.begin(); itr != Paths.end(); ++itr){            // On every path i
 
-        // Delta increments initialisation
-        deltaBest = FLT_MAX;
-        deltavip = FLT_MAX;
-        liMin = FLT_MAX;
-        itc = (itr->begin()+1);        // Between Start and End
-        for (v = 0; v < unvisitedNodes.size(); v++ ){   // For every Node v
-            insertIndex = (int)(itc - itr->begin());        // This is necessary to avoid modifying the current path
-                                                            // vector (which is NOT allowed since we're iterating
-                                                            // inside it), and keep track of the insertion index.
-            pathTentative = *itr;
-            vector<int>::iterator iTent = pathTentative.begin() + insertIndex;
-            float tentPathLength;
-            pathTentative.insert(iTent, unvisitedNodes[v]);
-            tentPathLength = pathLength(graphNodes, pathTentative);
+    // Delta increments initialisation
+    deltaBest = FLT_MAX;
+    deltavip = FLT_MAX;
+    liMin = FLT_MAX;
+    itc = (itr->begin()+1);        // Between Start and End
+    for (v = 0; v < unvisitedNodes.size(); v++ ){   // For every Node v
+      insertIndex = (int)(itc - itr->begin());        // This is necessary to avoid modifying the current path
+      // vector (which is NOT allowed since we're iterating
+      // inside it), and keep track of the insertion index.
+      pathTentative = *itr;
+      vector<int>::iterator iTent = pathTentative.begin() + insertIndex;
+      float tentPathLength;
+      pathTentative.insert(iTent, unvisitedNodes[v]);
+      tentPathLength = pathLength(graphNodes, pathTentative);
 
-            if(tentPathLength < liMin){
-              liMin = tentPathLength;
-              choice.set_vip(v, itr, itc);
-            }
+      if(tentPathLength < liMin){
+        liMin = tentPathLength;
+        choice.set_vip(v, itr, itc);
+      }
 
-        } // END V
-        choice.i->insert(choice.p, unvisitedNodes[choice.v]);
-        vector<int>::iterator insertedNode = unvisitedNodes.begin() + choice.v;
-        unvisitedNodes.erase(insertedNode);
-      } // END I
+    } // END V
+    choice.i->insert(choice.p, unvisitedNodes[choice.v]);
+    vector<int>::iterator insertedNode = unvisitedNodes.begin() + choice.v;
+    unvisitedNodes.erase(insertedNode);
+  } // END I
 
 }
 
@@ -208,7 +209,7 @@ void VrpGreedy::solve(){
     for (itr = Paths.begin(); itr != Paths.end(); ++itr){
       cout << "#" << itr - Paths.begin() << ": ";
       for (itc = itr->begin(); itc != itr->end(); ++itc){
-          std::cout << *itc << ' ';
+        std::cout << *itc << ' ';
       }
       std::cout << '\n';
     }
@@ -237,12 +238,12 @@ void VrpGreedy::solve(){
           //std::cin.get();
 
           if( ( (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) <= minDist+MAX_FOV   &&
-                (dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) <= minDist+MAX_FOV )
+              (dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) <= minDist+MAX_FOV )
               || 0 ){  ///NEAREST NEIGHBOUR - NOT IMPROVING MUCH THE RESULT (disabled "|| 1", enabled "|| 0")
 
             insertIndex = (int)(itc - itr->begin());        // This is necessary to avoid modifying the current path
-                                                            // vector (which is NOT allowed since we're iterating
-                                                            // inside it), and keep track of the insertion index.
+            // vector (which is NOT allowed since we're iterating
+            // inside it), and keep track of the insertion index.
             pathTentative = *itr;
             vector<int>::iterator iTent = pathTentative.begin() + insertIndex;
             float tentPathLenght;
@@ -284,7 +285,7 @@ void VrpGreedy::solve(){
   for (itr = Paths.begin(); itr != Paths.end(); ++itr){
     cout << "#" << itr - Paths.begin() << ": ";
     for (itc = itr->begin(); itc != itr->end(); ++itc){
-        std::cout << *itc << ' ';
+      std::cout << *itc << ' ';
     }
     std::cout << '\n';
   }
