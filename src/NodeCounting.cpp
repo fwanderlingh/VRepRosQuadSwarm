@@ -11,9 +11,10 @@
 
 #include "NodeCounting.h"
 #include <iostream>
-#include <cmath>
-#include <climits>
-#include <numeric>
+#include <cmath>        /* sqrt, pow */
+#include <climits>      /* INT_MAX */
+#include <numeric>      /* multiply */
+#include <stdlib.h>     /* srand, rand */
 
 #define STARTNODE 5
 
@@ -85,7 +86,7 @@ void NodeCounting::loadMatrixFile(std::ifstream &access_mat){
 
 void NodeCounting::initGraph(std::ifstream & INFILE){
 
-
+  srand(time(NULL));
   loadMatrixFile(INFILE);       /// THe access_vec and defining grid sizes
 
   //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
@@ -141,6 +142,7 @@ void NodeCounting::findNext(){
 
     int bestCount = INT_MAX;
     int bestNeighbour = currentNode;
+    std::vector<int> best_vec;
 
     int current_i = currentNode/gridSizeY;
     int current_j = currentNode%gridSizeY;
@@ -162,14 +164,29 @@ void NodeCounting::findNext(){
           //cout << "Checking node n." << tentIndex << endl;
 
             if( graphNodes.at(tentIndex).nodeCount <= bestCount ){
+
+              if( graphNodes.at(tentIndex).nodeCount == bestCount ){
+                best_vec.push_back(tentIndex);
+              }else{
+                best_vec.clear();
+                best_vec.push_back(tentIndex);
+              }
+
               bestCount = graphNodes.at(tentIndex).nodeCount;
-              bestNeighbour = tentIndex;
+              //bestNeighbour = tentIndex;
+
             }//End checkBest
           }//End occupancy check
         }//End range check
       }//End j_shift for-loop (y scan)
     } //End i_shift for-loop (x scan)
-    currentNode = bestNeighbour;
+    if(best_vec.size() > 0){
+      int randIndex = rand()%best_vec.size();
+      currentNode = best_vec.at(randIndex);
+    }else{
+      currentNode = bestNeighbour;
+    }
+
   }
 
 }

@@ -199,7 +199,6 @@ int main(int argc, char **argv)
 
 
 
-
 std::string get_selfpath() {
     char buff[2048];
     ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
