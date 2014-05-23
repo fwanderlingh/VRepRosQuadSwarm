@@ -1,0 +1,5 @@
+<launch>
+  <node name="quadLRTAstar_0" pkg="quadcopter_ctrl" type="quadLRTA" args="0" output="screen"/>
+  <node name="quadLRTAstar_1" pkg="quadcopter_ctrl" type="quadLRTA" args="1" output="screen"/> 
+  <node name="quadLRTAstar_2" pkg="quadcopter_ctrl" type="quadLRTA" args="2" output="screen"/> 
+</launch>

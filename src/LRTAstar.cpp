@@ -3,13 +3,13 @@
 //	License: BSD (http://opensource.org/licenses/BSD-3-Clause)	//
 
 /*
- * NodeCounting.cpp
+ * LRTAstar.cpp
  *
  *  Created on: May 9, 2014
  *      Author: francescow
  */
 
-#include "NodeCounting.h"
+#include "LRTAstar.h"
 #include <iostream>
 #include <cmath>        /* sqrt, pow */
 #include <climits>      /* INT_MAX */
@@ -22,8 +22,9 @@ using std::cout;
 using std::endl;
 
 
-NodeCounting::NodeCounting() : gridSizeX(0), gridSizeY(0),
-                                  currentNode(STARTNODE), unvisitedCount(INT_MAX)
+LRTAstar::LRTAstar() : gridSizeX(0), gridSizeY(0),
+                          currentNode(STARTNODE), unvisitedCount(INT_MAX),
+                          prevNode(STARTNODE)
 {
 
   // THE DEFAULT CONSTRUCTOR IS ONLY USED TO DECLARE CLASS INSTANCES AS
@@ -32,38 +33,22 @@ NodeCounting::NodeCounting() : gridSizeX(0), gridSizeY(0),
 }
 
 
-NodeCounting::NodeCounting(std::ifstream & INFILE) : currentNode(STARTNODE), unvisitedCount(INT_MAX)
+LRTAstar::LRTAstar(std::ifstream & INFILE) : currentNode(STARTNODE), unvisitedCount(INT_MAX),
+                                                prevNode(STARTNODE)
 {
 
   initGraph(INFILE);
-/*
-  loadMatrixFile(INFILE);       /// THe access_vec and defining grid sizes
 
-  //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
-
-  graphNodes.resize(gridSizeX*gridSizeY);
-
-  // Graph initialisation - to every node is assigned a position in a Row-Major order
-  for(int i=0; i<gridSizeX; i++){
-    for(int j=0; j<gridSizeY; j++){
-      graphNodes.at((i*gridSizeY) + j).setPos((float)i*2, (float)j*2);
-      graphNodes.at((i*gridSizeY) + j).occupied = access_vec.at((i*gridSizeY) + j);
-      if(access_vec.at((i*gridSizeY) + j) == 0) unvisitedCount++;
-      //cout << (int)graphNodes.at((i*gridSizeY) + j).occupied << " ";
-    }
-    //cout << endl;
-  }
-*/
 }
 
-NodeCounting::~NodeCounting()
+LRTAstar::~LRTAstar()
 {
   // TODO Auto-generated destructor stub
 }
 
 
 
-void NodeCounting::loadMatrixFile(std::ifstream &access_mat){
+void LRTAstar::loadMatrixFile(std::ifstream &access_mat){
 
   if( access_mat.is_open() ) {
     int val;
@@ -84,10 +69,10 @@ void NodeCounting::loadMatrixFile(std::ifstream &access_mat){
 }
 
 
-void NodeCounting::initGraph(std::ifstream & INFILE){
+void LRTAstar::initGraph(std::ifstream & INFILE){
 
   srand(time(NULL));
-  loadMatrixFile(INFILE);       /// THe access_vec and defining grid sizes
+  loadMatrixFile(INFILE);       /// Filling the "access_vec" and defining grid sizes
 
   //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
 
@@ -109,18 +94,19 @@ void NodeCounting::initGraph(std::ifstream & INFILE){
 }
 
 
-void NodeCounting::incrCount(int nodeIndex, bool nodeType){
+void LRTAstar::incrCount(int prevIndex, int currIndex, bool currType){
 
-  graphNodes.at(nodeIndex).nodeCount++;
+  graphNodes.at(prevIndex).nodeCount = graphNodes.at(currIndex).nodeCount + 1;
 
-  if(nodeType == 0){
-    unvisited.at(nodeIndex) = 0;
+  if(currType == 0){
+    unvisited.at(currIndex) = 0;
     // The sum of all elements of unvisited is performed so that when sum is zero we
     // know we have finished. Check is performed in "findNext()"
     unvisitedCount = std::accumulate(unvisited.begin(),unvisited.end(), 0);
   }
 
 /*
+ * PRINT MAP FOR DEBUGGING PURPOSES
   for(int i=0; i<gridSizeX; i++){
     for(int j=0; j<gridSizeY; j++){
       cout << (int)graphNodes.at((i*gridSizeY) + j).nodeCount << " ";
@@ -133,12 +119,14 @@ void NodeCounting::incrCount(int nodeIndex, bool nodeType){
 }
 
 
-void NodeCounting::findNext(){
+void LRTAstar::findNext(){
 
   if( !isCompleted() ){
     /// Look for adjacent nodes and find the one with the smallest number of visits
     /// Before being able to do the adjacency check we have to recover the (i,j) index
     /// values encoded in the graph 1D array as "i*gridSizeY + j" (row-major order)
+
+    prevNode = currentNode;
 
     int bestCount = INT_MAX;
     int bestNeighbour = currentNode;
@@ -192,7 +180,7 @@ void NodeCounting::findNext(){
 }
 
 
-float NodeCounting::getCurrentCoord(char coordinate){
+float LRTAstar::getCurrentCoord(char coordinate){
   switch(coordinate){
     case 'x':
       return graphNodes.at(currentNode).posx;
@@ -206,11 +194,15 @@ float NodeCounting::getCurrentCoord(char coordinate){
 
 }
 
-int NodeCounting::getCurrentIndex(){
+int LRTAstar::getCurrentIndex(){
   return currentNode;
 }
 
-bool NodeCounting::getCurrentType(){
+int LRTAstar::getPrevIndex(){
+  return prevNode;
+}
+
+bool LRTAstar::getCurrentType(){
 
   if(graphNodes.at(currentNode).nodeCount == 0)
     return 0;
@@ -218,7 +210,7 @@ bool NodeCounting::getCurrentType(){
     return 1;
 }
 
-bool NodeCounting::isCompleted(){
+bool LRTAstar::isCompleted(){
 
   if(unvisitedCount == 0)
     return true;

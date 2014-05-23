@@ -237,9 +237,8 @@ void VrpGreedy::solve(){
           //cout << (dist(graphNodes[*itc-1], graphNodes[unvisitedNodes[v]])) << endl;
           //std::cin.get();
 
-          if( ( (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) <= minDist+MAX_FOV   &&
-              (dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) <= minDist+MAX_FOV )
-              || 0 ){  ///NEAREST NEIGHBOUR - NOT IMPROVING MUCH THE RESULT (disabled "|| 1", enabled "|| 0")
+          if( ( (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) <= minDist   &&
+                (dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) <= minDist ) ){
 
             insertIndex = (int)(itc - itr->begin());        // This is necessary to avoid modifying the current path
             // vector (which is NOT allowed since we're iterating
@@ -254,7 +253,7 @@ void VrpGreedy::solve(){
             if(tentPathLenght < liMin){
               liMin = tentPathLenght;
 
-              // * Objective Function * //
+              /// *** Objective Function *** ///
               deltavip = liMin - bigL;
 
               if(deltavip < deltaBest){
@@ -262,6 +261,7 @@ void VrpGreedy::solve(){
                 choice.set_vip(v, itr, itc);
               }//End Check Global Best
             }//End Check Local Best
+
           }///DISTANCE CHECK - work in progress
         } // END P(positions)
       } // END I (robots)

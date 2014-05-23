@@ -13,12 +13,12 @@
 #include "quadNodeCount.h"
 #include "ros/ros.h"
 #include "geometry_msgs/PoseStamped.h"
-#include "quadcopter_ctrl/NCmsg.h"
+#include "quadcopter_ctrl/LRTAmsg.h"
 #include <cstring>
 #include <sstream>
 #include "termColors.h"
 #include "PathPlanningAlg.h"
-#include "NodeCounting.h"
+#include "LRTAstar.h"
 #include "robotInfo.h"
 #include <fstream>
 #include <vector>
@@ -29,12 +29,12 @@ using std::endl;
 using std::vector;
 
 
-quadcopter_ctrl::NCmsg ncInfo;
+quadcopter_ctrl::LRTAmsg LRTAinfo;
 geometry_msgs::PoseStamped quadPos;
 geometry_msgs::PoseStamped targetPos;
 geometry_msgs::PoseStamped subTarget;
 
-NodeCounting myNodeCount;
+LRTAstar myLRTA;
 
 int quadPosAcquired = 0;
 float zHeight = 0;
@@ -55,9 +55,9 @@ void quadPosFromVrep(const geometry_msgs::PoseStamped::ConstPtr& pubQuadPose)
 }
 
 
-void updateCount(const quadcopter_ctrl::NCmsg::ConstPtr& nodeCountInfo){
+void updateCount(const quadcopter_ctrl::LRTAmsg::ConstPtr& LRTAinfo){
 
-  myNodeCount.incrCount(nodeCountInfo->node, nodeCountInfo->type);
+  myLRTA.incrCount(LRTAinfo->prevNode, LRTAinfo->currNode, LRTAinfo->currType);
 
 }
 
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     cout << "File not found! (sure is the executable folder?)" << endl;
   }
 
-  myNodeCount.initGraph(access_matrix);    //Constructor inputs is (mapToExplore)
+  myLRTA.initGraph(access_matrix);    //Constructor inputs is (mapToExplore)
 
 
   /* The following strings are used to concatenate the topic name to the argument passed to
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
    * (e.g. if argv[1] = 0 the node will be named quadcopterRosCtrl_0, publish to
    *  vrep/targetObjPos_0, etc...)
    */
-  std::string nodeName = add_argv("quadNodeCount", argv[1]);
+  std::string nodeName = add_argv("quadLRTAstar", argv[1]);
   std::string targetObjPosName = add_argv("vrep/targetObjPos", argv[1]);
   std::string quadcopPosName = add_argv("vrep/quadcopPos", argv[1]);
 
@@ -104,8 +104,8 @@ int main(int argc, char **argv)
   ros::Publisher targetObjPos_pub = n.advertise<geometry_msgs::PoseStamped>(targetObjPosName, 100);
   ros::Subscriber quadcopPos_sub = n.subscribe(quadcopPosName, 100, quadPosFromVrep);
 
-  ros::Publisher nodeCount_pub = n.advertise<quadcopter_ctrl::NCmsg>("updateNodeCount", 100);
-  ros::Subscriber nodeCount_sub = n.subscribe("updateNodeCount", 100, updateCount);
+  ros::Publisher nodeCount_pub = n.advertise<quadcopter_ctrl::LRTAmsg>("updateLRTACount", 100);
+  ros::Subscriber nodeCount_sub = n.subscribe("updateLRTACount", 100, updateCount);
 
   ros::Rate loop_rate(DEF_LOOP_RATE); //Loop at DEF_LOOP_RATE
 
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-    if(quadPosAcquired && myNodeCount.isCompleted() == false){
+    if(quadPosAcquired && myLRTA.isCompleted() == false){
       quadPosAcquired = 0;
       running = 1;
 
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
         }else if(abs(dist) < treshold){
 
           //cout << "Finding next node:" << endl;
-          myNodeCount.findNext();
+          myLRTA.findNext();
           updateTarget(nodeCount_pub);
 
           //In the following if, "dist" is calculated again since updateTarget changed targetPos
@@ -183,7 +183,7 @@ int main(int argc, char **argv)
       running = 0;              //
     }
 
-    if(myNodeCount.isCompleted()){
+    if(myLRTA.isCompleted()){
       printf("%s[%s] ** Area coverage completed! **%s\n", TC_GREEN, argv[1], TC_NONE);
       ros::shutdown();
     }
@@ -224,13 +224,14 @@ std::string add_argv(std::string str, char* argvalue){
 
 
 void updateTarget(ros::Publisher& countPub){
-  targetPos.pose.position.x = myNodeCount.getCurrentCoord('x') - VREP_X0;     /// The constant is added due to the
-  targetPos.pose.position.y = myNodeCount.getCurrentCoord('y') - VREP_Y0;     /// different origin of the GRF used in Vrep
+  targetPos.pose.position.x = myLRTA.getCurrentCoord('x') - VREP_X0;     /// The constant is added due to the
+  targetPos.pose.position.y = myLRTA.getCurrentCoord('y') - VREP_Y0;     /// different origin of the GRF used in Vrep
   targetPos.pose.position.z = zHeight;
 
-  ncInfo.node = myNodeCount.getCurrentIndex();
-  ncInfo.type = myNodeCount.getCurrentType();
-  countPub.publish(ncInfo);
+  LRTAinfo.currNode = myLRTA.getCurrentIndex();
+  LRTAinfo.prevNode = myLRTA.getPrevIndex();
+  LRTAinfo.currType = myLRTA.getCurrentType();
+  countPub.publish(LRTAinfo);
 }
 
 

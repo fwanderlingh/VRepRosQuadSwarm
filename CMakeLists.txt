@@ -54,6 +54,7 @@ find_package(catkin REQUIRED COMPONENTS
  add_message_files(
    FILES
    NCmsg.msg
+   LRTAmsg.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -110,12 +111,12 @@ include_directories(
 #   src/${PROJECT_NAME}/beginner_tutorials.cpp
 # )
 
-# add_library(Cao src/Cao.cpp)
 
 add_library(PathPlanningAlg src/PathPlanningAlg.cpp)
 add_library(VrpGreedy src/VrpGreedy.cpp)
 add_library(NodeCounting src/NodeCounting.cpp)
 add_library(VrpGreedyAstar src/VrpGreedyAstar.cpp)
+add_library(LRTAstar src/LRTAstar.cpp)
 
 ## Declare a cpp executable
 # add_executable(beginner_tutorials_node src/beginner_tutorials_node.cpp)
@@ -143,21 +144,31 @@ add_executable(quadNodeCount src/quadNodeCount.cpp)
 target_link_libraries(quadNodeCount ${catkin_LIBRARIES})
 add_dependencies(quadNodeCount ${catkin_EXPORTED_TARGETS})
 
+add_executable(quadLRTA src/quadLRTA.cpp)
+target_link_libraries(quadLRTA ${catkin_LIBRARIES})
+add_dependencies(quadLRTA ${catkin_EXPORTED_TARGETS})
 
 
 
 # target_link_libraries(quadcopterRosCtrl Cao)  #creation this line took the shit out of me
 
-target_link_libraries(quadcopterRosCtrl PathPlanningAlg)
 target_link_libraries(quadcopterRosCtrl VrpGreedy)
+target_link_libraries(quadcopterRosCtrl PathPlanningAlg)
+
 target_link_libraries(kernelNode VrpGreedy)
 target_link_libraries(kernelNode VrpGreedyAstar)
-target_link_libraries(quadNodeCount PathPlanningAlg)
+
 target_link_libraries(quadNodeCount NodeCounting)
+target_link_libraries(quadNodeCount PathPlanningAlg)
+
+target_link_libraries(quadLRTA LRTAstar)
+target_link_libraries(quadLRTA PathPlanningAlg)
 
 
 add_dependencies(quadcopterRosCtrl ${catkin_EXPORTED_TARGETS}) #!!!!
-
+add_dependencies(kernelNode ${catkin_EXPORTED_TARGETS})
+add_dependencies(quadNodeCount ${catkin_EXPORTED_TARGETS})
+add_dependencies(quadLRTA ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##

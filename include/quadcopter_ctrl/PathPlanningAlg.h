@@ -22,8 +22,6 @@ public:
   PathPlanningAlg();
   virtual ~PathPlanningAlg();
 
-  void CreateGrid(int, int);
-  static void CreatePath();
   static void InterpNewPoint(geometry_msgs::PoseStamped* quadPos,
                                 geometry_msgs::PoseStamped* targetPos,
                                 float dSubWP[3]);

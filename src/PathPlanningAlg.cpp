@@ -26,23 +26,7 @@ PathPlanningAlg::~PathPlanningAlg()
   // TODO Auto-generated destructor stub
 }
 
-void PathPlanningAlg::CreateGrid(int width, int height)
-{
-  /*While creating the grid I am assuming a standard size of the robot
-  * in order to decide the size of the grid. The input (width, height) are
-  * the sizes of the rectangle i want to explore.
-  */
-  gridWidth = ceil(width/ROBOT_SQUARE_SIZE);
-  gridHeight = ceil(height/ROBOT_SQUARE_SIZE);
 
-  envGrid.set_size(gridWidth, gridHeight);
-
-}
-
-void PathPlanningAlg::CreatePath()
-{
-
-}
 
 void PathPlanningAlg::InterpNewPoint(geometry_msgs::PoseStamped* quadPos,
                                           geometry_msgs::PoseStamped* targetPos,
