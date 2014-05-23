@@ -39,6 +39,8 @@ class VrpGreedyAstar
   float bigLTent;
   float liMin;
 
+  int numFreeNodes;
+
   vector< vector<int> >::iterator it;
   vector< vector<int> >::iterator itr;
   vector<int>::iterator itc;

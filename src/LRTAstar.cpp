@@ -105,6 +105,16 @@ void LRTAstar::incrCount(int prevIndex, int currIndex, bool currType){
     unvisitedCount = std::accumulate(unvisited.begin(),unvisited.end(), 0);
   }
 
+
+  if(unvisitedCount == 0){
+    finalCountMap.resize(gridSizeX*gridSizeY);
+
+    for(int i=0; i<(gridSizeX*gridSizeY); i++){
+
+      finalCountMap.at(i) = graphNodes.at(i).nodeCount;
+    }
+  }
+
 /*
  * PRINT MAP FOR DEBUGGING PURPOSES
   for(int i=0; i<gridSizeX; i++){

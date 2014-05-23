@@ -36,6 +36,8 @@ class VrpGreedy
   float bigLTent;
   float liMin;
 
+  int numFreeNodes;
+
   float minDist; //distance between two adjacent blocks
 
   vector< vector<int> >::iterator itr;

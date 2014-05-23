@@ -136,6 +136,8 @@ void VrpGreedy::init(){
     //cout << endl;
   }
 
+  numFreeNodes = unvisitedNodes.size();
+
   minDist = (dist(graphNodes.at(0), graphNodes.at(1)) + FLT_MIN)*SQRT2;
   cout << "minDist=" << minDist << endl;
 

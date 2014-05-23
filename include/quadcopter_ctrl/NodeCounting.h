@@ -24,6 +24,10 @@ class NodeCounting
   vector<int> unvisited;
   int unvisitedCount;
 
+  int numFreeNodes;
+  vector<int> finalPath;
+  vector<int> finalCountMap;
+
   void loadMatrixFile(std::ifstream &access_mat);
 
 public:

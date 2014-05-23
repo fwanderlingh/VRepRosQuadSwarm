@@ -117,6 +117,7 @@ add_library(VrpGreedy src/VrpGreedy.cpp)
 add_library(NodeCounting src/NodeCounting.cpp)
 add_library(VrpGreedyAstar src/VrpGreedyAstar.cpp)
 add_library(LRTAstar src/LRTAstar.cpp)
+add_library(CoverAnalysis src/CoverAnalysis.cpp)
 
 ## Declare a cpp executable
 # add_executable(beginner_tutorials_node src/beginner_tutorials_node.cpp)

@@ -25,6 +25,10 @@ class LRTAstar
   int unvisitedCount;
   int prevNode;
 
+  int numFreeNodes;
+  vector<int> finalPath;
+  vector<int> finalCountMap;
+
   void loadMatrixFile(std::ifstream &access_mat);
 
 public:

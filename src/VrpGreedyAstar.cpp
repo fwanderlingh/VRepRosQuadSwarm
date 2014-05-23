@@ -9,12 +9,15 @@
  *      Author: francescow
  */
 
-#include "VrpGreedyAstar.h"
-#include <iostream>
+#include <quadcopter_ctrl/VrpGreedyAstar.h>
+#include <algorithm>
 #include <cfloat>
-#include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <ctime>
+#include <functional>
+#include <iterator>
+#include <string>
 
 
 #define STARTNODE 5
@@ -89,8 +92,8 @@ float VrpGreedyAstar::pathLength(vector<int> &path){
   float length = FLT_MIN;
   for(vector<graphNode>::size_type i = 0; i < (path.size() - 1); i++){
     length = length + sqrt(pow((graphNodes[path[i]].posx - graphNodes[path[i+1]].posx),2) +
-                           pow((graphNodes[path[i]].posy - graphNodes[path[i+1]].posy),2) +
-                           pow((graphNodes[path[i]].posz - graphNodes[path[i+1]].posz),2) );
+                           pow((graphNodes[path[i]].posy - graphNodes[path[i+1]].posy),2) /*+
+                           pow((graphNodes[path[i]].posz - graphNodes[path[i+1]].posz),2)*/ );
   }
   return length;
 }
@@ -152,6 +155,8 @@ void VrpGreedyAstar::init(){
     }
     //cout << endl;
   }
+
+  numFreeNodes = unvisitedNodes.size();
 
 
   minDist = (dist(graphNodes.at(0), graphNodes.at(1)) + FLT_MIN)*SQRT2;
@@ -369,7 +374,6 @@ void VrpGreedyAstar::solve(){
   }
 
 }
-
 
 
 

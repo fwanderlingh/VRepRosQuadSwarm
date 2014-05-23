@@ -28,7 +28,6 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-
 quadcopter_ctrl::NCmsg ncInfo;
 geometry_msgs::PoseStamped quadPos;
 geometry_msgs::PoseStamped targetPos;
@@ -231,6 +230,7 @@ void updateTarget(ros::Publisher& countPub){
   ncInfo.node = myNodeCount.getCurrentIndex();
   ncInfo.type = myNodeCount.getCurrentType();
   countPub.publish(ncInfo);
+
 }
 
 
