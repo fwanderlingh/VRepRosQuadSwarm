@@ -158,6 +158,7 @@ target_link_libraries(quadcopterRosCtrl PathPlanningAlg)
 
 target_link_libraries(kernelNode VrpGreedy)
 target_link_libraries(kernelNode VrpGreedyAstar)
+target_link_libraries(kernelNode CoverAnalysis)
 
 target_link_libraries(quadNodeCount NodeCounting)
 target_link_libraries(quadNodeCount PathPlanningAlg)

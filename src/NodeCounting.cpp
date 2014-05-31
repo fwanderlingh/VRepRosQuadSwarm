@@ -13,7 +13,7 @@
 #include <iostream>
 #include <cmath>        /* sqrt, pow */
 #include <climits>      /* INT_MAX */
-#include <numeric>      /* multiply */
+#include <numeric>      /* multiply, accumulate */
 #include <stdlib.h>     /* srand, rand */
 
 #define STARTNODE 5

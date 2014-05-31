@@ -54,18 +54,16 @@ int main(int argc, char **argv)
 	std::string folder_path = get_selfpath();
 	std::string acc_matrix_path = folder_path + "/" + filename;
 
-	VrpGreedy myVrp(acc_matrix_path, num_robots);    //Constructor inputs are (mapToExplore, numOfAgents)
-	//myVrp.solve();
+	/// Constructor inputs are (mapToExplore, numOfAgents) ///
+	//VrpGreedy myVrp(acc_matrix_path, num_robots);
+	VrpGreedyAstar myVrp(acc_matrix_path, num_robots);
 
-
-	VrpGreedyAstar myVrpAstar(acc_matrix_path, num_robots);
-	myVrpAstar.solve();
-
+	myVrp.solve();
 
 	vector< vector<int> > pathVec;
 	vector<graphNode> graph;
-	myVrpAstar.copyPathsTo(pathVec);
-	myVrpAstar.copyGraphTo(graph);
+	myVrp.copyPathsTo(pathVec);
+	myVrp.copyGraphTo(graph);
 
 	savePathsToFile(pathVec, graph, folder_path);
 

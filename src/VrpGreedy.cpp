@@ -206,7 +206,7 @@ void VrpGreedy::solve(){
   int insertIndex;
 
   while(unvisitedNodes.size() > 0){
-
+/*
     std::cout << "The contents of Paths are:" << endl;
     for (itr = Paths.begin(); itr != Paths.end(); ++itr){
       cout << "#" << itr - Paths.begin() << ": ";
@@ -215,7 +215,7 @@ void VrpGreedy::solve(){
       }
       std::cout << '\n';
     }
-
+*/
     // Delta increments initialisation
     deltaBest = FLT_MAX;
     deltavip = FLT_MAX;
@@ -239,8 +239,8 @@ void VrpGreedy::solve(){
           //cout << (dist(graphNodes[*itc-1], graphNodes[unvisitedNodes[v]])) << endl;
           //std::cin.get();
 
-          if( ( (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) <= minDist   &&
-                (dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) <= minDist ) ){
+          if( ( (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) <= minDist+MAX_FOV   &&
+                (dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) <= minDist+MAX_FOV ) ){
 
             insertIndex = (int)(itc - itr->begin());        // This is necessary to avoid modifying the current path
             // vector (which is NOT allowed since we're iterating

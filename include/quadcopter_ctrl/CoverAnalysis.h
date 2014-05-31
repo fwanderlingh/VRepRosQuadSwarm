@@ -22,7 +22,7 @@ class CoverAnalysis
   int longestPath();
   int totalPathsLength();
   float calcPathOverlap();
-  float calcMapOverlap();
+  float calcMapOverlap(vector<int> map);
 
 public:
   CoverAnalysis();

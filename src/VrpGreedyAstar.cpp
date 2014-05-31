@@ -9,10 +9,12 @@
  *      Author: francescow
  */
 
+#include <quadcopter_ctrl/CoverAnalysis.h>
 #include <quadcopter_ctrl/VrpGreedyAstar.h>
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <functional>
@@ -23,7 +25,7 @@
 #define STARTNODE 5
 #define MAX_FOV 2
 #define SQRT2 1.4143 /// Ceiled to avoid failure in check condition in "solve()"
-/// due to small decimal errors.
+                      /// due to small decimal errors.
 
 #define DEF_GRID_X 4
 #define DEF_GRID_Y 4
@@ -291,17 +293,14 @@ void VrpGreedyAstar::solve(){
 
           /// Otherwise: calculate the shortest traversable path to "get there and go back" ///
           else{
-
             //cout << "A* in progress! :)" <<  endl;
             //cout << "_ Insert position = " << (itc - itr->begin()) << " _" << endl;
 
             /// In the first astar.run() we calculate the "way there" path,
             ///  while in the second run() we calculate the "way back".
 
-
             target = unvisitedNodes[v];
             astarTent.clear();
-
 
             if((dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) > minDist){
 
@@ -337,7 +336,7 @@ void VrpGreedyAstar::solve(){
             }
 
             pathTentative.insert(iTent, astarTent.begin(), astarTent.end());
-            checkBest(0);
+            checkBest(false);
 
           }
 
@@ -346,7 +345,7 @@ void VrpGreedyAstar::solve(){
     } // END V (nodes)
 
 
-    if(choice.neighb == 1){
+    if(choice.neighb == true){
       /// Inserting chosen best node v, in position p, in path of robot i
       choice.i->insert(choice.p, unvisitedNodes[choice.v]);
     }else{
@@ -372,6 +371,16 @@ void VrpGreedyAstar::solve(){
     }
     std::cout << '\n';
   }
+
+  performanceIndexes();
+
+}
+
+void VrpGreedyAstar::performanceIndexes(){
+
+  printf("Coverage input args: [ numAgents=%d, numFreeNodes=%d ]\n", numAgents, numFreeNodes);
+  CoverAnalysis myCoverage(Paths, numAgents, numFreeNodes);
+
 
 }
 

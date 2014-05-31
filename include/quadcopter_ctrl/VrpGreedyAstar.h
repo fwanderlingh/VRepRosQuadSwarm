@@ -64,6 +64,7 @@ public:
   void solve();
   void copyPathsTo(vector< vector<int> > &);
   void copyGraphTo(vector< graphNode > &);
+  void performanceIndexes();
 
 };
 

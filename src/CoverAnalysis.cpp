@@ -10,9 +10,13 @@
  */
 
 #include <quadcopter_ctrl/CoverAnalysis.h>
+#include <iostream>
 #include <algorithm>
 #include <iterator>
+#include <numeric>      /* multiply, accumulate */
 
+using std::cout;
+using std::endl;
 using std::vector;
 using std::max_element;
 
@@ -36,15 +40,18 @@ CoverAnalysis::~CoverAnalysis()
 
 
 int CoverAnalysis::longestPath(){
+  /// Returns the length of the longest path
 
   vector<int> pathLengths;
-  /// Return the length of the longest path
-  for (vector< vector<int> >::iterator itr = Paths.begin(); itr != Paths.end(); ++itr){
 
+  for (vector< vector<int> >::iterator itr = Paths.begin(); itr != Paths.end(); ++itr){
     pathLengths.push_back( itr->size() );
   }
 
-  return *max_element(pathLengths.begin(), pathLengths.end());
+  int max = *max_element(pathLengths.begin(), pathLengths.end());
+  cout << "Max Path Length: " << max << endl;
+
+  return max;
 
 }
 
