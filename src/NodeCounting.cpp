@@ -142,6 +142,7 @@ void NodeCounting::incrCount(int nodeIndex, bool nodeType){
 }
 
 
+/****    MAIN METHOD    ****/
 void NodeCounting::findNext(){
 
   if( !isCompleted() ){
@@ -164,7 +165,7 @@ void NodeCounting::findNext(){
 
         if( (tent_i>=0) && (tent_i<gridSizeX) && (tent_j>=0) && (tent_j<gridSizeY) && ///RANGE CHECK
             (i_shift!=0 || j_shift!=0)  ///<--- don't check same node of current
-            //(i_shift*j_shift == 0)
+            && (i_shift*j_shift == 0) ///<--- don't check oblique nodes
             )
         {
           int tentIndex = tent_i*gridSizeY + tent_j;
@@ -195,6 +196,7 @@ void NodeCounting::findNext(){
 
     int randIndex = rand()%best_vec.size();
     currentNode = best_vec.at(randIndex);
+    finalPath.push_back(currentNode);
 
   }
 
@@ -215,9 +217,6 @@ float NodeCounting::getCurrentCoord(char coordinate){
 
 }
 
-int NodeCounting::getCurrentIndex(){
-  return currentNode;
-}
 
 bool NodeCounting::getCurrentType(){
 

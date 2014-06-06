@@ -14,6 +14,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "quadcopter_ctrl/LRTAmsg.h"
+#include "quadcopter_ctrl/OSmsg.h"
 #include <cstring>
 #include <sstream>
 #include "termColors.h"
@@ -30,6 +31,7 @@ using std::vector;
 
 
 quadcopter_ctrl::LRTAmsg LRTAinfo;
+quadcopter_ctrl::OSmsg osInfo;
 geometry_msgs::PoseStamped quadPos;
 geometry_msgs::PoseStamped targetPos;
 geometry_msgs::PoseStamped subTarget;
@@ -57,7 +59,7 @@ void quadPosFromVrep(const geometry_msgs::PoseStamped::ConstPtr& pubQuadPose)
 
 void updateCount(const quadcopter_ctrl::LRTAmsg::ConstPtr& LRTAinfo){
 
-  myLRTA.incrCount(LRTAinfo->prevNode, LRTAinfo->currNode, LRTAinfo->currType);
+  myLRTA.incrCount(LRTAinfo->currNode, LRTAinfo->nextNode, LRTAinfo->nextType);
 
 }
 
@@ -69,10 +71,11 @@ int main(int argc, char **argv)
 
   if(argc<2){
     printf("%s** argv[1] is empty! Provide quadcopter # to control! **%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
   }
 
   // In this way each robot flight at a slightly different height
-  zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.75 + 5;
+  zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
 
   std::ifstream access_matrix;
   std::string filename = "access_mat_subs";
@@ -107,6 +110,8 @@ int main(int argc, char **argv)
   ros::Publisher nodeCount_pub = n.advertise<quadcopter_ctrl::LRTAmsg>("updateLRTACount", 100);
   ros::Subscriber nodeCount_sub = n.subscribe("updateLRTACount", 100, updateCount);
 
+  ros::Publisher completed_pub = n.advertise<quadcopter_ctrl::OSmsg>("completedPath", 100);
+
   ros::Rate loop_rate(DEF_LOOP_RATE); //Loop at DEF_LOOP_RATE
 
   /*            *** PoseStamped structure: ***
@@ -138,56 +143,64 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-    if(quadPosAcquired && myLRTA.isCompleted() == false){
-      quadPosAcquired = 0;
-      running = 1;
+    if(myLRTA.isCompleted() == false){
 
-      if (loaded == 0){
-        loaded = 1;
-        updateTarget(nodeCount_pub);
-      }
+      if(quadPosAcquired){
+        quadPosAcquired = 0;
+        running = 1;
 
-      // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
-      dist = PathPlanningAlg::Distance(&quadPos, &targetPos);
-      //cout << "Distance to target = " << dist << " m" << endl;
-
-      if(inSubPath == 0){
-        if( abs(dist) > CRITICAL_DIST ){
-          inSubPath = 1;
-          publishSubTarget(targetObjPos_pub);
-          //std::cout << "First subTarget Published!" << std::endl;
-        }else if(abs(dist) < treshold){
-
-          //cout << "Finding next node:" << endl;
-          myLRTA.findNext();
+        if (loaded == 0){
+          loaded = 1;
           updateTarget(nodeCount_pub);
+        }
 
-          //In the following if, "dist" is calculated again since updateTarget changed targetPos
-          if( abs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
-            targetObjPos_pub.publish(targetPos);
-            //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
+        // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
+        dist = PathPlanningAlg::Distance(&quadPos, &targetPos);
+        //cout << "Distance to target = " << dist << " m" << endl;
+
+        if(inSubPath == 0){
+          if( abs(dist) > CRITICAL_DIST ){
+            inSubPath = 1;
+            publishSubTarget(targetObjPos_pub);
+            //std::cout << "First subTarget Published!" << std::endl;
+          }else if(abs(dist) < treshold){
+
+            //cout << "Finding next node:" << endl;
+            myLRTA.findNext();
+            updateTarget(nodeCount_pub);
+
+            //In the following if, "dist" is calculated again since updateTarget changed targetPos
+            if( abs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
+              targetObjPos_pub.publish(targetPos);
+              //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
+            }
+          }
+        }else if( abs((PathPlanningAlg::Distance(&quadPos, &subTarget)) < treshold) ){
+          publishSubTarget(targetObjPos_pub);
+          //std::cout << "subTarget Published!" << std::endl;
+          if (abs(dist) < treshold){
+            inSubPath = 0;
           }
         }
-      }else if( abs((PathPlanningAlg::Distance(&quadPos, &subTarget)) < treshold) ){
-        publishSubTarget(targetObjPos_pub);
-        //std::cout << "subTarget Published!" << std::endl;
-        if (abs(dist) < treshold){
-          inSubPath = 0;
+      }else{              /// THIS PART IS EXECUTED IF VREP SIMULATION IS NOT RUNNING
+
+        if (running == 1) {
+          printf("%s[%s] ** No incoming vrep/quadcopPos! (waiting...) **%s\n", TC_YELLOW, argv[1], TC_NONE);
         }
+        running = 0;
       }
-    }else{              /// THIS PART IS EXECUTED IF VREP SIMULATION IS NOT RUNNING
 
-      if (running == 1) {
-        printf("%s[%s] ** No incoming vrep/quadcopPos! (waiting...) **%s\n", TC_YELLOW, argv[1], TC_NONE);
-      }
-      running = 0;              //
-    }
-
-    if(myLRTA.isCompleted()){
+    }else{
       printf("%s[%s] ** Area coverage completed! **%s\n", TC_GREEN, argv[1], TC_NONE);
+
+      osInfo.ID = strtol(argv[1], NULL, 0);
+      osInfo.numNodes = myLRTA.getNumFreeNodes();
+      osInfo.path = myLRTA.getFinalPath();
+      osInfo.countMap = myLRTA.getFinalCountMap();
+      completed_pub.publish(osInfo);
+
       ros::shutdown();
     }
-
 
     ros::spinOnce();
     loop_rate.sleep();
@@ -229,8 +242,8 @@ void updateTarget(ros::Publisher& countPub){
   targetPos.pose.position.z = zHeight;
 
   LRTAinfo.currNode = myLRTA.getCurrentIndex();
-  LRTAinfo.prevNode = myLRTA.getPrevIndex();
-  LRTAinfo.currType = myLRTA.getCurrentType();
+  LRTAinfo.nextNode = myLRTA.getNextIndex();
+  LRTAinfo.nextType = myLRTA.getNextType();
   countPub.publish(LRTAinfo);
 }
 

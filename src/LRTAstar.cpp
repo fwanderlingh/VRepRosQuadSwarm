@@ -1,5 +1,5 @@
-//	Copyright (c) 2014, Francesco Wanderlingh. 					//
-//	All rights reserved.										//
+//	Copyright (c) 2014, Francesco Wanderlingh. 			//
+//	All rights reserved.						//				//
 //	License: BSD (http://opensource.org/licenses/BSD-3-Clause)	//
 
 /*
@@ -24,7 +24,7 @@ using std::endl;
 
 LRTAstar::LRTAstar() : gridSizeX(0), gridSizeY(0),
                           currentNode(STARTNODE), unvisitedCount(INT_MAX),
-                          prevNode(STARTNODE)
+                          nextNode(STARTNODE)
 {
 
   // THE DEFAULT CONSTRUCTOR IS ONLY USED TO DECLARE CLASS INSTANCES AS
@@ -34,7 +34,7 @@ LRTAstar::LRTAstar() : gridSizeX(0), gridSizeY(0),
 
 
 LRTAstar::LRTAstar(std::ifstream & INFILE) : currentNode(STARTNODE), unvisitedCount(INT_MAX),
-                                                prevNode(STARTNODE)
+                                                 nextNode(STARTNODE)
 {
 
   initGraph(INFILE);
@@ -71,7 +71,7 @@ void LRTAstar::loadMatrixFile(std::ifstream &access_mat){
 
 void LRTAstar::initGraph(std::ifstream & INFILE){
 
-  srand(time(NULL));
+  srand(time(NULL) xor getpid()<<16);
   loadMatrixFile(INFILE);       /// Filling the "access_vec" and defining grid sizes
 
   //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
@@ -94,12 +94,13 @@ void LRTAstar::initGraph(std::ifstream & INFILE){
 }
 
 
-void LRTAstar::incrCount(int prevIndex, int currIndex, bool currType){
+void LRTAstar::incrCount(int currIndex, int nextIndex, bool nextType){
 
-  graphNodes.at(prevIndex).nodeCount = graphNodes.at(currIndex).nodeCount + 1;
+  graphNodes.at(currIndex).nodeCount = graphNodes.at(nextIndex).nodeCount + 1;
+  //graphNodes.at(currIndex).nodeCount++;
 
-  if(currType == 0){
-    unvisited.at(currIndex) = 0;
+  if(nextType == 0){
+    unvisited.at(nextIndex) = 0;
     // The sum of all elements of unvisited is performed so that when sum is zero we
     // know we have finished. Check is performed in "findNext()"
     unvisitedCount = std::accumulate(unvisited.begin(),unvisited.end(), 0);
@@ -117,6 +118,8 @@ void LRTAstar::incrCount(int prevIndex, int currIndex, bool currType){
 
 /*
  * PRINT MAP FOR DEBUGGING PURPOSES
+*/
+/*
   for(int i=0; i<gridSizeX; i++){
     for(int j=0; j<gridSizeY; j++){
       cout << (int)graphNodes.at((i*gridSizeY) + j).nodeCount << " ";
@@ -128,7 +131,7 @@ void LRTAstar::incrCount(int prevIndex, int currIndex, bool currType){
 */
 }
 
-
+/// *** MAIN METHOD *** ///
 void LRTAstar::findNext(){
 
   if( !isCompleted() ){
@@ -136,7 +139,7 @@ void LRTAstar::findNext(){
     /// Before being able to do the adjacency check we have to recover the (i,j) index
     /// values encoded in the graph 1D array as "i*gridSizeY + j" (row-major order)
 
-    prevNode = currentNode;
+    currentNode = nextNode;
 
     int bestCount = INT_MAX;
     int bestNeighbour = currentNode;
@@ -151,15 +154,14 @@ void LRTAstar::findNext(){
         int tent_i = current_i + i_shift;
         int tent_j = current_j + j_shift;
 
-        if( (tent_i>=0) && (tent_i<gridSizeX) && (tent_j>=0) && (tent_j<gridSizeY) && ///RANGE CHECK
-            (i_shift!=0 || j_shift!=0)  ///<--- don't check same node of current
-            //(i_shift*j_shift == 0)
+        if( (tent_i>=0) && (tent_i<gridSizeX) && (tent_j>=0) && (tent_j<gridSizeY) ///RANGE CHECK
+            && (i_shift!=0 || j_shift!=0)  ///<--- don't check same node of current
+            && (i_shift*j_shift == 0)  ///<--- don't allow diagonal movements
             )
         {
           int tentIndex = tent_i*gridSizeY + tent_j;
 
           if( (graphNodes.at(tentIndex).occupied == 0) ){   ///OCCUPANCY CHECK
-          //cout << "Checking node n." << tentIndex << endl;
 
             if( graphNodes.at(tentIndex).nodeCount <= bestCount ){
 
@@ -169,9 +171,8 @@ void LRTAstar::findNext(){
               }else{
                 best_vec.clear();
                 best_vec.push_back(tentIndex);
+                bestCount = graphNodes.at(tentIndex).nodeCount;
               }
-
-              bestCount = graphNodes.at(tentIndex).nodeCount;
 
             }//End checkBest
           }//End occupancy check
@@ -183,8 +184,8 @@ void LRTAstar::findNext(){
     /// If size()==1 the modulus function always returns 0 (the first element)
 
     int randIndex = rand()%best_vec.size();
-    currentNode = best_vec.at(randIndex);
-
+    nextNode = best_vec.at(randIndex);
+    finalPath.push_back(nextNode);
   }
 
 }
@@ -204,17 +205,18 @@ float LRTAstar::getCurrentCoord(char coordinate){
 
 }
 
-int LRTAstar::getCurrentIndex(){
-  return currentNode;
-}
 
-int LRTAstar::getPrevIndex(){
-  return prevNode;
-}
-
-bool LRTAstar::getCurrentType(){
+bool LRTAstar::getCurrType(){
 
   if(graphNodes.at(currentNode).nodeCount == 0)
+    return 0;
+  else
+    return 1;
+}
+
+bool LRTAstar::getNextType(){
+
+  if(graphNodes.at(nextNode).nodeCount == 0)
     return 0;
   else
     return 1;

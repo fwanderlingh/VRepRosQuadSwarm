@@ -10,8 +10,10 @@
  */
 
 #include <quadcopter_ctrl/CoverAnalysis.h>
-#include <iostream>
+#include <quadcopter_ctrl/termColors.h>
 #include <algorithm>
+#include <cstdio>
+#include <iostream>
 #include <iterator>
 #include <numeric>      /* multiply, accumulate */
 
@@ -23,7 +25,8 @@ using std::max_element;
 CoverAnalysis::CoverAnalysis()
 {
   // TODO Auto-generated constructor stub
-
+  cout << '\a';
+  cout << '\a';
 }
 
 CoverAnalysis::CoverAnalysis(vector<vector<int> > paths_vec, int numberOfRobots, int numberOfNodes)
@@ -31,6 +34,8 @@ CoverAnalysis::CoverAnalysis(vector<vector<int> > paths_vec, int numberOfRobots,
   Paths = paths_vec;
   numRobots = numberOfRobots;
   numNodes = numberOfNodes;
+  cout << '\a';
+  cout << '\a';
 }
 
 CoverAnalysis::~CoverAnalysis()
@@ -45,11 +50,11 @@ int CoverAnalysis::longestPath(){
   vector<int> pathLengths;
 
   for (vector< vector<int> >::iterator itr = Paths.begin(); itr != Paths.end(); ++itr){
-    pathLengths.push_back( itr->size() );
+    pathLengths.push_back( itr->size() - 1 );
   }
 
   int max = *max_element(pathLengths.begin(), pathLengths.end());
-  cout << "Max Path Length: " << max << endl;
+  printf("%sMax Path Length: %d%s\n", TC_MAGENTA, max, TC_NONE);
 
   return max;
 
@@ -57,21 +62,25 @@ int CoverAnalysis::longestPath(){
 
 int CoverAnalysis::totalPathsLength(){
 
-  int totalLength;
+  int totalLength = 0;
   /// Return the length of the longest path
   for (vector< vector<int> >::iterator itr = Paths.begin(); itr != Paths.end(); ++itr){
 
-    totalLength +=  itr->size() ;
+    totalLength +=  (itr->size() - 1) ;
   }
+
+  printf("%sTotal Paths Length: %d%s\n", TC_MAGENTA, totalLength, TC_NONE);
 
   return totalLength;
 
 }
 
-float CoverAnalysis::calcPathOverlap(){
+float CoverAnalysis::pathsOverlapIndex(){
   /// Calculate the overlap over all the paths
 
   int pathOverlap = totalPathsLength() - numRobots*2 - numNodes;
+
+  cout << "Path Overlap Index: " << pathOverlap << endl;
 
   return pathOverlap;
 }

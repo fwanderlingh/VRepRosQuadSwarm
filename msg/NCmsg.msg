@@ -1,2 +1,2 @@
-int64 node
+int32 node
 bool type

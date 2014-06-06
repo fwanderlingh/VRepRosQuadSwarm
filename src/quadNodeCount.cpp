@@ -14,6 +14,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "quadcopter_ctrl/NCmsg.h"
+#include "quadcopter_ctrl/OSmsg.h"
 #include <cstring>
 #include <sstream>
 #include "termColors.h"
@@ -29,6 +30,7 @@ using std::endl;
 using std::vector;
 
 quadcopter_ctrl::NCmsg ncInfo;
+quadcopter_ctrl::OSmsg osInfo;
 geometry_msgs::PoseStamped quadPos;
 geometry_msgs::PoseStamped targetPos;
 geometry_msgs::PoseStamped subTarget;
@@ -68,10 +70,11 @@ int main(int argc, char **argv)
 
   if(argc<2){
     printf("%s** argv[1] is empty! Provide quadcopter # to control! **%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
   }
 
   // In this way each robot flight at a slightly different height
-  zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.75 + 5;
+  zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
 
   std::ifstream access_matrix;
   std::string filename = "access_mat_subs";
@@ -106,6 +109,8 @@ int main(int argc, char **argv)
   ros::Publisher nodeCount_pub = n.advertise<quadcopter_ctrl::NCmsg>("updateNodeCount", 100);
   ros::Subscriber nodeCount_sub = n.subscribe("updateNodeCount", 100, updateCount);
 
+  ros::Publisher completed_pub = n.advertise<quadcopter_ctrl::OSmsg>("completedPath", 100);
+
   ros::Rate loop_rate(DEF_LOOP_RATE); //Loop at DEF_LOOP_RATE
 
   /*            *** PoseStamped structure: ***
@@ -123,7 +128,7 @@ int main(int argc, char **argv)
   //                    float64 y
   //                    float64 z
   //                    float64 w
-  */
+   */
 
   cout << "[" << argv[1] << "] Waiting for start....    " << endl;
 
@@ -132,58 +137,68 @@ int main(int argc, char **argv)
 
   float dist = 0;
   float treshold = 0.3;   // How much the quadcopter has to be near
-                           // to the green sphere (target) before the target moves
+  // to the green sphere (target) before the target moves
   int loaded = 0;
 
   while (ros::ok())
   {
-    if(quadPosAcquired && myNodeCount.isCompleted() == false){
-      quadPosAcquired = 0;
-      running = 1;
+    if(myNodeCount.isCompleted() == false){
 
-      if (loaded == 0){
-        loaded = 1;
-        updateTarget(nodeCount_pub);
-      }
+      if(quadPosAcquired){
+        quadPosAcquired = 0;
+        running = 1;
 
-      // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
-      dist = PathPlanningAlg::Distance(&quadPos, &targetPos);
-      //cout << "Distance to target = " << dist << " m" << endl;
-
-      if(inSubPath == 0){
-        if( abs(dist) > CRITICAL_DIST ){
-          inSubPath = 1;
-          publishSubTarget(targetObjPos_pub);
-          //std::cout << "First subTarget Published!" << std::endl;
-        }else if(abs(dist) < treshold){
-
-          //cout << "Finding next node:" << endl;
-          myNodeCount.findNext();
+        if (loaded == 0){
+          loaded = 1;
           updateTarget(nodeCount_pub);
+        }
 
-          //In the following if, "dist" is calculated again since updateTarget changed targetPos
-          if( abs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
-            targetObjPos_pub.publish(targetPos);
-            //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
+        // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
+        dist = PathPlanningAlg::Distance(&quadPos, &targetPos);
+        //cout << "Distance to target = " << dist << " m" << endl;
+
+        if(inSubPath == 0){
+          if( abs(dist) > CRITICAL_DIST ){
+            inSubPath = 1;
+            publishSubTarget(targetObjPos_pub);
+            //std::cout << "First subTarget Published!" << std::endl;
+          }else if(abs(dist) < treshold){
+
+            //cout << "Finding next node:" << endl;
+            myNodeCount.findNext();
+            updateTarget(nodeCount_pub);
+
+            //In the following if, "dist" is calculated again since updateTarget changed targetPos
+            if( abs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
+              targetObjPos_pub.publish(targetPos);
+              //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
+            }
+          }
+        }else if( abs((PathPlanningAlg::Distance(&quadPos, &subTarget)) < treshold) ){
+          publishSubTarget(targetObjPos_pub);
+          //std::cout << "subTarget Published!" << std::endl;
+          if (abs(dist) < treshold){
+            inSubPath = 0;
           }
         }
-      }else if( abs((PathPlanningAlg::Distance(&quadPos, &subTarget)) < treshold) ){
-        publishSubTarget(targetObjPos_pub);
-        //std::cout << "subTarget Published!" << std::endl;
-        if (abs(dist) < treshold){
-          inSubPath = 0;
+      }else{              /// THIS PART IS EXECUTED IF VREP SIMULATION IS NOT RUNNING
+
+        if (running == 1) {
+          printf("%s[%s] ** No incoming vrep/quadcopPos! (waiting...) **%s\n", TC_YELLOW, argv[1], TC_NONE);
         }
+        running = 0;              //
       }
-    }else{              /// THIS PART IS EXECUTED IF VREP SIMULATION IS NOT RUNNING
 
-      if (running == 1) {
-        printf("%s[%s] ** No incoming vrep/quadcopPos! (waiting...) **%s\n", TC_YELLOW, argv[1], TC_NONE);
-      }
-      running = 0;              //
-    }
-
-    if(myNodeCount.isCompleted()){
+    }else{
       printf("%s[%s] ** Area coverage completed! **%s\n", TC_GREEN, argv[1], TC_NONE);
+
+      osInfo.ID = strtol(argv[1], NULL, 0);
+      osInfo.numNodes = myNodeCount.getNumFreeNodes();
+      osInfo.path = myNodeCount.getFinalPath();
+      osInfo.countMap = myNodeCount.getFinalCountMap();
+      completed_pub.publish(osInfo);
+
+
       ros::shutdown();
     }
 
@@ -198,17 +213,17 @@ int main(int argc, char **argv)
 
 
 std::string get_selfpath() {
-    char buff[2048];
-    ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
-    if (len != -1) {
-      buff[len] = '\0';
-      std::string path(buff);   ///Here the executable name is still in
-      std::string::size_type t = path.find_last_of("/");   // Here we find the last "/"
-      path = path.substr(0,t);                             // and remove the rest (exe name)
-      return path;
-    } else {
-     printf("Cannot determine file path!\n");
-    }
+  char buff[2048];
+  ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
+  if (len != -1) {
+    buff[len] = '\0';
+    std::string path(buff);   ///Here the executable name is still in
+    std::string::size_type t = path.find_last_of("/");   // Here we find the last "/"
+    path = path.substr(0,t);                             // and remove the rest (exe name)
+    return path;
+  } else {
+    printf("Cannot determine file path!\n");
+  }
 }
 
 

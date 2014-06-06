@@ -381,6 +381,11 @@ void VrpGreedyAstar::performanceIndexes(){
   printf("Coverage input args: [ numAgents=%d, numFreeNodes=%d ]\n", numAgents, numFreeNodes);
   CoverAnalysis myCoverage(Paths, numAgents, numFreeNodes);
 
+  myCoverage.longestPath();
+  myCoverage.pathsOverlapIndex();
+
+  std::cin.get();
+
 
 }
 

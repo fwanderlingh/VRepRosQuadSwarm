@@ -38,11 +38,28 @@ public:
   void incrCount(int nodeIndex, bool nodeType);
   void findNext();
   float getCurrentCoord(char coordinate);
-  int getCurrentIndex();
   bool getCurrentType();
   bool isCompleted();
 
+  const vector<int>& getFinalCountMap() const
+  {
+    return finalCountMap;
+  }
 
+  const vector<int>& getFinalPath() const
+  {
+    return finalPath;
+  }
+
+  int getCurrentIndex() const
+  {
+    return currentNode;
+  }
+
+  int getNumFreeNodes() const
+  {
+    return numFreeNodes;
+  }
 };
 
 #endif /* NODECOUNTING_H_ */
