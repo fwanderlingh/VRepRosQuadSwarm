@@ -16,7 +16,7 @@
 #include <cstring>
 #include <sstream>
 #include "termColors.h"
-#include "VrpGreedy.h"
+#include "VrpGreedyFW.h"
 #include "VrpGreedyAstar.h"
 #include <fstream>
 #include <unistd.h>
@@ -55,8 +55,8 @@ int main(int argc, char **argv)
 	std::string acc_matrix_path = folder_path + "/" + filename;
 
 	/// Constructor inputs are (mapToExplore, numOfAgents) ///
-	//VrpGreedy myVrp(acc_matrix_path, num_robots);
-	VrpGreedyAstar myVrp(acc_matrix_path, num_robots);
+	VrpGreedy myVrp(acc_matrix_path, num_robots);
+	//VrpGreedyAstar myVrp(acc_matrix_path, num_robots);
 
 	myVrp.solve();
 

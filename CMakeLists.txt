@@ -3,7 +3,7 @@ project(quadcopter_ctrl)
 
 # WHEN BUILT IN RELEASE MODE THERE IS NO BOUNDS CHECK IN VECTORS !!!
 # SO TO DEBUNG AND FIND ERRORS COMMENT THE FOLLOWING "set" LINE  !!!
-set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Release)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -114,12 +114,13 @@ include_directories(
 
 
 add_library(PathPlanningAlg src/PathPlanningAlg.cpp)
-add_library(VrpGreedy src/VrpGreedy.cpp)
+add_library(VrpGreedyFW src/VrpGreedyFW.cpp)
 add_library(NodeCounting src/NodeCounting.cpp)
 add_library(VrpGreedyAstar src/VrpGreedyAstar.cpp)
 add_library(LRTAstar src/LRTAstar.cpp)
 add_library(CoverAnalysis src/CoverAnalysis.cpp)
 add_library(FloydWarshall src/FloydWarshall.cpp)
+add_library(Utils src/Utils.cpp)
 
 ## Declare a cpp executable
 # add_executable(beginner_tutorials_node src/beginner_tutorials_node.cpp)
@@ -161,13 +162,16 @@ add_dependencies(FW_test ${catkin_EXPORTED_TARGETS})
 
 
 # target_link_libraries(quadcopterRosCtrl Cao)  #creation this line took the shit out of me
-
-target_link_libraries(quadcopterRosCtrl VrpGreedy)
+target_link_libraries(quadcopterRosCtrl VrpGreedyFW)
 target_link_libraries(quadcopterRosCtrl PathPlanningAlg)
 
-target_link_libraries(kernelNode VrpGreedy)
+target_link_libraries(kernelNode VrpGreedyFW)
+target_link_libraries(kernelNode FloydWarshall)
+target_link_libraries(kernelNode Utils)
 target_link_libraries(kernelNode VrpGreedyAstar)
 target_link_libraries(kernelNode CoverAnalysis)
+
+target_link_libraries(FloydWarshall Utils)
 
 target_link_libraries(quadNodeCount NodeCounting)
 target_link_libraries(quadNodeCount PathPlanningAlg)

@@ -16,28 +16,34 @@
 #include <vector>
 #include <quadcopter_ctrl/termColors.h>
 #include <quadcopter_ctrl/FloydWarshall.h>
+#include <cassert>
 
 using std::cout;
 using std::endl;
 using std::vector;
 
 const int Inf = INT_MAX/2-1;// graph[i][j] = Inf if no edge
-int _access_vec[] = {0, 0, 0, 0,
+/*int _access_vec[] = {0, 0, 0, 0,
                      0, 0, 0, 1,
                      1, 1, 0, 0,
                      0, 0, 0, 1};
+*/
+int _access_vec[] = {0, 0, 0,
+                     0, 1, 1,
+                     1, 1, 0 };
 
 void spaced_cout(int value);
 
 int main(int argc, char **argv){
 
-  int gridSizeX = 4;
-  int gridSizeY = 4;
+  int gridSizeX = 3;
+  int gridSizeY = 3;
   const int n = gridSizeX*gridSizeY;
   vector<int> access_vec(_access_vec, _access_vec + sizeof(_access_vec)/sizeof(int));
 
   vector<int> _graph(n, Inf);
   vector< vector<int> > graph(n, _graph);
+  vector< vector<int> > dist(n, _graph);
   int row, col;    // Main indexes
   int row_shift, col_shift; // To move around spacial adjacents
   int nb_row, nb_col;       // Adjacents indexes
@@ -78,18 +84,34 @@ int main(int argc, char **argv){
 
 
   FloydWarshall myFW(graph);
-  myFW.solve();
+  myFW.solve(dist);
 
+  //printf("%sDistances:%s", TC_GREEN, TC_NONE);
+  //myFW.printMatrix(dist);
 
-  int start = 0;
-  int target = 12;
+  int start;
+  int target;
   vector <int> path;
-  printf("%sThe path from %d to %d is:%s\n", TC_CYAN, start, target, TC_NONE);
+
+  cout << "Provide start vertex: ";
+  std::cin >> start;
+  assert(start<n);
+
+  cout << "Provide target vertex: ";
+  std::cin >> target;
+  assert(target<n);
+
+  printf("%sThe path from %d to %d goes through:%s\n", TC_CYAN, start, target, TC_NONE);
   myFW.getPath(start, target, path);
-  for(int k=0; k<path.size(); k++){
-    cout << path.at(k) << " ";
+  if( path.size() > 0 ){
+    if( path.size() == 2 ) cout << "Come on man, they're adjacent!\n";
+    else{
+      for(int k=1; k<path.size()-1; k++){
+        cout << path.at(k) << " ";
+      }
+      cout << endl;
+    }
   }
-  cout << endl;
 
   return 0;
 

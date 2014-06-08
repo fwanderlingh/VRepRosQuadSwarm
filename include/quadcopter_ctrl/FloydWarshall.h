@@ -23,22 +23,21 @@ using std::vector;
 
 class FloydWarshall
 {
-  int Inf; // graph[i][j] = Inf if no edge
+  static const int Inf = INT_MAX/2-1; // graph[i][j] = Inf if no edge
 
   vector< vector <int> > graph;
   vector< vector <int> > dist;
   vector< vector <int> > parent;
 
-  void spaced_cout(int value);
-  void printMatrix(vector< vector<int> >& matrix);
 
 public:
   FloydWarshall();
-  FloydWarshall(vector< vector <int> > G);
+  FloydWarshall(vector< vector <int> >& G);
   virtual ~FloydWarshall();
 
-  void loadGraph(vector< vector <int> > G);
-  void solve();
+  void printMatrix(vector< vector<int> >& matrix);
+  void loadGraph(vector< vector <int> >& G);
+  void solve(vector< vector <int> >& D);
   void getPath(int i, int j, vector <int>& path);
 
 };
