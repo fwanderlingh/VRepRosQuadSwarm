@@ -31,6 +31,7 @@ FloydWarshall::FloydWarshall(){
 FloydWarshall::FloydWarshall(vector< vector <int> >& G){
 
   graph = G;
+  dist = G;
   parent = G;
 };
 
@@ -44,6 +45,7 @@ FloydWarshall::~FloydWarshall()
 void FloydWarshall::loadGraph(vector< vector <int> >& G){
 
   graph = G;
+  dist = G;
   parent = G;
 }
 
@@ -72,31 +74,33 @@ void FloydWarshall::printMatrix(vector< vector<int> >& matrix){
    cout << endl;
  }
 
+
 void FloydWarshall::solve(vector< vector <int> >& D){
 
-  dist = graph;
   int n = graph.size();
 
-  cout << "Size is " << n << endl;
+  dist = D;
+
+  //cout << "Size is " << n << endl;
 
     for(int i = 0; i < n; i++ ){
       for(int j = 0; j < n; j++ ){
-        if ( i == j || graph[i][j] == Inf ) parent[i][j] = -1;
-        else parent[i][j] = i;
+        if ( dist[i][j] != 0 && dist[i][j] != Inf ){
+          parent[i][j] = i;
+        }
+        else{
+          parent[i][j] = -1;
+        }
       }
     }
 
     for( int k = 0; k < n; k++ ){
-      for(int i = 0; i < n; i++ ){
-        for(int j = 0; j < n; j++ ) {
-          if( i != j ){
-            int newD = dist[i][k] + dist[k][j];
-            if( newD < dist[i][j] ) {
-              dist[i][j] = newD;
-              parent[i][j] = parent[k][j];
-            }
-          }else{
-           dist[i][j] = 0;
+      for( int i = 0; i < n; i++ ){
+        for( int j = 0; j < n; j++ ){
+          int kDist = dist[i][k] + dist[k][j];
+          if( kDist < dist[i][j] ){
+            dist[i][j] = kDist;
+            parent[i][j] = parent[k][j];
           }
         }
       }
@@ -112,7 +116,7 @@ void FloydWarshall::getPath(int i, int j, vector <int>& path){
     //cout << i << " ";
     path.push_back(i);
   }else if (parent[i][j] == -1){
-    cout << "Path does not exist" << endl;
+    cout << " Path does not exist" << endl;
   }else{
     getPath(i, parent[i][j], path);
     //cout << j << " ";

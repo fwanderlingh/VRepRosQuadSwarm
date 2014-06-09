@@ -51,6 +51,7 @@ int main(int argc, char **argv)
 	int num_robots = strtol(argv[1], NULL, 0);
 
 	std::string filename = "access_mat_subs";
+	//std::string filename = "little_matrix";
 	std::string folder_path = get_selfpath();
 	std::string acc_matrix_path = folder_path + "/" + filename;
 

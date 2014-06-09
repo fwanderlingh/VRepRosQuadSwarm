@@ -119,10 +119,10 @@ void VrpGreedy::createGraph(){
 
     const int n = gridSizeX*gridSizeY;
 
+    assert(n == access_vec.size());
     vector<int> _graph(n, Inf);
     vector< vector<int> > __graph(n, _graph);
     graph = __graph;
-    distanceMat = __graph;
     int row, col;    // Main indexes
     int row_shift, col_shift; // To move around spatial adjacents
     int nb_row, nb_col;       // Adjacent indexes
@@ -139,11 +139,10 @@ void VrpGreedy::createGraph(){
     }
     cout << endl << endl;
 
-    std::cin.get();
 
     for(int i=0; i<n; i++){
       if(access_vec[i] == 0){
-        row = i/gridSizeX;
+        row = i/gridSizeY;
         col = i%gridSizeY;
         for(row_shift=-1; row_shift<=1; row_shift++){
           for(col_shift=-1; col_shift<=1; col_shift++){
@@ -153,10 +152,12 @@ void VrpGreedy::createGraph(){
               && (row_shift!=0 || col_shift!=0)  ///<--- don't check same node of current
               && (row_shift*col_shift == 0)  ///<--- don't allow diagonal movements
               )
+              //&& ( (row_shift*row_shift xor col_shift*col_shift)==1 ) <--last 2 statements compressed in one condition
             {
               if(access_vec[nb_row*gridSizeY+nb_col] == 0){
                 /// Create the edge between "i" and its "free neighbour"
                 graph[i][nb_row*gridSizeY+nb_col] = 1;
+                graph[nb_row*gridSizeY+nb_col][i] = 1;
               }
             }
           }
@@ -164,6 +165,9 @@ void VrpGreedy::createGraph(){
       }
     }
 
+    distanceMat = graph;
+
+    for(int i=0; i<n; i++) distanceMat[i][i] = 0;
 
 }
 
@@ -172,7 +176,7 @@ void VrpGreedy::init(){
 
   createGraph();
 
-  cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
+  //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
 
   graphNodes.resize(gridSizeX*gridSizeY);
   unvisitedNodes.reserve( graphNodes.size() );
@@ -196,7 +200,7 @@ void VrpGreedy::init(){
   numFreeNodes = unvisitedNodes.size();
 
   minDist = (dist(graphNodes.at(0), graphNodes.at(1)) + FLT_MIN)*SQRT2;
-  cout << "minDist=" << minDist << endl;
+  //cout << "minDist=" << minDist << endl;
 
   // Path initialisation
   path.push_back(STARTNODE);       // Every path initially is just 2 nodes: Start + End(=start)
@@ -263,22 +267,45 @@ void VrpGreedy::solve(){
   FloydWarshall myFW(graph);
   myFW.solve(distanceMat);
 
+  //myFW.printMatrix(graph);
+
+  //cout << "\nDistances: ";
   //myFW.printMatrix(distanceMat);
 
-  int start = 5, target = 27;
+  int start = 4, target = 54;
+  assert(start<gridSizeX*gridSizeY);
+  assert(target<gridSizeX*gridSizeY);
 
-  printf("%sThe path from %d to %d goes through:%s\n", TC_CYAN, start, target, TC_NONE);
+  printf("%sThe path from %d to %d%s",  TC_CYAN, start, target, TC_NONE);
   myFW.getPath(start, target, fwPath);
   if( fwPath.size() > 0 ){
-    if( fwPath.size() == 2 ) cout << "Come on man, they're adjacent!\n";
-    else{
-      for(int k=1; k<fwPath.size()-1; k++){
+    printf("%s is long %d and goes through:%s\n",
+           TC_CYAN, distanceMat[start][target], TC_NONE);
+    //if( fwPath.size() == 2 ) cout << "Come on man, they're adjacent!\n";
+    //else{
+      for(int k=0; k<fwPath.size(); k++){
         cout << fwPath.at(k) << " ";
       }
       cout << endl;
-    }
+    //}
   }
 
+  fwPath.clear();
+  start = 4; target = 175;
+
+  printf("%sThe path from %d to %d%s",  TC_CYAN, start, target, TC_NONE);
+    myFW.getPath(start, target, fwPath);
+    if( fwPath.size() > 0 ){
+      printf("%s is long %d and goes through:%s\n",
+             TC_CYAN, distanceMat[start][target], TC_NONE);
+      //if( fwPath.size() == 2 ) cout << "Come on man, they're adjacent!\n";
+      //else{
+        for(int k=0; k<fwPath.size(); k++){
+          cout << fwPath.at(k) << " ";
+        }
+        cout << endl;
+      //}
+    }
 
 
   std::cin.get();
