@@ -139,7 +139,7 @@ void VrpGreedyAstar::init(){
 
   srand(time(NULL));    ///Here just because of the Astar class
 
-  cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
+  //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
 
   graphNodes.resize(gridSizeX*gridSizeY);
   unvisitedNodes.reserve( graphNodes.size() );
@@ -162,7 +162,7 @@ void VrpGreedyAstar::init(){
 
 
   minDist = (dist(graphNodes.at(0), graphNodes.at(1)) + FLT_MIN)*SQRT2;
-  cout << "minDist=" << minDist << endl;
+  //cout << "minDist=" << minDist << endl;
 
   // Path initialisation
   path.push_back(STARTNODE);       // Every path initially is just 2 nodes: Start + End(=start)
@@ -276,18 +276,13 @@ void VrpGreedyAstar::solve(){
           vector<int>::iterator iTent = pathTentative.begin() + (itc - itr->begin());
 
 
-          //            cout << (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) << endl;
-          //            cout << (dist(graphNodes[*itc-1], graphNodes[unvisitedNodes[v]])) << endl;
-          //            std::cin.get();
-
-
           /// Following if: If node is adjacent to path just insert it ///
           if( ( dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]]) ) <= minDist   &&
               ( dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]]) ) <= minDist ){
 
             pathTentative.insert(iTent, unvisitedNodes[v]);
 
-            checkBest(1);
+            checkBest(true);
 
           }
 
@@ -350,7 +345,7 @@ void VrpGreedyAstar::solve(){
       choice.i->insert(choice.p, unvisitedNodes[choice.v]);
     }else{
       /// Inserting chosen best node v, along with all the path to reach it
-      choice.i->insert(choice.p, choice.astarPath.begin(), choice.astarPath.end());
+      choice.i->insert(choice.p, choice.interPath.begin(), choice.interPath.end());
     }
 
     unvisitedNodes.erase(unvisitedNodes.begin() + choice.v);     // Delete it from list of unvisited
@@ -382,7 +377,7 @@ void VrpGreedyAstar::performanceIndexes(){
   CoverAnalysis myCoverage(Paths, numAgents, numFreeNodes);
 
   myCoverage.longestPath();
-  myCoverage.pathsOverlapIndex();
+  myCoverage.totalPathsLength();
 
   std::cin.get();
 
@@ -414,7 +409,7 @@ void VrpGreedyAstar::checkBest(bool isNeighbour){
       deltaBest = deltavip;
       choice.set_vipn(v, itr, itc, isNeighbour);
       if(!isNeighbour){
-        choice.astarPath = astarTent;
+        choice.interPath = astarTent;
       }
     }//End Check Global Best
   }//End Check Local Best

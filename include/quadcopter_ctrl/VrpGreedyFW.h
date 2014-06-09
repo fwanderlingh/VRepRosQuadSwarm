@@ -28,7 +28,7 @@ class VrpGreedy
   const static int Inf = INT_MAX/2-1;
   vector< vector<int> > graph;
   vector< vector<int> > distanceMat;
-  vector<int> fwPath;
+  vector<int> fwTent;
   vector<int> access_vec;
   vector<int> unvisitedNodes;
   vector<int> path;
@@ -45,15 +45,17 @@ class VrpGreedy
 
   float minDist; //distance between two adjacent blocks
 
+  vector< vector<int> >::iterator it;
   vector< vector<int> >::iterator itr;
   vector<int>::iterator itc;
   vector<int>::size_type v;
 
-  float pathLength(vector<graphNode> graph, vector<int> &pathToEvaluate);
+  float pathLength(vector<int> &pathToEvaluate);
   void loadMatrixFile(std::string acc_matrix_path);
   void createGraph();
   void createCycles();
   float dist(graphNode &a, graphNode &b);
+  void checkBest(bool isNeighbour);
 
 
 public:

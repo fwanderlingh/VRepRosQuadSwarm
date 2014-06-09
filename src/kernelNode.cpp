@@ -57,9 +57,10 @@ int main(int argc, char **argv)
 
 	/// Constructor inputs are (mapToExplore, numOfAgents) ///
 	VrpGreedy myVrp(acc_matrix_path, num_robots);
-	//VrpGreedyAstar myVrp(acc_matrix_path, num_robots);
+	VrpGreedyAstar myVrpAstar(acc_matrix_path, num_robots);
 
 	myVrp.solve();
+	myVrpAstar.solve();
 
 	vector< vector<int> > pathVec;
 	vector<graphNode> graph;

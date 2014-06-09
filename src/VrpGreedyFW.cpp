@@ -75,18 +75,17 @@ VrpGreedy::~VrpGreedy()
 }
 
 
-float VrpGreedy::pathLength(vector<graphNode> graph, vector<int> &path){
+float VrpGreedy::pathLength(vector<int> &path){
 
 
   float length = FLT_MIN;
   for(vector<graphNode>::size_type i = 0; i < (path.size() - 1); i++){
-    length = length + sqrt(pow((graph[path[i]].posx - graph[path[i+1]].posx),2) +
-                           pow((graph[path[i]].posy - graph[path[i+1]].posy),2) +
-                           pow((graph[path[i]].posz - graph[path[i+1]].posz),2) );
+    length = length + sqrt(pow((graphNodes[path[i]].posx - graphNodes[path[i+1]].posx),2) +
+                           pow((graphNodes[path[i]].posy - graphNodes[path[i+1]].posy),2) /*+
+                           pow((graphNodes[path[i]].posz - graphNodes[path[i+1]].posz),2)*/ );
   }
   return length;
 }
-
 
 void VrpGreedy::loadMatrixFile(std::string acc_matrix_path){
   /**
@@ -150,7 +149,7 @@ void VrpGreedy::createGraph(){
             nb_col = col + col_shift;
             if( (nb_row>=0) && (nb_row<gridSizeX) && (nb_col>=0) && (nb_col<gridSizeY) ///RANGE CHECK
               && (row_shift!=0 || col_shift!=0)  ///<--- don't check same node of current
-              && (row_shift*col_shift == 0)  ///<--- don't allow diagonal movements
+              //&& (row_shift*col_shift == 0)  ///<--- don't allow diagonal movements
               )
               //&& ( (row_shift*row_shift xor col_shift*col_shift)==1 ) <--last 2 statements compressed in one condition
             {
@@ -244,7 +243,7 @@ void VrpGreedy::createCycles(){
       vector<int>::iterator iTent = pathTentative.begin() + insertIndex;
       float tentPathLength;
       pathTentative.insert(iTent, unvisitedNodes[v]);
-      tentPathLength = pathLength(graphNodes, pathTentative);
+      tentPathLength = pathLength(pathTentative);
 
       if(tentPathLength < liMin){
         liMin = tentPathLength;
@@ -272,45 +271,8 @@ void VrpGreedy::solve(){
   //cout << "\nDistances: ";
   //myFW.printMatrix(distanceMat);
 
-  int start = 4, target = 54;
-  assert(start<gridSizeX*gridSizeY);
-  assert(target<gridSizeX*gridSizeY);
-
-  printf("%sThe path from %d to %d%s",  TC_CYAN, start, target, TC_NONE);
-  myFW.getPath(start, target, fwPath);
-  if( fwPath.size() > 0 ){
-    printf("%s is long %d and goes through:%s\n",
-           TC_CYAN, distanceMat[start][target], TC_NONE);
-    //if( fwPath.size() == 2 ) cout << "Come on man, they're adjacent!\n";
-    //else{
-      for(int k=0; k<fwPath.size(); k++){
-        cout << fwPath.at(k) << " ";
-      }
-      cout << endl;
-    //}
-  }
-
-  fwPath.clear();
-  start = 4; target = 175;
-
-  printf("%sThe path from %d to %d%s",  TC_CYAN, start, target, TC_NONE);
-    myFW.getPath(start, target, fwPath);
-    if( fwPath.size() > 0 ){
-      printf("%s is long %d and goes through:%s\n",
-             TC_CYAN, distanceMat[start][target], TC_NONE);
-      //if( fwPath.size() == 2 ) cout << "Come on man, they're adjacent!\n";
-      //else{
-        for(int k=0; k<fwPath.size(); k++){
-          cout << fwPath.at(k) << " ";
-        }
-        cout << endl;
-      //}
-    }
-
-
-  std::cin.get();
-
-  int insertIndex;
+  int start1, start2, target;
+  vector<int> fwPath;
 
   while(unvisitedNodes.size() > 0){
 /*
@@ -322,6 +284,7 @@ void VrpGreedy::solve(){
       }
       std::cout << '\n';
     }
+    std::cin.get();
 */
     // Delta increments initialisation
     deltaBest = FLT_MAX;
@@ -330,9 +293,9 @@ void VrpGreedy::solve(){
     bigLTent = -FLT_MAX;
     liMin = FLT_MAX;
 
-    // Initialise bigL
-    for(vector< vector<int> >::iterator it = Paths.begin(); it!=Paths.end(); ++it){
-      if( pathLength(graphNodes, *it) > bigL ) bigL = pathLength(graphNodes, *it);
+    /// Initialise bigL as the MAX path length among all the current paths
+    for(it = Paths.begin(); it!=Paths.end(); ++it){
+      if( pathLength(*it) > bigL ) bigL = pathLength(*it);
     }
 
     ///*** MAIN NESTED LOOPS ***///
@@ -342,61 +305,98 @@ void VrpGreedy::solve(){
         liMin = FLT_MAX;
         for (itc = (itr->begin()+1); itc != itr->end(); ++itc){        // In every position p (reversed)
 
-          //cout << (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) << endl;
-          //cout << (dist(graphNodes[*itc-1], graphNodes[unvisitedNodes[v]])) << endl;
-          //std::cin.get();
 
-          if( ( (dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) <= minDist+MAX_FOV   &&
-                (dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) <= minDist+MAX_FOV ) ){
+          //cout << "_ Insert position = " << (itc - itr->begin()) << " _" << endl;
 
-            insertIndex = (int)(itc - itr->begin());        // This is necessary to avoid modifying the current path
-            // vector (which is NOT allowed since we're iterating
-            // inside it), and keep track of the insertion index.
-            pathTentative = *itr;
-            vector<int>::iterator iTent = pathTentative.begin() + insertIndex;
-            float tentPathLenght;
+
+          pathTentative = *itr;
+          vector<int>::iterator iTent = pathTentative.begin() + (itc - itr->begin());
+
+          /// Following if: If node is adjacent to path just insert it ///
+          if( ( dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]]) ) <= minDist   &&
+              ( dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]]) ) <= minDist ){
 
             pathTentative.insert(iTent, unvisitedNodes[v]);
-            tentPathLenght = pathLength(graphNodes, pathTentative);
 
-            if(tentPathLenght < liMin){
-              liMin = tentPathLenght;
+            checkBest(true);
 
-              /// *** Objective Function *** ///
-              deltavip = liMin - bigL;
+          }
+          /// Otherwise: insert the shortest traversable path to "get there and go back" ///
+          else{
+            target = unvisitedNodes[v];
+            fwTent.clear();
 
-              if(deltavip < deltaBest){
-                deltaBest = deltavip;
-                choice.set_vip(v, itr, itc);
-              }//End Check Global Best
-            }//End Check Local Best
+            if((dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) > minDist){
+              ///Way there
+              start1 = *(itc-1);
+              myFW.getPath(start1, target, fwPath);
+              if(fwPath.size()>2){
+                for(int i=1; i<fwPath.size()-1; i++){
+                  //cout << astar.path[i] << " ";
+                  fwTent.push_back(fwPath[i]);
+                }
+              }
+              fwPath.clear();
+            }
 
-          }///DISTANCE CHECK - work in progress
+
+            fwTent.push_back(unvisitedNodes[v]);
+
+            if((dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) > minDist){
+
+              ///Way back
+              start2 = *itc;
+              myFW.getPath(target, start2, fwPath);
+              if(fwPath.size()>2){
+                for(int i=1; i<fwPath.size()-1; i++){
+                  //cout << astar.path[i] << " ";
+                  fwTent.push_back(fwPath[i]);
+                }
+              }
+            }
+
+            pathTentative.insert(iTent, fwTent.begin(), fwTent.end());
+
+            checkBest(false);
+          }
+
         } // END P(positions)
       } // END I (robots)
     } // END V (nodes)
 
+/*
+    printf("About to insert node %d in position %d of path %d\n",
+           unvisitedNodes[choice.v], (int)(choice.p - choice.i->begin()), (int)(choice.i-Paths.begin()));
+    printf("The contents of the interPath are: ");
+    for(int i=0; i<choice.interPath.size();i++) cout << choice.interPath.at(i) << " ";
+    std::cin.get();
+  */
 
+    if(choice.neighb == true){
+      /// Inserting chosen best node v, in position p, in path of robot i
+      choice.i->insert(choice.p, unvisitedNodes[choice.v]);
+    }else{
+      /// Inserting chosen best node v, along with all the path to reach it
+      choice.i->insert(choice.p, choice.interPath.begin(), choice.interPath.end());
+    }
 
-    choice.i->insert(choice.p, unvisitedNodes[choice.v]);   // Inserting chosen best node
-
-    vector<int>::iterator insertedNode = unvisitedNodes.begin() + choice.v;   //Retrieve the index of the just inserted node
-    unvisitedNodes.erase(insertedNode);     // Delete it from list of unvisited
+    //cout << "About to erase it from unvisited list\n";
+    unvisitedNodes.erase(unvisitedNodes.begin() + choice.v);     // Delete it from list of unvisited
 
     cout << "unvisitedNodes.size() = " << (int)unvisitedNodes.size() << "       " << '\r';
     cout.flush();
 
   } // END WHILE
 
-  std::cout << '\n';
+  cout << '\n';
 
-  std::cout << "The contents of Paths are:" << endl;
+  cout << "The contents of Paths are:" << endl;
   for (itr = Paths.begin(); itr != Paths.end(); ++itr){
     cout << "#" << itr - Paths.begin() << ": ";
     for (itc = itr->begin(); itc != itr->end(); ++itc){
-      std::cout << *itc << ' ';
+      cout << *itc << ' ';
     }
-    std::cout << '\n';
+    cout << '\n';
   }
 
 }
@@ -412,11 +412,32 @@ void VrpGreedy::copyGraphTo(vector< graphNode > &destination){
 
 float VrpGreedy::dist(graphNode &a, graphNode &b){
 
-  float dist = sqrt ( pow(a.posx - b.posx, 2.0) +
-                      pow(a.posy - b.posy, 2.0) +
-                      pow(a.posz - b.posz, 2.0) );
+  float dist = sqrt ( pow(a.posx - b.posx, 2.0)
+                      + pow(a.posy - b.posy, 2.0)
+                      //+ pow(a.posz - b.posz, 2.0)
+                      );
 
   //cout << "Dist=" << dist << endl;
   return dist;
 }
 
+void VrpGreedy::checkBest(bool isNeighbour){
+
+  int tentPathLenght = pathLength(pathTentative);
+
+  if(tentPathLenght < liMin){
+    liMin = tentPathLenght;
+
+    // * Objective Function * //
+    deltavip = liMin - bigL;
+
+    if(deltavip < deltaBest){
+      deltaBest = deltavip;
+      choice.set_vipn(v, itr, itc, isNeighbour);
+      if(!isNeighbour){
+        choice.interPath = fwTent;
+      }
+    }//End Check Global Best
+  }//End Check Local Best
+
+}

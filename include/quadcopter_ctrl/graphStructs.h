@@ -34,7 +34,7 @@ struct vip{
   std::vector< std::vector<int> >::iterator i;    // Index of Path (#robots)
   std::vector<int>::iterator p;              // Position index inside the path
   bool neighb;
-  std::vector<int> astarPath;
+  std::vector<int> interPath;
 
   void set_vip( int nodeIndex,
                  std::vector< std::vector<int> >::iterator pathIndex,

@@ -23,11 +23,7 @@ using std::endl;
 using std::vector;
 
 const int Inf = INT_MAX/2-1;// graph[i][j] = Inf if no edge
-/*int _access_vec[] = {0, 0, 0, 0,
-                     0, 0, 0, 1,
-                     1, 1, 0, 0,
-                     0, 0, 0, 1};
-*/
+
 int _access_vec[] = {0, 0, 0,
                      0, 1, 0,
                      1, 1, 0,
