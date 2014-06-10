@@ -51,7 +51,6 @@ VrpGreedy::VrpGreedy() : gridSizeX(DEF_GRID_X),
   deltaBest = FLT_MAX;
   deltavip = FLT_MAX;
   bigL = -FLT_MAX;
-  bigLTent = -FLT_MAX;
   liMin = FLT_MAX;
 
 }
@@ -237,9 +236,12 @@ void VrpGreedy::createCycles(){
     liMin = FLT_MAX;
     itc = (itr->begin()+1);        // Between Start and End
     for (v = 0; v < unvisitedNodes.size(); v++ ){   // For every Node v
-      insertIndex = (int)(itc - itr->begin());        // This is necessary to avoid modifying the current path
-      // vector (which is NOT allowed since we're iterating
-      // inside it), and keep track of the insertion index.
+
+      /** This is necessary to avoid modifying the current path
+       * vector (which is NOT allowed since we're iterating
+       * inside it), and keep track of the insertion index.  **/
+      insertIndex = (int)(itc - itr->begin());
+
       pathTentative = *itr;
       vector<int>::iterator iTent = pathTentative.begin() + insertIndex;
       float tentPathLength;
@@ -267,15 +269,18 @@ void VrpGreedy::solve(){
   FloydWarshall myFW(graph);
   myFW.solve(distanceMat);
 
+
   //myFW.printMatrix(graph);
 
-  //std::cin.get();
 
   //cout << "\nDistances: ";
   //myFW.printMatrix(distanceMat);
 
+  //std::cin.get();
+
   int start1, start2, target;
   vector<int> fwPath;
+
 
   while(unvisitedNodes.size() > 0){
 /*
@@ -293,8 +298,6 @@ void VrpGreedy::solve(){
     deltaBest = FLT_MAX;
     deltavip = FLT_MAX;
     bigL = -FLT_MAX;
-    bigLTent = -FLT_MAX;
-    liMin = FLT_MAX;
 
     /// Initialise bigL as the MAX path length among all the current paths
     for(it = Paths.begin(); it!=Paths.end(); ++it){
@@ -312,12 +315,15 @@ void VrpGreedy::solve(){
           //cout << "_ Insert position = " << (itc - itr->begin()) << " _" << endl;
 /*
           printf("Inserting node %d between node %d and %d\n", unvisitedNodes[v], *(itc-1), *itc );
-          printf("The edges value are: e(%d,%d)=%d, e(%d,%d)=%d",
+          printf("The edges value are: e(%d,%d)=%d, e(%d,%d)=%d\n",
                   *(itc-1), unvisitedNodes[v], graph[*(itc-1)][unvisitedNodes[v]],
                    unvisitedNodes[v], *itc, graph[*itc][unvisitedNodes[v]]);
-          std::cin.get();
 */
 
+
+          /** This is necessary to avoid modifying the current path
+           * vector (which is NOT allowed since we're iterating
+           * inside it), and keep track of the insertion index.  **/
           pathTentative = *itr;
           vector<int>::iterator iTent = pathTentative.begin() + (itc - itr->begin());
 
@@ -338,16 +344,17 @@ void VrpGreedy::solve(){
             if(graph[*(itc-1)][unvisitedNodes[v]] != 1){
 
               ///Way there
+              //cout << "\nWay there: ";
               start1 = *(itc-1);
               myFW.getPath(start1, target, fwPath);
               if(fwPath.size()>2){
-                for(int i=1; i<fwPath.size()-1; i++){
+                for(int i=1; i<(fwPath.size()-1); i++){
                   //cout << fwPath[i] << " ";
                   fwTent.push_back(fwPath[i]);
                 }
               }
-              fwPath.clear();
             }
+            fwPath.clear();
 
 
             fwTent.push_back(unvisitedNodes[v]);
@@ -356,20 +363,23 @@ void VrpGreedy::solve(){
             if(graph[*itc][unvisitedNodes[v]] != 1){
 
               ///Way back
+              //cout << "\nWay back: ";
               start2 = *itc;
               myFW.getPath(target, start2, fwPath);
               if(fwPath.size()>2){
-                for(int i=1; i<fwPath.size()-1; i++){
+                for(int i=1; i<(fwPath.size()-1); i++){
                   //cout << fwPath[i] << " ";
                   fwTent.push_back(fwPath[i]);
                 }
               }
             }
+            fwPath.clear();
 
 
             pathTentative.insert(iTent, fwTent.begin(), fwTent.end());
 
             checkBest(false);
+
           }
 
         } // END P(positions)

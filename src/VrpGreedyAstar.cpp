@@ -258,7 +258,7 @@ void VrpGreedyAstar::solve(){
     deltavip = FLT_MAX;
     bigL = -FLT_MAX;
     bigLTent = -FLT_MAX;
-    liMin = FLT_MAX;
+    //liMin = FLT_MAX;
 
     /// Initialise bigL as the MAX path length among all the current paths
     for(it = Paths.begin(); it!=Paths.end(); ++it){

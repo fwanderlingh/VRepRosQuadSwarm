@@ -64,7 +64,8 @@ void FloydWarshall::printMatrix(vector< vector<int> >& matrix){
      Utils::spaced_cout(j);
      printf("%s", TC_NONE);
      for(k=0; k<n; k++){
-       if (matrix[j][k] == Inf || matrix[j][k] == -1) cout << "   -";
+       if (matrix[j][k] == -1) cout << "   -";
+       else if (matrix[j][k] == Inf) cout << "   ∞";
        else{
          Utils::spaced_cout(matrix[j][k]);
        }

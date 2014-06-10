@@ -38,7 +38,6 @@ class VrpGreedy
   float deltaBest;
   float deltavip;
   float bigL;
-  float bigLTent;
   float liMin;
 
   int numFreeNodes;

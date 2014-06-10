@@ -45,13 +45,13 @@ CoverAnalysis::~CoverAnalysis()
 }
 
 
-
 void CoverAnalysis::vecOfLengths(vector<int>& vecOfLenghts){
 
   for (vector< vector<int> >::iterator itr = Paths.begin(); itr != Paths.end(); ++itr){
     vecOfLenghts.push_back( itr->size() - 1 );
   }
 }
+
 
 int CoverAnalysis::totalPathsLength(){
 
@@ -70,7 +70,6 @@ int CoverAnalysis::getLongestPath(){
 
   return max;
 }
-
 
 
 double CoverAnalysis::getStDev(){
