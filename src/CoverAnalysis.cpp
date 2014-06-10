@@ -16,6 +16,7 @@
 #include <iostream>
 #include <iterator>
 #include <numeric>      /* multiply, accumulate */
+#include <cmath>
 
 using std::cout;
 using std::endl;
@@ -25,8 +26,7 @@ using std::max_element;
 CoverAnalysis::CoverAnalysis()
 {
   // TODO Auto-generated constructor stub
-  cout << '\a';
-  cout << '\a';
+
 }
 
 CoverAnalysis::CoverAnalysis(vector<vector<int> > paths_vec, int numberOfRobots, int numberOfNodes)
@@ -34,8 +34,9 @@ CoverAnalysis::CoverAnalysis(vector<vector<int> > paths_vec, int numberOfRobots,
   Paths = paths_vec;
   numRobots = numberOfRobots;
   numNodes = numberOfNodes;
-  cout << '\a';
-  cout << '\a';
+
+  vecOfLengths(pathLengths);
+  totalLength = totalPathsLength();
 }
 
 CoverAnalysis::~CoverAnalysis()
@@ -44,61 +45,48 @@ CoverAnalysis::~CoverAnalysis()
 }
 
 
-int CoverAnalysis::longestPath(){
-  /// Returns the length of the longest path
 
-  vector<int> pathLengths;
+void CoverAnalysis::vecOfLengths(vector<int>& vecOfLenghts){
 
   for (vector< vector<int> >::iterator itr = Paths.begin(); itr != Paths.end(); ++itr){
-    pathLengths.push_back( itr->size() - 1 );
+    vecOfLenghts.push_back( itr->size() - 1 );
   }
-
-  int max = *max_element(pathLengths.begin(), pathLengths.end());
-  printf("%sMax Path Length: %d%s\n", TC_MAGENTA, max, TC_NONE);
-
-  return max;
-
 }
 
 int CoverAnalysis::totalPathsLength(){
 
-  int totalLength = 0;
-  /// Return the length of the longest path
-  for (vector< vector<int> >::iterator itr = Paths.begin(); itr != Paths.end(); ++itr){
-
-    totalLength +=  (itr->size() - 1) ;
-  }
-
-  printf("%sTotal Paths Length: %d%s\n", TC_MAGENTA, totalLength, TC_NONE);
-
-  return totalLength;
+  int _totalLength = std::accumulate(pathLengths.begin(), pathLengths.end(), 0.0);
+  //printf("%sTotal Paths Length: %d%s\n", TC_MAGENTA, _totalLength, TC_NONE);
+  return _totalLength;
 
 }
 
-float CoverAnalysis::pathsOverlapIndex(){
-  /// Calculate the overlap over all the paths
 
-  int pathOverlap = totalPathsLength() - numRobots*2 - numNodes;
+int CoverAnalysis::getLongestPath(){
+  /// Returns the length of the longest path
 
-  cout << "Path Overlap Index: " << pathOverlap << endl;
+  int max = *max_element(pathLengths.begin(), pathLengths.end());
+  //printf("%sMax Path Length: %d%s\n", TC_MAGENTA, max, TC_NONE);
 
-  return pathOverlap;
-}
-
-float CoverAnalysis::calcMapOverlap( vector<int> map ){
-  /// Calculate the overlap over all the count Map
-
-  int mapOverlap;
-
-  mapOverlap = std::accumulate(map.begin(), map.end(), 0) - numNodes - numRobots ;
-
-  return mapOverlap;
+  return max;
 }
 
 
 
-void CoverAnalysis::loadPaths(vector<vector<int> > paths_vec){
+double CoverAnalysis::getStDev(){
 
-  Paths = paths_vec;
+  double mean = totalLength / pathLengths.size();
+
+  std::vector<double> diff(pathLengths.size());
+  std::transform(pathLengths.begin(), pathLengths.end(), diff.begin(),
+                 std::bind2nd(std::minus<double>(), mean));
+  double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+  double stdev = std::sqrt(sq_sum / pathLengths.size());
+
+  return stdev;
 
 }
+
+
+
+

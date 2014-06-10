@@ -69,8 +69,10 @@ int main(int argc, char **argv)
       printf("%sAll %d paths collected!%s\n", TC_GREEN, num_robots, TC_NONE);
 
       CoverAnalysis myCoverage(finalPaths, num_robots, numFreeNodes);
-      myCoverage.longestPath();
-      myCoverage.totalPathsLength();
+      int longest = myCoverage.getLongestPath();
+      int total = myCoverage.getTotalLength();
+      printf("%sMax Path Length: %d%s\n", TC_MAGENTA, longest, TC_NONE);
+      printf("%sTotal Paths Length: %d%s\n", TC_MAGENTA, total, TC_NONE);
 
       ros::shutdown();
 

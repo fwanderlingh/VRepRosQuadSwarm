@@ -18,18 +18,25 @@ class CoverAnalysis
   int numNodes;
   vector<vector<int> > Paths;
 
+  vector<int> pathLengths;
+  int totalLength;
+
 
 public:
   CoverAnalysis();
   CoverAnalysis(vector<vector<int> > paths_vec, int numberOfRobots, int numberOfNodes);
   virtual ~CoverAnalysis();
 
-  void loadPaths(vector<vector<int> > paths_vec);
-  int longestPath();
-  int totalPathsLength();
-  float pathsOverlapIndex();
-  float calcMapOverlap(vector<int> map);
 
+  void vecOfLengths(vector<int>& vecOfLenghts);
+  int totalPathsLength();
+  int getLongestPath();
+  double getStDev();
+
+  int getTotalLength() const
+  {
+    return totalLength;
+  }
 };
 
 #endif /* COVERANALYSIS_H_ */

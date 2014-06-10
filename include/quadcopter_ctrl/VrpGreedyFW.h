@@ -58,6 +58,7 @@ class VrpGreedy
   void checkBest(bool isNeighbour);
 
 
+
 public:
   VrpGreedy();
   VrpGreedy(std::string acc_matrix_path);
@@ -67,6 +68,7 @@ public:
   void solve();
   void copyPathsTo(vector< vector<int> > &);
   void copyGraphTo(vector< graphNode > &);
+  void performanceIndexes();
 
 };
 

@@ -9,8 +9,8 @@
  *      Author: francescow
  */
 
-#include <quadcopter_ctrl/CoverAnalysis.h>
 #include <quadcopter_ctrl/VrpGreedyAstar.h>
+#include <quadcopter_ctrl/CoverAnalysis.h>
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
@@ -19,6 +19,7 @@
 #include <ctime>
 #include <functional>
 #include <iterator>
+#include "termColors.h"
 #include <string>
 
 
@@ -376,8 +377,12 @@ void VrpGreedyAstar::performanceIndexes(){
   printf("Coverage input args: [ numAgents=%d, numFreeNodes=%d ]\n", numAgents, numFreeNodes);
   CoverAnalysis myCoverage(Paths, numAgents, numFreeNodes);
 
-  myCoverage.longestPath();
-  myCoverage.totalPathsLength();
+  int longest = myCoverage.getLongestPath();
+  int total = myCoverage.getTotalLength();
+  double st_dev = myCoverage.getStDev();
+  printf("%sMax Path Length: %d%s\n", TC_MAGENTA, longest, TC_NONE);
+  printf("%sTotal Paths Length: %d%s\n", TC_MAGENTA, total, TC_NONE);
+  printf("%sPaths length standard deviation: %f%s\n", TC_MAGENTA, st_dev, TC_NONE);
 
   std::cin.get();
 

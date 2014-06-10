@@ -11,6 +11,7 @@
 
 #include "VrpGreedyFW.h"
 #include "quadcopter_ctrl/FloydWarshall.h"
+#include <quadcopter_ctrl/CoverAnalysis.h>
 #include "Utils.h"
 #include <iostream>
 #include <cfloat>
@@ -268,6 +269,8 @@ void VrpGreedy::solve(){
 
   //myFW.printMatrix(graph);
 
+  //std::cin.get();
+
   //cout << "\nDistances: ";
   //myFW.printMatrix(distanceMat);
 
@@ -307,14 +310,19 @@ void VrpGreedy::solve(){
 
 
           //cout << "_ Insert position = " << (itc - itr->begin()) << " _" << endl;
-
+/*
+          printf("Inserting node %d between node %d and %d\n", unvisitedNodes[v], *(itc-1), *itc );
+          printf("The edges value are: e(%d,%d)=%d, e(%d,%d)=%d",
+                  *(itc-1), unvisitedNodes[v], graph[*(itc-1)][unvisitedNodes[v]],
+                   unvisitedNodes[v], *itc, graph[*itc][unvisitedNodes[v]]);
+          std::cin.get();
+*/
 
           pathTentative = *itr;
           vector<int>::iterator iTent = pathTentative.begin() + (itc - itr->begin());
 
           /// Following if: If node is adjacent to path just insert it ///
-          if( ( dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]]) ) <= minDist   &&
-              ( dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]]) ) <= minDist ){
+          if( graph[*(itc-1)][unvisitedNodes[v]] == 1 && graph[*itc][unvisitedNodes[v]] == 1){
 
             pathTentative.insert(iTent, unvisitedNodes[v]);
 
@@ -326,13 +334,15 @@ void VrpGreedy::solve(){
             target = unvisitedNodes[v];
             fwTent.clear();
 
-            if((dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) > minDist){
+            //if((dist(graphNodes[*(itc - 1)], graphNodes[unvisitedNodes[v]])) > minDist){
+            if(graph[*(itc-1)][unvisitedNodes[v]] != 1){
+
               ///Way there
               start1 = *(itc-1);
               myFW.getPath(start1, target, fwPath);
               if(fwPath.size()>2){
                 for(int i=1; i<fwPath.size()-1; i++){
-                  //cout << astar.path[i] << " ";
+                  //cout << fwPath[i] << " ";
                   fwTent.push_back(fwPath[i]);
                 }
               }
@@ -342,18 +352,20 @@ void VrpGreedy::solve(){
 
             fwTent.push_back(unvisitedNodes[v]);
 
-            if((dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) > minDist){
+            //if((dist(graphNodes[*itc], graphNodes[unvisitedNodes[v]])) > minDist){
+            if(graph[*itc][unvisitedNodes[v]] != 1){
 
               ///Way back
               start2 = *itc;
               myFW.getPath(target, start2, fwPath);
               if(fwPath.size()>2){
                 for(int i=1; i<fwPath.size()-1; i++){
-                  //cout << astar.path[i] << " ";
+                  //cout << fwPath[i] << " ";
                   fwTent.push_back(fwPath[i]);
                 }
               }
             }
+
 
             pathTentative.insert(iTent, fwTent.begin(), fwTent.end());
 
@@ -399,6 +411,24 @@ void VrpGreedy::solve(){
     cout << '\n';
   }
 
+  performanceIndexes();
+
+}
+
+void VrpGreedy::performanceIndexes(){
+
+  printf("Coverage input args: [ numAgents=%d, numFreeNodes=%d ]\n", numAgents, numFreeNodes);
+  CoverAnalysis myCoverage(Paths, numAgents, numFreeNodes);
+
+  int longest = myCoverage.getLongestPath();
+  int total = myCoverage.getTotalLength();
+  double st_dev = myCoverage.getStDev();
+  printf("%sMax Path Length: %d%s\n", TC_MAGENTA, longest, TC_NONE);
+  printf("%sTotal Paths Length: %d%s\n", TC_MAGENTA, total, TC_NONE);
+  printf("%sPaths length standard deviation: %f%s\n", TC_MAGENTA, st_dev, TC_NONE);
+
+  std::cin.get();
+
 }
 
 
@@ -406,9 +436,11 @@ void VrpGreedy::copyPathsTo(vector< vector<int> > &destination){
   destination = Paths;
 }
 
+
 void VrpGreedy::copyGraphTo(vector< graphNode > &destination){
   destination = graphNodes;
 }
+
 
 float VrpGreedy::dist(graphNode &a, graphNode &b){
 
@@ -420,6 +452,7 @@ float VrpGreedy::dist(graphNode &a, graphNode &b){
   //cout << "Dist=" << dist << endl;
   return dist;
 }
+
 
 void VrpGreedy::checkBest(bool isNeighbour){
 
