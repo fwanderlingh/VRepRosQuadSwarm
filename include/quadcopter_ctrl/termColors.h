@@ -12,7 +12,7 @@
 #define TC_BLACK        "\033[0;30m"
 #define TC_BROWN        "\033[0;33m"
 #define TC_MAGENTA      "\033[1;35m"
-#define TC_GRAY         "\033[0;37m"
+#define TC_GRAY         "\033[1;37m"
 #define TC_NONE         "\033[0m"
 
 

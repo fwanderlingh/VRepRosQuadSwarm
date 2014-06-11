@@ -45,12 +45,11 @@ public:
     start(0),
     target(0)
   {
-
     MapSearchNode::map = a_map;
     MapSearchNode::MAP_WIDTH = sizeX;
     MapSearchNode::MAP_HEIGHT = sizeY;
-
   }
+  virtual ~Astar(){}
 
   std::vector<int> path;
   void run(int v_start, int v_target);
@@ -107,7 +106,7 @@ void Astar::run(int v_start, int v_target){
     cout << "Search terminated. No traversable path found.\n";
   }
 
-  astarsearch.EnsureMemoryFreed();
+  //astarsearch.EnsureMemoryFreed();
 
 }
 

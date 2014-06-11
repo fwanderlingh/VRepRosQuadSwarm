@@ -225,6 +225,9 @@ void VrpGreedyAstar::createCycles(){
 void VrpGreedyAstar::solve(){
 
   init();
+
+  printf("\n%s** Using the VRP-A*pathfinder algorithm **%s\n", TC_CYAN, TC_NONE);
+
   pathTentative.reserve(gridSizeX*gridSizeY);
 
   /// Here we adapt out access_vec to the format of the Astar class:
@@ -372,6 +375,7 @@ void VrpGreedyAstar::solve(){
 
 }
 
+
 void VrpGreedyAstar::performanceIndexes(){
 
   printf("Coverage input args: [ numAgents=%d, numFreeNodes=%d ]\n", numAgents, numFreeNodes);
@@ -388,7 +392,6 @@ void VrpGreedyAstar::performanceIndexes(){
 
 
 }
-
 
 
 float VrpGreedyAstar::dist(graphNode &a, graphNode &b){

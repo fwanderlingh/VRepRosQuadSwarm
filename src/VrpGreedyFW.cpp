@@ -266,6 +266,8 @@ void VrpGreedy::solve(){
 
   init();
 
+  printf("\n%s** Using the VRP-FloydWarshall algorithm **%s\n", TC_CYAN, TC_NONE);
+
   FloydWarshall myFW(graph);
   myFW.solve(distanceMat);
 
