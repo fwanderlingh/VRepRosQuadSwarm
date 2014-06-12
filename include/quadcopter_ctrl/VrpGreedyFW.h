@@ -23,7 +23,7 @@ class VrpGreedy
 
   int gridSizeX;
   int gridSizeY;
-  int numAgents;
+  int numRobots;
   vector<graphNode> graphNodes;
   const static int Inf = INT_MAX/2-1;
   vector< vector<int> > graph;
@@ -31,7 +31,6 @@ class VrpGreedy
   vector<int> fwTent;
   vector<int> access_vec;
   vector<int> unvisitedNodes;
-  vector<int> path;
   vector< vector<int> > Paths;
   vector<int> pathTentative;
   vip choice;
@@ -52,7 +51,6 @@ class VrpGreedy
   float pathLength(vector<int> &pathToEvaluate);
   void loadMatrixFile(std::string acc_matrix_path);
   void createGraph();
-  void createCycles();
   float dist(graphNode &a, graphNode &b);
   void checkBest(bool isNeighbour);
 
@@ -65,10 +63,26 @@ public:
   virtual ~VrpGreedy();
   void init();
   void solve();
-  void copyPathsTo(vector< vector<int> > &);
-  void copyGraphTo(vector< graphNode > &);
-  void performanceIndexes();
 
+  int getNumRobots() const
+  {
+    return numRobots;
+  }
+
+  const vector<vector<int> >& getPaths() const
+  {
+    return Paths;
+  }
+
+  const vector<graphNode>& getGraphNodes() const
+  {
+    return graphNodes;
+  }
+
+  int getNumFreeNodes() const
+  {
+    return numFreeNodes;
+  }
 };
 
 

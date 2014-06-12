@@ -21,13 +21,12 @@ class VrpGreedyAstar
 {
   int gridSizeX;
   int gridSizeY;
-  int numAgents;
+  int numRobots;
   bool neighbourAvailable;
   vector<graphNode> graphNodes;
   vector<int> unvisitedNodes;
   vector<int> access_vec;
   float minDist;			//distance between two adjacent blocks
-  vector<int> path;
   vector< vector<int> > Paths;
   vector<int> pathTentative;
   vector<int> astarTent;
@@ -50,7 +49,6 @@ class VrpGreedyAstar
   void checkBest(bool neighbour);
   float pathLength(vector<int> &pathToEvaluate);
   void loadMatrixFile(std::string acc_matrix_path);
-  void createCycles();
   float dist(graphNode &a, graphNode &b);
   void init();
   void printTentative();
@@ -62,10 +60,26 @@ public:
   VrpGreedyAstar(std::string acc_matrix_path, int agents);
   virtual ~VrpGreedyAstar();
   void solve();
-  void copyPathsTo(vector< vector<int> > &);
-  void copyGraphTo(vector< graphNode > &);
-  void performanceIndexes();
 
+  const vector<graphNode>& getGraphNodes() const
+  {
+    return graphNodes;
+  }
+
+  int getNumRobots() const
+  {
+    return numRobots;
+  }
+
+  int getNumFreeNodes() const
+  {
+    return numFreeNodes;
+  }
+
+  const vector<vector<int> >& getPaths() const
+  {
+    return Paths;
+  }
 };
 
 

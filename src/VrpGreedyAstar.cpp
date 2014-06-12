@@ -41,14 +41,14 @@ using std::vector;
 VrpGreedyAstar::VrpGreedyAstar() :
     		    gridSizeX(DEF_GRID_X),
     		    gridSizeY(DEF_GRID_Y),
-    		    numAgents(DEF_NUM_ROB),  // Default Initialisation
+    		    numRobots(DEF_NUM_ROB),  // Default Initialisation
     		    minDist(FLT_MAX),
     		    v(0),
     		    neighbourAvailable(false)
 {
   cout << "Default configuration:" << endl;
   cout << "- Default grid is empty" << endl;
-  cout << "- " << numAgents << " Robots" << endl;
+  cout << "- " << numRobots << " Robots" << endl;
 
   access_vec.resize(gridSizeX*gridSizeY,0);
 
@@ -64,7 +64,7 @@ VrpGreedyAstar::VrpGreedyAstar() :
 
 
 VrpGreedyAstar::VrpGreedyAstar(std::string acc_matrix_path) :
-    		    numAgents(DEF_NUM_ROB),
+    		    numRobots(DEF_NUM_ROB),
     		    minDist(FLT_MAX),
     		    v(0),
     		    neighbourAvailable(false)
@@ -79,7 +79,7 @@ VrpGreedyAstar::VrpGreedyAstar(std::string acc_matrix_path, int agents) :
     		    neighbourAvailable(false)
 {
   loadMatrixFile(acc_matrix_path);
-  numAgents = agents;
+  numRobots = agents;
 }
 
 
@@ -166,58 +166,17 @@ void VrpGreedyAstar::init(){
   //cout << "minDist=" << minDist << endl;
 
   // Path initialisation
+  vector<int> path;
   path.push_back(STARTNODE);       // Every path initially is just 2 nodes: Start + End(=start)
   path.push_back(STARTNODE);
 
-  for(int i = 0; i < numAgents; i++){
+  for(int i = 0; i < numRobots; i++){
     Paths.push_back(path); // Define a path for every agent
   }
 
-  Paths.reserve( graphNodes.size() * numAgents);
+  Paths.reserve( graphNodes.size() * numRobots);
 
-  createCycles();
-
-}
-
-
-void VrpGreedyAstar::createCycles(){
-
-  /** /////////////////// Create initial cycles /////////////////////////////////
-   * To understand the need for the initial cycle: consider that the initial path
-   * is (0,0), the next best path for the Greedy solver cannot be (0,1,0) which has
-   * length=2, but (0,0,1) which has length=1. So it will not produce a circular
-   * solution. By inserting the first element in the middle (see **), we solve this problem.
-   */
-
-  int insertIndex;
-
-  for (itr = Paths.begin(); itr != Paths.end(); ++itr){            // On every path i
-
-    // Delta increments initialisation
-    deltaBest = FLT_MAX;
-    deltavip = FLT_MAX;
-    liMin = FLT_MAX;
-    itc = (itr->begin()+1);        // Between Start and End
-    for (v = 0; v < unvisitedNodes.size(); v++ ){   // For every Node v
-      insertIndex = (int)(itc - itr->begin());        // This is necessary to avoid modifying the current path
-      // vector (which is NOT allowed since we're iterating
-      // inside it), and keep track of the insertion index.
-      pathTentative = *itr;
-      vector<int>::iterator iTent = pathTentative.begin() + insertIndex;
-      float tentPathLength;
-      pathTentative.insert(iTent, unvisitedNodes[v]);
-      tentPathLength = pathLength(pathTentative);
-
-      if(tentPathLength < liMin){
-        liMin = tentPathLength;
-        choice.set_vip(v, itr, itc);
-      }
-
-    } // END V
-    choice.i->insert(choice.p, unvisitedNodes[choice.v]);
-    vector<int>::iterator insertedNode = unvisitedNodes.begin() + choice.v;
-    unvisitedNodes.erase(insertedNode);
-  } // END I
+  //createCycles();
 
 }
 
@@ -371,27 +330,10 @@ void VrpGreedyAstar::solve(){
     std::cout << '\n';
   }
 
-  performanceIndexes();
 
 }
 
 
-void VrpGreedyAstar::performanceIndexes(){
-
-  printf("Coverage input args: [ numAgents=%d, numFreeNodes=%d ]\n", numAgents, numFreeNodes);
-  CoverAnalysis myCoverage(Paths, numAgents, numFreeNodes);
-
-  int longest = myCoverage.getLongestPath();
-  int total = myCoverage.getTotalLength();
-  double st_dev = myCoverage.getStDev();
-  printf("%sMax Path Length: %d%s\n", TC_MAGENTA, longest, TC_NONE);
-  printf("%sTotal Paths Length: %d%s\n", TC_MAGENTA, total, TC_NONE);
-  printf("%sPaths length standard deviation: %f%s\n", TC_MAGENTA, st_dev, TC_NONE);
-
-  std::cin.get();
-
-
-}
 
 
 float VrpGreedyAstar::dist(graphNode &a, graphNode &b){
@@ -434,10 +376,3 @@ void VrpGreedyAstar::printTentative(){
 
 }
 
-void VrpGreedyAstar::copyPathsTo(vector< vector<int> > &destination){
-  destination = Paths;
-}
-
-void VrpGreedyAstar::copyGraphTo(vector< graphNode > &destination){
-  destination = graphNodes;
-}
