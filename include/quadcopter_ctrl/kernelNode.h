@@ -26,7 +26,7 @@ using std::vector;
 
 
 template<typename T>
-void performanceIndexes(T VRP){
+void performanceIndexes(T VRP, std::string folder_save_path, double execTime){
 
   int numRobots = VRP.getNumRobots();
   int numFreeNodes = VRP.getNumFreeNodes();
@@ -41,6 +41,19 @@ void performanceIndexes(T VRP){
   printf("%sMax Path Length: %d%s\n", TC_MAGENTA, longest, TC_NONE);
   printf("%sTotal Paths Length: %d%s\n", TC_MAGENTA, total, TC_NONE);
   printf("%sPaths length standard deviation: %f%s\n", TC_MAGENTA, st_dev, TC_NONE);
+  printf("%sAlgorithm execution time: %f ms%s\n", TC_MAGENTA, execTime, TC_NONE);
+
+  std::ofstream pathfile;
+
+  std::string pathfileName = folder_save_path + "/Results/VRP_Results";
+
+  pathfile.open ( pathfileName.c_str(), std::fstream::app );
+
+  pathfile << numRobots << "  " << numFreeNodes
+      << "  " << longest << "  " << total << "  " << st_dev << "  " << execTime << "\n";
+
+  pathfile.close();
+
 
 
 

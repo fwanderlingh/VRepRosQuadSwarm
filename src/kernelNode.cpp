@@ -17,6 +17,7 @@
 #include <cstring>
 #include <sstream>
 #include <unistd.h>
+#include <ctime>
 
 
 using std::cout;
@@ -45,19 +46,28 @@ int main(int argc, char **argv)
   }
   int num_robots = strtol(argv[1], NULL, 0);
 
-  std::string filename = "free_mat_8x9";
+
+
+  std::string filename = "free_mat_5x5";
   //std::string filename = "access_mat_subs";
   //std::string filename = "little_matrix";
   std::string folder_path = get_selfpath();
-  std::string acc_matrix_path = folder_path + "/" + filename;
+  std::string map_matrix_path = folder_path + "/" + filename;
+
 
   /// Constructor inputs are (mapToExplore, numOfAgents) ///
-  VrpGreedy myVrp(acc_matrix_path, num_robots);
+  VrpGreedy myVrp(map_matrix_path, num_robots);
   //VrpGreedyAstar myVrp(acc_matrix_path, num_robots);
 
+  struct timespec requestStart, requestEnd;
+
+  clock_gettime(CLOCK_REALTIME, &requestStart);
   myVrp.solve();
-  //myVrpAstar.solve();
-  performanceIndexes(myVrp);
+  clock_gettime(CLOCK_REALTIME, &requestEnd);
+  double timeElapsed = ( requestEnd.tv_sec - requestStart.tv_sec )
+               + ( requestEnd.tv_nsec - requestStart.tv_nsec ) / 1E9;
+
+  performanceIndexes(myVrp, folder_path, timeElapsed*1E3); ///We multiply the time to get it in milliseconds
 
   savePathsToFile(myVrp, folder_path);
 

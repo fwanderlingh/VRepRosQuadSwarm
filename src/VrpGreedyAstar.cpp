@@ -23,7 +23,6 @@
 #include <string>
 
 
-#define STARTNODE 5
 #define MAX_FOV 2
 #define SQRT2 1.4143 /// Ceiled to avoid failure in check condition in "solve()"
                       /// due to small decimal errors.
@@ -145,6 +144,9 @@ void VrpGreedyAstar::init(){
   graphNodes.resize(gridSizeX*gridSizeY);
   unvisitedNodes.reserve( graphNodes.size() );
 
+  int STARTNODE = gridSizeY/2;
+  access_vec.at(STARTNODE) = 1;    //STARTNODE is set as start for all the agents
+
 
   /// Graph initialisation - to every node is assigned a position
   for(int i=0; i<gridSizeX; i++){
@@ -152,7 +154,7 @@ void VrpGreedyAstar::init(){
       graphNodes.at((i*gridSizeY) + j).setPos((float)i*2, (float)j*2);
       graphNodes.at((i*gridSizeY) + j).occupied = access_vec.at((i*gridSizeY) + j);
       //cout << (int)graphNodes.at((i*gridSizeY) + j).occupied << " ";
-      if (graphNodes.at((i*gridSizeY)+ j).occupied == 0 && ((i*gridSizeY)+ j) != STARTNODE){
+      if (graphNodes.at((i*gridSizeY)+ j).occupied == 0){
         unvisitedNodes.push_back((i*gridSizeY) + j); //Adding the free nodes to the list of unvisited
       }
     }

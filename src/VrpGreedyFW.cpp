@@ -20,7 +20,6 @@
 #include <ctime>
 
 
-#define STARTNODE 5
 #define MAX_FOV 2
 #define SQRT2 1.4143
 /// Ceiled to avoid failure in check condition in "solve()"
@@ -181,6 +180,7 @@ void VrpGreedy::init(){
   graphNodes.resize(gridSizeX*gridSizeY);
   unvisitedNodes.reserve( graphNodes.size() );
 
+  int STARTNODE = gridSizeY/2;
   access_vec.at(STARTNODE) = 1;    //STARTNODE is set as start for all the agents
 
 
