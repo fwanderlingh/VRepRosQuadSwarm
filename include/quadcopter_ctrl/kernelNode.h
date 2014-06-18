@@ -43,18 +43,16 @@ void performanceIndexes(T VRP, std::string folder_save_path, double execTime){
   printf("%sPaths length standard deviation: %f%s\n", TC_MAGENTA, st_dev, TC_NONE);
   printf("%sAlgorithm execution time: %f ms%s\n", TC_MAGENTA, execTime, TC_NONE);
 
-  std::ofstream pathfile;
+  std::ofstream results_file;
 
-  std::string pathfileName = folder_save_path + "/Results/VRP_Results";
+  std::string resultsFileName = folder_save_path + "/Results/VRP_Results";
 
-  pathfile.open ( pathfileName.c_str(), std::fstream::app );
+  results_file.open ( resultsFileName.c_str(), std::fstream::app );
 
-  pathfile << numRobots << "  " << numFreeNodes
-      << "  " << longest << "  " << total << "  " << st_dev << "  " << execTime << "\n";
+  results_file << numRobots << "\t" << numFreeNodes
+      << "\t" << longest << "\t" << total << "\t" << st_dev << "\t" << execTime << "\n";
 
-  pathfile.close();
-
-
+  results_file.close();
 
 
 }

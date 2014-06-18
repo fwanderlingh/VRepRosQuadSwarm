@@ -78,14 +78,15 @@ int main(int argc, char **argv)
   zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
 
   std::ifstream access_matrix;
-  std::string filename = "free_mat_8x9";
+  std::string filename = "access_mat_subs";
 
   std::string folder_path = get_selfpath();
   std::string file_path = folder_path + "/" + filename;
 
   access_matrix.open( file_path.c_str() );
   if( !access_matrix.is_open() ){
-    cout << "File not found! (sure is the executable folder?)" << endl;
+    printf("%sFile not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
   }
 
   myLRTA.initGraph(access_matrix);    //Constructor inputs is (mapToExplore)

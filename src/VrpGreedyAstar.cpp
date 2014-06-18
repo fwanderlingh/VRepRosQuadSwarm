@@ -144,7 +144,7 @@ void VrpGreedyAstar::init(){
   graphNodes.resize(gridSizeX*gridSizeY);
   unvisitedNodes.reserve( graphNodes.size() );
 
-  int STARTNODE = gridSizeY/2;
+  int STARTNODE = 5;
   access_vec.at(STARTNODE) = 1;    //STARTNODE is set as start for all the agents
 
 
@@ -160,6 +160,8 @@ void VrpGreedyAstar::init(){
     }
     //cout << endl;
   }
+
+  access_vec.at(STARTNODE) = 0;
 
   numFreeNodes = unvisitedNodes.size();
 
@@ -177,8 +179,6 @@ void VrpGreedyAstar::init(){
   }
 
   Paths.reserve( graphNodes.size() * numRobots);
-
-  //createCycles();
 
 }
 
@@ -198,10 +198,11 @@ void VrpGreedyAstar::solve(){
   std::transform(astar_vec.begin(), astar_vec.end(),
                  astar_vec.begin(), std::bind1st(std::multiplies<int>(),9));
 
+
   Astar astar(astar_vec, gridSizeX, gridSizeY);
 
 
-  astar.printMap();
+  //astar.printMap();
   int start1, start2, target;
 
 
@@ -322,7 +323,7 @@ void VrpGreedyAstar::solve(){
 
 
   std::cout << '\n';
-
+/*
   std::cout << "The contents of Paths are:" << endl;
   for (itr = Paths.begin(); itr != Paths.end(); ++itr){
     cout << "#" << itr - Paths.begin() << ": ";
@@ -331,7 +332,7 @@ void VrpGreedyAstar::solve(){
     }
     std::cout << '\n';
   }
-
+*/
 
 }
 

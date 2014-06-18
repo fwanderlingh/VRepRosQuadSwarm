@@ -77,7 +77,7 @@ int main(int argc, char **argv)
   zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
 
   std::ifstream access_matrix;
-  std::string filename = "free_mat_8x9";
+  std::string filename = "access_mat_subs";
 
   std::string folder_path = get_selfpath();
   std::string file_path = folder_path + "/" + filename;

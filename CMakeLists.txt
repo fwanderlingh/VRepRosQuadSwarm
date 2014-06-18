@@ -144,6 +144,10 @@ add_executable(kernelNode src/kernelNode.cpp)
 target_link_libraries(kernelNode ${catkin_LIBRARIES})
 add_dependencies(kernelNode ${catkin_EXPORTED_TARGETS})
 
+add_executable(testVRPs src/testVRPs.cpp)
+target_link_libraries(testVRPs ${catkin_LIBRARIES})
+add_dependencies(testVRPs ${catkin_EXPORTED_TARGETS})
+
 add_executable(quadNodeCount src/quadNodeCount.cpp)
 target_link_libraries(quadNodeCount ${catkin_LIBRARIES})
 add_dependencies(quadNodeCount ${catkin_EXPORTED_TARGETS})
@@ -161,6 +165,8 @@ target_link_libraries(FW_test ${catkin_LIBRARIES})
 add_dependencies(FW_test ${catkin_EXPORTED_TARGETS})
 
 
+
+
 # target_link_libraries(quadcopterRosCtrl Cao)  #creation this line took the shit out of me
 target_link_libraries(quadcopterRosCtrl VrpGreedyFW)
 target_link_libraries(quadcopterRosCtrl PathPlanningAlg)
@@ -170,6 +176,15 @@ target_link_libraries(kernelNode FloydWarshall)
 target_link_libraries(kernelNode Utils)
 target_link_libraries(kernelNode VrpGreedyAstar)
 target_link_libraries(kernelNode CoverAnalysis)
+target_link_libraries(kernelNode -lrt)
+
+target_link_libraries(testVRPs VrpGreedyFW)
+target_link_libraries(testVRPs FloydWarshall)
+target_link_libraries(testVRPs Utils)
+target_link_libraries(testVRPs VrpGreedyAstar)
+target_link_libraries(testVRPs CoverAnalysis)
+target_link_libraries(testVRPs -lrt)
+
 
 target_link_libraries(FloydWarshall Utils)
 
@@ -185,10 +200,12 @@ target_link_libraries(FW_test FloydWarshall)
 
 add_dependencies(quadcopterRosCtrl ${catkin_EXPORTED_TARGETS}) #!!!!
 add_dependencies(kernelNode ${catkin_EXPORTED_TARGETS})
+add_dependencies(testVRPs ${catkin_EXPORTED_TARGETS})
 add_dependencies(quadNodeCount ${catkin_EXPORTED_TARGETS})
 add_dependencies(quadLRTA ${catkin_EXPORTED_TARGETS})
 add_dependencies(OnlineSearchListener ${catkin_EXPORTED_TARGETS})
 add_dependencies(FW_test ${catkin_EXPORTED_TARGETS})
+
 
 #############
 ## Install ##

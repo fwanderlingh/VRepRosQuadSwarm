@@ -125,7 +125,7 @@ void VrpGreedy::createGraph(){
     int row, col;    // Main indexes
     int row_shift, col_shift; // To move around spatial adjacents
     int nb_row, nb_col;       // Adjacent indexes
-
+/*
     printf("%sOccupancy Map:%s",TC_RED, TC_NONE);
     for(int j=0; j<n; j++){
       if(j%gridSizeY == 0) cout << endl;
@@ -137,7 +137,7 @@ void VrpGreedy::createGraph(){
       else Utils::spaced_cout(j);
     }
     cout << endl << endl;
-
+*/
 
     for(int i=0; i<n; i++){
       if(access_vec[i] == 0){
@@ -213,7 +213,6 @@ void VrpGreedy::init(){
 
   Paths.reserve( graphNodes.size() * numRobots);
 
-  //createCycles();
 }
 
 
@@ -369,7 +368,7 @@ void VrpGreedy::solve(){
   } // END WHILE
 
   cout << '\n';
-
+/*
   cout << "The contents of Paths are:" << endl;
   for (itr = Paths.begin(); itr != Paths.end(); ++itr){
     cout << "#" << itr - Paths.begin() << ": ";
@@ -378,7 +377,7 @@ void VrpGreedy::solve(){
     }
     cout << '\n';
   }
-
+*/
 
 }
 

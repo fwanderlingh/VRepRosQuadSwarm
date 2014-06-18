@@ -27,8 +27,7 @@ LRTAstar::LRTAstar() : gridSizeX(0), gridSizeY(0),
                           nextNode(STARTNODE)
 {
 
-  // THE DEFAULT CONSTRUCTOR IS ONLY USED TO DECLARE CLASS INSTANCES AS
-  // GLOBAL. WITHOUT RUNNING "initGraph()" AFTER, THE CLASS CANNOT WORK.
+  cout << "unvisitedCount:" << unvisitedCount << endl;
 
 }
 
