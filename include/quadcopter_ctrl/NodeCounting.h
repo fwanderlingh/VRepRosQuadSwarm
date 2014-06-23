@@ -26,7 +26,6 @@ class NodeCounting
 
   int numFreeNodes;
   vector<int> finalPath;
-  vector<int> finalCountMap;
 
   void loadMatrixFile(std::ifstream &access_mat);
 
@@ -41,10 +40,6 @@ public:
   bool getCurrentType();
   bool isCompleted();
 
-  const vector<int>& getFinalCountMap() const
-  {
-    return finalCountMap;
-  }
 
   const vector<int>& getFinalPath() const
   {

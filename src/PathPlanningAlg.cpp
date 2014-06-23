@@ -9,7 +9,7 @@
  *      Author: francescow
  */
 
-#include "ros/ros.h"
+
 #include "geometry_msgs/PoseStamped.h"
 #include "PathPlanningAlg.h"
 #include "quadcopterRosCtrl.h"
@@ -30,7 +30,7 @@ PathPlanningAlg::~PathPlanningAlg()
 
 void PathPlanningAlg::InterpNewPoint(geometry_msgs::PoseStamped* quadPos,
                                           geometry_msgs::PoseStamped* targetPos,
-                                          float dSubWP[3])
+                                          double dSubWP[3])
 {
   /* interpNewPoint() interpolates the next point in the direction of the target
    * with a distance from the quadcopter that is less than CRITICAL_DIST
@@ -40,10 +40,10 @@ void PathPlanningAlg::InterpNewPoint(geometry_msgs::PoseStamped* quadPos,
    * get the infinitesimal dSubWP movement.
    */
 
-   float distVec[3] = { (targetPos->pose.position.x - quadPos->pose.position.x),
+   double distVec[3] = { (targetPos->pose.position.x - quadPos->pose.position.x),
                         (targetPos->pose.position.y - quadPos->pose.position.y),
                         (targetPos->pose.position.z - quadPos->pose.position.z) };
-   float distVecNorm = Distance(quadPos, targetPos);
+   double distVecNorm = Distance(quadPos, targetPos);
    //std::cout << "Distance = " <<  distVecNorm << " m" << std::endl;
    dSubWP[X] = (distVec[X]/distVecNorm)*CRITICAL_DIST;
    dSubWP[Y] = (distVec[Y]/distVecNorm)*CRITICAL_DIST;
@@ -51,10 +51,10 @@ void PathPlanningAlg::InterpNewPoint(geometry_msgs::PoseStamped* quadPos,
 
 }
 
-float PathPlanningAlg::Distance(geometry_msgs::PoseStamped* quadPos,
+double PathPlanningAlg::Distance(geometry_msgs::PoseStamped* quadPos,
                                    geometry_msgs::PoseStamped* targetPos){
 
-  float dist = sqrt (pow(quadPos->pose.position.x - targetPos->pose.position.x, 2.0) +
+  double dist = sqrt (pow(quadPos->pose.position.x - targetPos->pose.position.x, 2.0) +
                       pow(quadPos->pose.position.y - targetPos->pose.position.y, 2.0) +
                       pow(quadPos->pose.position.z - targetPos->pose.position.z, 2.0) );
   return dist;

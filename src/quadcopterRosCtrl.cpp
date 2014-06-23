@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 
 
   float dist = 0;
-  float treshold = 0.3;	// How much the quadcopter has to be near to the green sphere before the target moves
+  float treshold = 0.2;	// How much the quadcopter has to be near to the green sphere before the target moves
   float posZ  =  1.5;		// z for now is fixed!
 
   int wpIndex = 0;     // Waypoint index, used to navigate through the robotPath vector
@@ -136,32 +136,32 @@ int main(int argc, char **argv)
         }
 
         // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
-        dist = PathPlanningAlg::Distance(&quadPos, &targetPos);
+        dist = abs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
         //std::cout << "Distance to target = " << dist << " m" << std::endl;
         if(inSubPath == 0){
-          if( abs(dist) > CRITICAL_DIST ){
+          if( dist > CRITICAL_DIST ){
             inSubPath = 1;
             publishSubTarget(targetObjPos_pub);
             //std::cout << "First subTarget Published!" << std::endl;
-          }else if(abs(dist) < treshold){
+          }else if(dist < treshold){
+
             ++wpIndex;
             if(wpIndex == (int)robotPathVec.size() ){
-              wpIndex = 0;
               completedPath.data = 1;
             }
-
             updateTarget(wpIndex, robotPathVec, argv[1]);
-
 
             if( abs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < treshold ){
               targetObjPos_pub.publish(targetPos);
               //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
             }
           }
-        }else if( abs((PathPlanningAlg::Distance(&quadPos, &subTarget)) < treshold) ){
-          publishSubTarget(targetObjPos_pub);
-          //std::cout << "subTarget Published!" << std::endl;
-          if (abs(dist) < treshold){
+        }else{
+          double sub_dist = abs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
+          if(sub_dist < treshold && dist > treshold){
+            publishSubTarget(targetObjPos_pub);
+            //std::cout << "subTarget Published!" << std::endl;
+          }else if (dist < treshold){
             inSubPath = 0;
           }
         }
@@ -277,20 +277,21 @@ std::string add_argv(std::string str, char* argvalue){
 
 void updateTarget(int index, vector< vector<float> > &path, char * argvalue){
   if(index < (int)path.size()){
+  ///Position is multiplied by 2 since the access map is sub-sampled
   targetPos.pose.position.x = path[index][X] - VREP_X0;     /// The constant is added due to the
   targetPos.pose.position.y = path[index][Y] - VREP_Y0;     /// different origin of the GRF used in Vrep
   targetPos.pose.position.z = path[index][Z];
   }else{
     printf("ERROR: Vector index out of range");
   }
-  std::cout << "[" << argvalue << "] New target: "
-            << targetPos.pose.position.x << "  " << targetPos.pose.position.y << "  " << targetPos.pose.position.z << std::endl;
+  //std::cout << "[" << argvalue << "] New target: "
+  //          << targetPos.pose.position.x << "  " << targetPos.pose.position.y << "  " << targetPos.pose.position.z << std::endl;
 
 }
 
 
 void publishSubTarget(ros::Publisher& pub){
-  float dSubWP[3];
+  double dSubWP[3];
   PathPlanningAlg::InterpNewPoint(&quadPos, &targetPos, dSubWP);
   subTarget.pose.position.x = quadPos.pose.position.x + dSubWP[X];
   subTarget.pose.position.y = quadPos.pose.position.y + dSubWP[Y];

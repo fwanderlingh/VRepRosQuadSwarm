@@ -9,14 +9,12 @@
 #define PATHPLANNINGALG_H_
 
 #include <vector>
-#include "armadillo"
 
 class PathPlanningAlg
 {
   std::vector<std::vector<int> > grid;
   int gridWidth;
   int gridHeight;
-  arma::mat envGrid;
 
 public:
   PathPlanningAlg();
@@ -24,8 +22,8 @@ public:
 
   static void InterpNewPoint(geometry_msgs::PoseStamped* quadPos,
                                 geometry_msgs::PoseStamped* targetPos,
-                                float dSubWP[3]);
-  static float Distance(geometry_msgs::PoseStamped* quadPos,
+                                double dSubWP[3]);
+  static double Distance(geometry_msgs::PoseStamped* quadPos,
                          geometry_msgs::PoseStamped* targetPos);
 
 

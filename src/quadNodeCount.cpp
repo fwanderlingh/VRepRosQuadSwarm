@@ -3,7 +3,7 @@
 //	License: BSD (http://opensource.org/licenses/BSD-3-Clause)	//
 
 /*
- * NodeCounting.cpp
+ * quadNodeCount.cpp
  *
  *  Created on: May 6, 2014
  *      Author: francescow
@@ -153,15 +153,15 @@ int main(int argc, char **argv)
         }
 
         // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
-        dist = PathPlanningAlg::Distance(&quadPos, &targetPos);
+        dist = abs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
         //cout << "Distance to target = " << dist << " m" << endl;
 
         if(inSubPath == 0){
-          if( abs(dist) > CRITICAL_DIST ){
+          if( dist > CRITICAL_DIST ){
             inSubPath = 1;
             publishSubTarget(targetObjPos_pub);
             //std::cout << "First subTarget Published!" << std::endl;
-          }else if(abs(dist) < treshold){
+          }else if(dist < treshold){
 
             //cout << "Finding next node:" << endl;
             myNodeCount.findNext();
@@ -173,10 +173,12 @@ int main(int argc, char **argv)
               //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
             }
           }
-        }else if( abs((PathPlanningAlg::Distance(&quadPos, &subTarget)) < treshold) ){
-          publishSubTarget(targetObjPos_pub);
-          //std::cout << "subTarget Published!" << std::endl;
-          if (abs(dist) < treshold){
+        }else{
+          double sub_dist = abs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
+          if(sub_dist < treshold && dist > treshold){
+            publishSubTarget(targetObjPos_pub);
+            //std::cout << "subTarget Published!" << std::endl;
+          }else if (dist < treshold){
             inSubPath = 0;
           }
         }
@@ -194,7 +196,6 @@ int main(int argc, char **argv)
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myNodeCount.getNumFreeNodes();
       osInfo.path = myNodeCount.getFinalPath();
-      osInfo.countMap = myNodeCount.getFinalCountMap();
       completed_pub.publish(osInfo);
 
 
@@ -249,7 +250,7 @@ void updateTarget(ros::Publisher& countPub){
 
 
 void publishSubTarget(ros::Publisher& posPub){
-  float dSubWP[3];
+  double dSubWP[3];
   PathPlanningAlg::InterpNewPoint(&quadPos, &targetPos, dSubWP);
   subTarget.pose.position.x = quadPos.pose.position.x + dSubWP[X];
   subTarget.pose.position.y = quadPos.pose.position.y + dSubWP[Y];

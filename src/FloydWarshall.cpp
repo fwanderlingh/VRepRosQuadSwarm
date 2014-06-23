@@ -10,13 +10,12 @@
  */
 
 #include <iostream>
-#include <cstdio>
 #include <cstdlib>
 #include <climits>
 #include <vector>
 #include <termColors.h>
 #include <algorithm>
-#include <quadcopter_ctrl/FloydWarshall.h>
+#include "FloydWarshall.h"
 #include "Utils.h"
 
 using std::cout;

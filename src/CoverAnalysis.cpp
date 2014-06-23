@@ -65,10 +65,9 @@ int CoverAnalysis::totalPathsLength(){
 int CoverAnalysis::getLongestPath(){
   /// Returns the length of the longest path
 
-  int max = *max_element(pathLengths.begin(), pathLengths.end());
+  return *max_element(pathLengths.begin(), pathLengths.end());
   //printf("%sMax Path Length: %d%s\n", TC_MAGENTA, max, TC_NONE);
 
-  return max;
 }
 
 

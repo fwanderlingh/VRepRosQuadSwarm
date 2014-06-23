@@ -3,7 +3,7 @@
 //	License: BSD (http://opensource.org/licenses/BSD-3-Clause)	//
 
 /*
- * NodeCounting.cpp
+ * quadLRTA.cpp
  *
  *  Created on: May 6, 2014
  *      Author: francescow
@@ -107,8 +107,8 @@ int main(int argc, char **argv)
   ros::Publisher targetObjPos_pub = n.advertise<geometry_msgs::PoseStamped>(targetObjPosName, 100);
   ros::Subscriber quadcopPos_sub = n.subscribe(quadcopPosName, 100, quadPosFromVrep);
 
-  ros::Publisher nodeCount_pub = n.advertise<quadcopter_ctrl::LRTAmsg>("updateLRTACount", 100);
-  ros::Subscriber nodeCount_sub = n.subscribe("updateLRTACount", 100, updateCount);
+  ros::Publisher updateCount_pub = n.advertise<quadcopter_ctrl::LRTAmsg>("updateLRTACount", 100);
+  ros::Subscriber updateCount_sub = n.subscribe("updateLRTACount", 100, updateCount);
 
   ros::Publisher completed_pub = n.advertise<quadcopter_ctrl::OSmsg>("completedPath", 100);
 
@@ -151,23 +151,23 @@ int main(int argc, char **argv)
 
         if (loaded == 0){
           loaded = 1;
-          updateTarget(nodeCount_pub);
+          updateTarget(updateCount_pub);
         }
 
         // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
-        dist = PathPlanningAlg::Distance(&quadPos, &targetPos);
+        dist = abs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
         //cout << "Distance to target = " << dist << " m" << endl;
 
         if(inSubPath == 0){
-          if( abs(dist) > CRITICAL_DIST ){
+          if( dist > CRITICAL_DIST ){
             inSubPath = 1;
             publishSubTarget(targetObjPos_pub);
             //std::cout << "First subTarget Published!" << std::endl;
-          }else if(abs(dist) < treshold){
+          }else if(dist < treshold){
 
             //cout << "Finding next node:" << endl;
             myLRTA.findNext();
-            updateTarget(nodeCount_pub);
+            updateTarget(updateCount_pub);
 
             //In the following if, "dist" is calculated again since updateTarget changed targetPos
             if( abs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
@@ -175,10 +175,12 @@ int main(int argc, char **argv)
               //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
             }
           }
-        }else if( abs((PathPlanningAlg::Distance(&quadPos, &subTarget)) < treshold) ){
-          publishSubTarget(targetObjPos_pub);
-          //std::cout << "subTarget Published!" << std::endl;
-          if (abs(dist) < treshold){
+        }else{
+          double sub_dist = abs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
+          if(sub_dist < treshold && dist > treshold){
+            publishSubTarget(targetObjPos_pub);
+            //std::cout << "subTarget Published!" << std::endl;
+          }else if (dist < treshold){
             inSubPath = 0;
           }
         }
@@ -196,7 +198,6 @@ int main(int argc, char **argv)
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myLRTA.getNumFreeNodes();
       osInfo.path = myLRTA.getFinalPath();
-      osInfo.countMap = myLRTA.getFinalCountMap();
       completed_pub.publish(osInfo);
 
       ros::shutdown();
@@ -249,7 +250,7 @@ void updateTarget(ros::Publisher& countPub){
 
 
 void publishSubTarget(ros::Publisher& posPub){
-  float dSubWP[3];
+  double dSubWP[3];
   PathPlanningAlg::InterpNewPoint(&quadPos, &targetPos, dSubWP);
   subTarget.pose.position.x = quadPos.pose.position.x + dSubWP[X];
   subTarget.pose.position.y = quadPos.pose.position.y + dSubWP[Y];

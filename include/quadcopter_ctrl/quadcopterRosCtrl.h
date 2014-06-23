@@ -12,10 +12,10 @@
 #define VREP_X0 11
 #define VREP_Y0 9.5
 
-#define ROBOT_SQUARE_SIZE 0.5   //This is the robot size taken from the VREP simulator
+#define ROBOT_SQUARE_SIZE 0.5   //This is the quadcopter size taken from the VREP simulator
 #define SENSOR_DEPTH 8.0
 
-#define CRITICAL_DIST (float) 0.8       /// Distance above which automatic quadcopter control by
+#define CRITICAL_DIST (double) 0.8       /// Distance above which automatic quadcopter control by
                                             /// VREP is badly handled.
 
 enum{X, Y, Z};

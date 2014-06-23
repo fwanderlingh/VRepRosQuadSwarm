@@ -216,7 +216,6 @@ void VrpGreedy::init(){
 }
 
 
-
 void VrpGreedy::solve(){
 
   init();
@@ -380,7 +379,6 @@ void VrpGreedy::solve(){
 */
 
 }
-
 
 
 float VrpGreedy::dist(graphNode &a, graphNode &b){

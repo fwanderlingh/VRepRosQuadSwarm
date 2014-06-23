@@ -26,7 +26,6 @@ quadcopter_ctrl::OSmsg osInfo;
 int numOfCollected = 0;
 
 int numFreeNodes;
-vector<int> finalCountMap;
 vector<vector<int> > finalPaths;
 
 /// This class must be subscribed to a topic like "completedPaths" where the online
@@ -38,7 +37,6 @@ void pathFromQuads(const quadcopter_ctrl::OSmsg::ConstPtr& onlineSearchInfo){
 
   cout << "Listener Says: Collected Path [" << onlineSearchInfo->ID << "]" << endl;
   numFreeNodes = onlineSearchInfo->numNodes;
-  finalCountMap = onlineSearchInfo->countMap;
   finalPaths.push_back(onlineSearchInfo->path);
   numOfCollected++;
 }

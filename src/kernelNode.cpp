@@ -54,8 +54,9 @@ int main(int argc, char **argv)
 
 
   /// Constructor inputs are (mapToExplore, numOfAgents) ///
-  //VrpGreedy myVrp(map_matrix_path, num_robots);
-  VrpGreedyAstar myVrp(map_matrix_path, num_robots);
+
+  VrpGreedy myVrp(map_matrix_path, num_robots);
+  //VrpGreedyAstar myVrp(map_matrix_path, num_robots);
 
   struct timespec requestStart, requestEnd;
 
@@ -70,7 +71,7 @@ int main(int argc, char **argv)
   savePathsToFile(myVrp, folder_path);
 
 
-  std::cin.get();
+  //std::cin.get();
 
   ros::init(argc, argv, "kernelNode");
   ros::NodeHandle n;

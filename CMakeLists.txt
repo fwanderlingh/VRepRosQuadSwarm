@@ -3,7 +3,7 @@ project(quadcopter_ctrl)
 
 # WHEN BUILT IN RELEASE MODE THERE IS NO BOUNDS CHECK IN VECTORS !!!
 # SO TO DEBUNG AND FIND ERRORS COMMENT THE FOLLOWING "set" LINE  !!!
-set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Release)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -56,6 +56,7 @@ find_package(catkin REQUIRED COMPONENTS
    NCmsg.msg
    LRTAmsg.msg
    OSmsg.msg
+   PGmsg.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -75,7 +76,7 @@ find_package(catkin REQUIRED COMPONENTS
  generate_messages(
    DEPENDENCIES
    std_msgs
-#   geometry_msgs
+   geometry_msgs
  )
 
 ###################################
@@ -121,6 +122,7 @@ add_library(LRTAstar src/LRTAstar.cpp)
 add_library(CoverAnalysis src/CoverAnalysis.cpp)
 add_library(FloydWarshall src/FloydWarshall.cpp)
 add_library(Utils src/Utils.cpp)
+add_library(PatrolGRAPH src/PatrolGRAPH.cpp)
 
 ## Declare a cpp executable
 # add_executable(beginner_tutorials_node src/beginner_tutorials_node.cpp)
@@ -160,6 +162,10 @@ add_executable(OnlineSearchListener src/OnlineSearchListener.cpp)
 target_link_libraries(OnlineSearchListener ${catkin_LIBRARIES})
 add_dependencies(OnlineSearchListener ${catkin_EXPORTED_TARGETS})
 
+add_executable(quadPatrolGRAPH src/quadPatrolGRAPH.cpp)
+target_link_libraries(quadPatrolGRAPH ${catkin_LIBRARIES})
+add_dependencies(quadPatrolGRAPH ${catkin_EXPORTED_TARGETS})
+
 
 
 target_link_libraries(quadcopterRosCtrl VrpGreedyFW)
@@ -189,6 +195,10 @@ target_link_libraries(quadLRTA LRTAstar)
 target_link_libraries(quadLRTA PathPlanningAlg)
 
 target_link_libraries(OnlineSearchListener CoverAnalysis)
+
+target_link_libraries(quadPatrolGRAPH PatrolGRAPH)
+target_link_libraries(quadPatrolGRAPH PathPlanningAlg)
+target_link_libraries(quadPatrolGRAPH Utils)
 
 
 add_dependencies(quadcopterRosCtrl ${catkin_EXPORTED_TARGETS}) #!!!!

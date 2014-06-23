@@ -106,15 +106,6 @@ void LRTAstar::incrCount(int currIndex, int nextIndex, bool nextType){
   }
 
 
-  if(unvisitedCount == 0){
-    finalCountMap.resize(gridSizeX*gridSizeY);
-
-    for(int i=0; i<(gridSizeX*gridSizeY); i++){
-
-      finalCountMap.at(i) = graphNodes.at(i).nodeCount;
-    }
-  }
-
 /*
  * PRINT MAP FOR DEBUGGING PURPOSES
 */
