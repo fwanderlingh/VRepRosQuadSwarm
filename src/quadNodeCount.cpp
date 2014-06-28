@@ -57,7 +57,7 @@ void quadPosFromVrep(const geometry_msgs::PoseStamped::ConstPtr& pubQuadPose)
 
 void updateCount(const quadcopter_ctrl::NCmsg::ConstPtr& nodeCountInfo){
 
-  myNodeCount.incrCount(nodeCountInfo->node, nodeCountInfo->type);
+  myNodeCount.incrCount(nodeCountInfo->node, nodeCountInfo->isVisited);
 
 }
 
@@ -243,7 +243,7 @@ void updateTarget(ros::Publisher& countPub){
   targetPos.pose.position.z = zHeight;
 
   ncInfo.node = myNodeCount.getCurrentIndex();
-  ncInfo.type = myNodeCount.getCurrentType();
+  ncInfo.isVisited = myNodeCount.getCurrentType();
   countPub.publish(ncInfo);
 
 }

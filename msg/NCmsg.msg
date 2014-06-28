@@ -1,2 +1,2 @@
 int32 node
-bool type
+bool isVisited

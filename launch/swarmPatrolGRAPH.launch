@@ -1,0 +1,6 @@
+<launch>
+  <node name="OSListener" pkg="quadcopter_ctrl" type="OnlineSearchListener" args="3" output="screen"/>
+  <node name="quadPatrolGRAPH_0" pkg="quadcopter_ctrl" type="quadPatrolGRAPH" args="0" output="screen"/>
+  <node name="quadPatrolGRAPH_1" pkg="quadcopter_ctrl" type="quadPatrolGRAPH" args="1" output="screen"/>
+  <node name="quadPatrolGRAPH_2" pkg="quadcopter_ctrl" type="quadPatrolGRAPH" args="2" output="screen"/>
+</launch>

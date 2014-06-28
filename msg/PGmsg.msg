@@ -1,3 +1,3 @@
 int32 currNode
-bool currType
+bool isCurrVisited
 int32[2] chosenEdge

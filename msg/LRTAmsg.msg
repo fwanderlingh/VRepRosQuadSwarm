@@ -1,4 +1,4 @@
 int32 currNode
-bool currType
+bool isCurrVisited
 int32 nextNode
-bool nextType
+bool isNextVisited

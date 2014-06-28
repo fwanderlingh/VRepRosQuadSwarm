@@ -93,12 +93,12 @@ void LRTAstar::initGraph(std::ifstream & INFILE){
 }
 
 
-void LRTAstar::incrCount(int currIndex, int nextIndex, bool nextType){
+void LRTAstar::incrCount(int currIndex, int nextIndex, bool isNextVisited){
 
   graphNodes.at(currIndex).nodeCount = graphNodes.at(nextIndex).nodeCount + 1;
   //graphNodes.at(currIndex).nodeCount++;
 
-  if(nextType == 0){
+  if(isNextVisited == 0){
     unvisited.at(nextIndex) = 0;
     // The sum of all elements of unvisited is performed so that when sum is zero we
     // know we have finished. Check is performed in "findNext()"

@@ -109,11 +109,11 @@ void NodeCounting::initGraph(std::ifstream & INFILE){
 }
 
 
-void NodeCounting::incrCount(int nodeIndex, bool nodeType){
+void NodeCounting::incrCount(int nodeIndex, bool isNodeVisited){
 
   graphNodes.at(nodeIndex).nodeCount++;
 
-  if(nodeType == 0){
+  if(isNodeVisited == 0){
     unvisited.at(nodeIndex) = 0;
     // The sum of all elements of unvisited is performed so that when sum is zero we
     // know we have finished. Check is performed in "findNext()"

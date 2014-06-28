@@ -30,7 +30,7 @@ using std::vector;
 
 /** Patrol graph msg:
 int32 currNode
-bool currType
+bool isCurrVisited
 int32[2] chosenEdge */
 quadcopter_ctrl::PGmsg PGinfo;
 quadcopter_ctrl::OSmsg osInfo;
@@ -61,10 +61,8 @@ void quadPosFromVrep(const geometry_msgs::PoseStamped::ConstPtr& pubQuadPose)
 
 void updateCount(const quadcopter_ctrl::PGmsg::ConstPtr& PGinfo){
 
-  myPG.incrCount(PGinfo->currNode, PGinfo->currType, PGinfo->chosenEdge);
-
+  myPG.incrCount(PGinfo->currNode, PGinfo->isCurrVisited, PGinfo->chosenEdge);
 }
-
 
 
 int main(int argc, char **argv)
@@ -133,7 +131,7 @@ int main(int argc, char **argv)
   //                    float64 y
   //                    float64 z
   //                    float64 w
-  */
+   */
 
   cout << "[" << argv[1] << "] Waiting for start....    " << endl;
 
@@ -141,8 +139,9 @@ int main(int argc, char **argv)
   int inSubPath = 0;
 
   float dist = 0;
-  float treshold = 0.3;   // How much the quadcopter has to be near
-                           // to the green sphere (target) before the target moves
+  /// How much the quadcopter has to be near to the
+  /// green sphere (target) before the target moves:
+  float treshold = 0.2;
   int loaded = 0;
 
   while (ros::ok())
@@ -170,8 +169,13 @@ int main(int argc, char **argv)
             //std::cout << "First subTarget Published!" << std::endl;
           }else if(dist < treshold){
 
-            //cout << "Finding next node:" << endl;
+            /// Here we save the index of the node to which we arrived since after executing
+            /// the findNext algorithm the "currentNode" variable gets modified, containing
+            /// the index of the next vertex to be visited.
+            PGinfo.currNode = myPG.getCurrentNode();
+            PGinfo.isCurrVisited = myPG.getCurrentType();
             myPG.findNext();
+            PGinfo.chosenEdge = myPG.getChosenEdge();
             updateTarget(updateCount_pub);
 
             //In the following if, "dist" is calculated again since updateTarget changed targetPos
@@ -182,12 +186,19 @@ int main(int argc, char **argv)
           }
         }else{
           double sub_dist = abs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
-          if(sub_dist < treshold && dist > treshold){
+          if(dist < treshold){
+            inSubPath = 0;
+          }else if(sub_dist < treshold){
+            publishSubTarget(targetObjPos_pub);
+            //std::cout << "subTarget Published!" << std::endl;
+          }
+
+          /*if(sub_dist < treshold && dist > treshold){
             publishSubTarget(targetObjPos_pub);
             //std::cout << "subTarget Published!" << std::endl;
           }else if (dist < treshold){
             inSubPath = 0;
-          }
+          }*/
         }
       }else{              /// THIS PART IS EXECUTED IF VREP SIMULATION IS NOT RUNNING
 
@@ -216,19 +227,18 @@ int main(int argc, char **argv)
 }
 
 
-
 std::string get_selfpath() {
-    char buff[2048];
-    ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
-    if (len != -1) {
-      buff[len] = '\0';
-      std::string path(buff);   ///Here the executable name is still in
-      std::string::size_type t = path.find_last_of("/");   // Here we find the last "/"
-      path = path.substr(0,t);                             // and remove the rest (exe name)
-      return path;
-    } else {
-     printf("Cannot determine file path!\n");
-    }
+  char buff[2048];
+  ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
+  if (len != -1) {
+    buff[len] = '\0';
+    std::string path(buff);   ///Here the executable name is still in
+    std::string::size_type t = path.find_last_of("/");   // Here we find the last "/"
+    path = path.substr(0,t);                             // and remove the rest (exe name)
+    return path;
+  } else {
+    printf("Cannot determine file path!\n");
+  }
 }
 
 
@@ -245,13 +255,11 @@ std::string add_argv(std::string str, char* argvalue){
 void updateTarget(ros::Publisher& countPub){
 
   ///Position is multiplied by 2 since the access map is sub-sampled
-  targetPos.pose.position.x = myPG.getCurrentCoord('x')*2 - VREP_X0;     /// The constant VREP_** is added due to the
-  targetPos.pose.position.y = myPG.getCurrentCoord('y')*2 - VREP_Y0;     /// different origin of the GRF used in Vrep
+  targetPos.pose.position.x = myPG.getCurrentCoord('x')*2.0 - VREP_X0;     /// The constant VREP_** is added due to the
+  targetPos.pose.position.y = myPG.getCurrentCoord('y')*2.0 - VREP_Y0;     /// different origin of the GRF used in Vrep
   targetPos.pose.position.z = zHeight;
 
-  PGinfo.currNode = myPG.getCurrentNode();
-  PGinfo.currType = myPG.getCurrentType();
-  PGinfo.chosenEdge = myPG.getChosenEdge();
+  /// Here we inform all the other quadcopters of our choice
   countPub.publish(PGinfo);
 }
 

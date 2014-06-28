@@ -58,7 +58,7 @@ void quadPosFromVrep(const geometry_msgs::PoseStamped::ConstPtr& pubQuadPose)
 
 void updateCount(const quadcopter_ctrl::LRTAmsg::ConstPtr& LRTAinfo){
 
-  myLRTA.incrCount(LRTAinfo->currNode, LRTAinfo->nextNode, LRTAinfo->nextType);
+  myLRTA.incrCount(LRTAinfo->currNode, LRTAinfo->nextNode, LRTAinfo->isNextVisited);
 
 }
 
@@ -244,7 +244,7 @@ void updateTarget(ros::Publisher& countPub){
 
   LRTAinfo.currNode = myLRTA.getCurrentIndex();
   LRTAinfo.nextNode = myLRTA.getNextIndex();
-  LRTAinfo.nextType = myLRTA.getNextType();
+  LRTAinfo.isNextVisited = myLRTA.getNextType();
   countPub.publish(LRTAinfo);
 }
 
