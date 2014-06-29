@@ -16,6 +16,7 @@ using std::vector;
 
 class NodeCounting
 {
+  int STARTNODE;
   int gridSizeX;
   int gridSizeY;
   int currentNode;

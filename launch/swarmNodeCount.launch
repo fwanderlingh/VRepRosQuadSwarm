@@ -10,4 +10,5 @@
   <node name="quadNodeCount_7" pkg="quadcopter_ctrl" type="quadNodeCount" args="7" output="screen"/>
   <node name="quadNodeCount_8" pkg="quadcopter_ctrl" type="quadNodeCount" args="8" output="screen"/>
   <node name="quadNodeCount_9" pkg="quadcopter_ctrl" type="quadNodeCount" args="9" output="screen"/>
+<!--  -->
 </launch>

@@ -12,28 +12,28 @@
 #include "LRTAstar.h"
 #include <iostream>
 #include <cmath>        /* sqrt, pow */
-#include <climits>      /* INT_MAX */
+#include <limits>       /* numeric_limits */
 #include <numeric>      /* multiply, accumulate */
 #include <cstdlib>
+#include <cassert>
 
-#define STARTNODE 5
+//#define STARTNODE 5
 
 using std::cout;
 using std::endl;
 
 
-LRTAstar::LRTAstar() : gridSizeX(0), gridSizeY(0),
-                          currentNode(STARTNODE), unvisitedCount(INT_MAX),
-                          nextNode(STARTNODE)
+LRTAstar::LRTAstar() :  gridSizeX(0), gridSizeY(0),
+                          unvisitedCount(std::numeric_limits<int>::max())
 {
 
-  cout << "unvisitedCount:" << unvisitedCount << endl;
+  // THE DEFAULT CONSTRUCTOR IS ONLY USED TO DECLARE CLASS INSTANCES AS
+  // GLOBAL. WITHOUT RUNNING "initGraph()" AFTER, THE CLASS CANNOT WORK.
 
 }
 
 
-LRTAstar::LRTAstar(std::ifstream & INFILE) : currentNode(STARTNODE), unvisitedCount(INT_MAX),
-                                                 nextNode(STARTNODE)
+LRTAstar::LRTAstar(std::ifstream & INFILE) : unvisitedCount(std::numeric_limits<int>::max())
 {
 
   initGraph(INFILE);
@@ -90,6 +90,9 @@ void LRTAstar::initGraph(std::ifstream & INFILE){
     //cout << endl;
   }
   unvisitedCount = std::accumulate(unvisited.begin(),unvisited.end(), 0);
+
+  STARTNODE = gridSizeY/2;
+  nextNode = currentNode = STARTNODE;
 }
 
 
@@ -131,7 +134,7 @@ void LRTAstar::findNext(){
 
     currentNode = nextNode;
 
-    int bestCount = INT_MAX;
+    int bestCount = std::numeric_limits<int>::max();
     int bestNeighbour = currentNode;
     std::vector<int> best_vec;
 
@@ -172,7 +175,7 @@ void LRTAstar::findNext(){
 
     /// Now if there is more than one element in the vector choose one randomly.
     /// If size()==1 the modulus function always returns 0 (the first element)
-
+    assert(best_vec.size() != 0);
     int randIndex = rand()%best_vec.size();
     nextNode = best_vec.at(randIndex);
     finalPath.push_back(nextNode);

@@ -32,7 +32,7 @@ void PathPlanningAlg::InterpNewPoint(geometry_msgs::PoseStamped* quadPos,
                                           geometry_msgs::PoseStamped* targetPos,
                                           double dSubWP[3])
 {
-  /* interpNewPoint() interpolates the next point in the direction of the target
+  /** interpNewPoint() interpolates the next point in the direction of the target
    * with a distance from the quadcopter that is less than CRITICAL_DIST
    * As a first step we compute the vector d = (quadPos -> targetPos),
    * then we compute its norm to get the unit vector and then we will
@@ -45,9 +45,9 @@ void PathPlanningAlg::InterpNewPoint(geometry_msgs::PoseStamped* quadPos,
                         (targetPos->pose.position.z - quadPos->pose.position.z) };
    double distVecNorm = Distance(quadPos, targetPos);
    //std::cout << "Distance = " <<  distVecNorm << " m" << std::endl;
-   dSubWP[X] = (distVec[X]/distVecNorm)*CRITICAL_DIST;
-   dSubWP[Y] = (distVec[Y]/distVecNorm)*CRITICAL_DIST;
-   dSubWP[Z] = (distVec[Z]/distVecNorm)*CRITICAL_DIST;
+   dSubWP[X] = (distVec[X]/distVecNorm)*WP_STEP;
+   dSubWP[Y] = (distVec[Y]/distVecNorm)*WP_STEP;
+   dSubWP[Z] = (distVec[Z]/distVecNorm)*WP_STEP;
 
 }
 

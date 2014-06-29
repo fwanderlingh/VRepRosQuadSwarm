@@ -136,14 +136,14 @@ int main(int argc, char **argv)
   int running = 1;
   int inSubPath = 0;
 
-  float dist = 0;
-  float treshold = 0.3;   // How much the quadcopter has to be near
+  double dist = 0;
+  double treshold = 0.3;   // How much the quadcopter has to be near
                            // to the green sphere (target) before the target moves
   int loaded = 0;
 
   while (ros::ok())
   {
-    if(myLRTA.isCompleted() == false){
+    if(myLRTA.isCompleted() == false && inSubPath == 1){
 
       if(quadPosAcquired){
         quadPosAcquired = 0;
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
         }
 
         // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
-        dist = abs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
+        dist = fabs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
         //cout << "Distance to target = " << dist << " m" << endl;
 
         if(inSubPath == 0){
@@ -170,13 +170,13 @@ int main(int argc, char **argv)
             updateTarget(updateCount_pub);
 
             //In the following if, "dist" is calculated again since updateTarget changed targetPos
-            if( abs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
+            if( fabs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
               targetObjPos_pub.publish(targetPos);
               //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
             }
           }
         }else{
-          double sub_dist = abs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
+          double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
           if(sub_dist < treshold && dist > treshold){
             publishSubTarget(targetObjPos_pub);
             //std::cout << "subTarget Published!" << std::endl;

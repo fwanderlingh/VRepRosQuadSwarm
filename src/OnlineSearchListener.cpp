@@ -14,6 +14,8 @@
 #include "quadcopter_ctrl/OSmsg.h"
 #include <quadcopter_ctrl/CoverAnalysis.h>
 #include "termColors.h"
+#include <iostream>
+#include <fstream>
 #include <vector>
 
 #define DEF_LOOP_RATE 2      // Loop frequency of node in hertz
@@ -32,6 +34,7 @@ vector<vector<int> > finalPaths;
 /// searches are publishing, so that after all the quadcopter performing the online
 /// search are done it computes the CoverAnalysis!
 
+std::string get_selfpath();
 
 void pathFromQuads(const quadcopter_ctrl::OSmsg::ConstPtr& onlineSearchInfo){
 
@@ -51,6 +54,12 @@ int main(int argc, char **argv)
   }
   const int num_robots = strtol(argv[1], NULL, 0);
 
+  std::string folder_path = get_selfpath();
+  std::string resultsFileName = folder_path + "/Results/OS_NC_Results";
+  std::ofstream results_file;
+
+  cout << resultsFileName;
+
   ros::init(argc, argv, "OnlineSearchListener");
   ros::NodeHandle n;
 
@@ -69,8 +78,17 @@ int main(int argc, char **argv)
       CoverAnalysis myCoverage(finalPaths, num_robots, numFreeNodes);
       int longest = myCoverage.getLongestPath();
       int total = myCoverage.getTotalLength();
+      double st_dev = myCoverage.getStDev();
       printf("%sMax Path Length: %d%s\n", TC_MAGENTA, longest, TC_NONE);
       printf("%sTotal Paths Length: %d%s\n", TC_MAGENTA, total, TC_NONE);
+      printf("%sPaths length standard deviation: %f%s\n", TC_MAGENTA, st_dev, TC_NONE);
+
+      /** SAVING RESULTS TO FILE **/
+      results_file.open ( resultsFileName.c_str(), std::fstream::app );
+      results_file << num_robots << "\t" << numFreeNodes
+          << "\t" << longest << "\t" << total << "\t" << st_dev << "\n";
+
+      results_file.close();
 
       ros::shutdown();
 
@@ -82,5 +100,20 @@ int main(int argc, char **argv)
 
   return 0;
 
+}
+
+
+std::string get_selfpath() {
+  char buff[2048];
+  ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
+  if (len != -1) {
+    buff[len] = '\0';
+    std::string path(buff);   ///Here the executable name is still in
+    std::string::size_type t = path.find_last_of("/");   // Here we find the last "/"
+    path = path.substr(0,t);                             // and remove the rest (exe name)
+    return path;
+  } else {
+    printf("Cannot determine file path!\n");
+  }
 }
 

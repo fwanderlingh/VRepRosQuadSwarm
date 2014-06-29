@@ -85,8 +85,8 @@ int main(int argc, char **argv)
   ros::Rate loop_rate(DEF_LOOP_RATE); //Loop at DEF_LOOP_RATE
 
 
-  float dist = 0;
-  float treshold = 0.2;	// How much the quadcopter has to be near to the green sphere before the target moves
+  double dist;
+  double treshold = 0.3;	// How much the quadcopter has to be near to the green sphere before the target moves
   float posZ  =  1.5;		// z for now is fixed!
 
   int wpIndex = 0;     // Waypoint index, used to navigate through the robotPath vector
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-    if( (controlSignal.data != 0) && (completedPath.data == 0) ){
+    if( (controlSignal.data != 0) && (completedPath.data == 0) && (inSubPath == 1) ){
 
 
       if(quadPosAcquired){
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
         }
 
         // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
-        dist = abs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
+        dist = fabs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
         //std::cout << "Distance to target = " << dist << " m" << std::endl;
         if(inSubPath == 0){
           if( dist > CRITICAL_DIST ){
@@ -151,18 +151,19 @@ int main(int argc, char **argv)
             }
             updateTarget(wpIndex, robotPathVec, argv[1]);
 
-            if( abs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < treshold ){
+            if( fabs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < treshold ){
               targetObjPos_pub.publish(targetPos);
               //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
             }
           }
         }else{
-          double sub_dist = abs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
-          if(sub_dist < treshold && dist > treshold){
+          double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
+          if(dist < treshold){
+            inSubPath = 0;
+            targetObjPos_pub.publish(targetPos);
+          }else if(sub_dist < treshold){
             publishSubTarget(targetObjPos_pub);
             //std::cout << "subTarget Published!" << std::endl;
-          }else if (dist < treshold){
-            inSubPath = 0;
           }
         }
       }else{              /// THIS PART IS EXECUTED IF VREP IS NOT RUNNING

@@ -16,6 +16,7 @@ using std::vector;
 
 class LRTAstar
 {
+  int STARTNODE;
   int gridSizeX;
   int gridSizeY;
   int currentNode;

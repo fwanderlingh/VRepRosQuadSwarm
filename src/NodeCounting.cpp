@@ -12,48 +12,34 @@
 #include "NodeCounting.h"
 #include <iostream>
 #include <cmath>        /* sqrt, pow */
-#include <climits>      /* INT_MAX */
+#include <limits>       /* numeric_limits */
 #include <numeric>      /* multiply, accumulate */
 #include <stdlib.h>     /* srand, rand */
+#include <cassert>
 
-#define STARTNODE 5
+//#define STARTNODE 5
 
 using std::cout;
 using std::endl;
 
 
 NodeCounting::NodeCounting() : gridSizeX(0), gridSizeY(0),
-                                  currentNode(STARTNODE), unvisitedCount(INT_MAX)
+                                  unvisitedCount(std::numeric_limits<int>::max())
 {
 
   // THE DEFAULT CONSTRUCTOR IS ONLY USED TO DECLARE CLASS INSTANCES AS
   // GLOBAL. WITHOUT RUNNING "initGraph()" AFTER, THE CLASS CANNOT WORK.
+  //cout << "Unvisited initial count: " <<  unvisitedCount << endl;
+
 
 }
 
 
-NodeCounting::NodeCounting(std::ifstream & INFILE) : currentNode(STARTNODE), unvisitedCount(INT_MAX)
+NodeCounting::NodeCounting(std::ifstream & INFILE) : unvisitedCount(std::numeric_limits<int>::max())
 {
 
   initGraph(INFILE);
-/*
-  loadMatrixFile(INFILE);       /// THe access_vec and defining grid sizes
 
-  //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
-
-  graphNodes.resize(gridSizeX*gridSizeY);
-
-  // Graph initialisation - to every node is assigned a position in a Row-Major order
-  for(int i=0; i<gridSizeX; i++){
-    for(int j=0; j<gridSizeY; j++){
-      graphNodes.at((i*gridSizeY) + j).setPos((float)i*2, (float)j*2);
-      graphNodes.at((i*gridSizeY) + j).occupied = access_vec.at((i*gridSizeY) + j);
-      if(access_vec.at((i*gridSizeY) + j) == 0) unvisitedCount++;
-      //cout << (int)graphNodes.at((i*gridSizeY) + j).occupied << " ";
-    }
-    //cout << endl;
-  }
-*/
 }
 
 NodeCounting::~NodeCounting()
@@ -64,6 +50,7 @@ NodeCounting::~NodeCounting()
 
 
 void NodeCounting::loadMatrixFile(std::ifstream &access_mat){
+/// Loading the access_vec and defining grid sizes
 
   if( access_mat.is_open() ) {
     int val;
@@ -106,6 +93,14 @@ void NodeCounting::initGraph(std::ifstream & INFILE){
     //cout << endl;
   }
   unvisitedCount = std::accumulate(unvisited.begin(),unvisited.end(), 0);
+
+  numFreeNodes = unvisitedCount;
+
+  STARTNODE = gridSizeY/2;
+  currentNode = STARTNODE;
+
+  finalPath.push_back(currentNode);
+
 }
 
 
@@ -142,7 +137,7 @@ void NodeCounting::findNext(){
     /// Before being able to do the adjacency check we have to recover the (i,j) index
     /// values encoded in the graph 1D array as "i*gridSizeY + j" (row-major order)
 
-    int bestCount = INT_MAX;
+    int bestCount = std::numeric_limits<int>::max();
     int bestNeighbour = currentNode;
     std::vector<int> best_vec;
 
@@ -185,7 +180,7 @@ void NodeCounting::findNext(){
 
     /// Now if there is more than one element in the vector choose one randomly.
     /// If size()==1 the modulus function always returns 0 (the first element)
-
+    assert(best_vec.size() != 0);
     int randIndex = rand()%best_vec.size();
     currentNode = best_vec.at(randIndex);
     finalPath.push_back(currentNode);
