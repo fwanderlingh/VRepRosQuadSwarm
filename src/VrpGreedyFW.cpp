@@ -15,6 +15,7 @@
 #include "Utils.h"
 #include <iostream>
 #include <cfloat>
+#include <limits>
 #include <cassert>
 #include <cmath>
 #include <ctime>
@@ -74,10 +75,10 @@ VrpGreedy::~VrpGreedy()
 }
 
 
-float VrpGreedy::pathLength(vector<int> &path){
+double VrpGreedy::pathLength(vector<int> &path){
 
-
-  float length = FLT_MIN;
+//FIXME distance//
+  double length = FLT_MIN;
   for(vector<graphNode>::size_type i = 0; i < (path.size() - 1); i++){
     length = length + sqrt(pow((graphNodes[path[i]].posx - graphNodes[path[i+1]].posx),2) +
                            pow((graphNodes[path[i]].posy - graphNodes[path[i+1]].posy),2) /*+
@@ -225,9 +226,7 @@ void VrpGreedy::solve(){
   FloydWarshall myFW(graph);
   myFW.solve(distanceMat);
 
-
   //myFW.printMatrix(graph);
-
 
   //cout << "\nDistances: ";
   //myFW.printMatrix(distanceMat);
@@ -395,7 +394,7 @@ float VrpGreedy::dist(graphNode &a, graphNode &b){
 
 void VrpGreedy::checkBest(bool isNeighbour){
 
-  int tentPathLenght = pathLength(pathTentative);
+  double tentPathLenght = pathLength(pathTentative);
 
   if(tentPathLenght < liMin){
     liMin = tentPathLenght;

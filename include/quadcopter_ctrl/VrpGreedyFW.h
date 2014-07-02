@@ -34,21 +34,21 @@ class VrpGreedy
   vector< vector<int> > Paths;
   vector<int> pathTentative;
   vip choice;
-  float deltaBest;
-  float deltavip;
-  float bigL;
-  float liMin;
+  double deltaBest;
+  double deltavip;
+  double bigL;
+  double liMin;
 
   int numFreeNodes;
 
-  float minDist; //distance between two adjacent blocks
+  double minDist; //distance between two adjacent blocks
 
   vector< vector<int> >::iterator it;
   vector< vector<int> >::iterator itr;
   vector<int>::iterator itc;
   vector<int>::size_type v;
 
-  float pathLength(vector<int> &pathToEvaluate);
+  double pathLength(vector<int> &pathToEvaluate);
   void loadMatrixFile(std::string acc_matrix_path);
   void createGraph();
   float dist(graphNode &a, graphNode &b);

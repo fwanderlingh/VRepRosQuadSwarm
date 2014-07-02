@@ -23,7 +23,7 @@ using std::cout;
 using std::endl;
 
 
-LRTAstar::LRTAstar() :  gridSizeX(0), gridSizeY(0),
+LRTAstar::LRTAstar() :  gridSizeX(0), gridSizeY(0), reachLastOne(0),
                           unvisitedCount(std::numeric_limits<int>::max())
 {
 
@@ -33,7 +33,7 @@ LRTAstar::LRTAstar() :  gridSizeX(0), gridSizeY(0),
 }
 
 
-LRTAstar::LRTAstar(std::ifstream & INFILE) : unvisitedCount(std::numeric_limits<int>::max())
+LRTAstar::LRTAstar(std::ifstream & INFILE) : reachLastOne(0), unvisitedCount(std::numeric_limits<int>::max())
 {
 
   initGraph(INFILE);
@@ -91,6 +91,8 @@ void LRTAstar::initGraph(std::ifstream & INFILE){
   }
   unvisitedCount = std::accumulate(unvisited.begin(),unvisited.end(), 0);
 
+  numFreeNodes = unvisitedCount;
+
   STARTNODE = gridSizeY/2;
   nextNode = currentNode = STARTNODE;
 }
@@ -127,6 +129,13 @@ void LRTAstar::incrCount(int currIndex, int nextIndex, bool isNextVisited){
 /// *** MAIN METHOD *** ///
 void LRTAstar::findNext(){
 
+
+//FIXME quadcopter is reaching position before last one, fix!
+/*
+  if(unvisitedCount == 0){
+    reachLastOne++;
+  }
+*/
   if( !isCompleted() ){
     /// Look for adjacent nodes and find the one with the smallest number of visits
     /// Before being able to do the adjacency check we have to recover the (i,j) index
@@ -185,6 +194,7 @@ void LRTAstar::findNext(){
 
 
 float LRTAstar::getCurrentCoord(char coordinate){
+
   switch(coordinate){
     case 'x':
       return graphNodes.at(currentNode).posx;
@@ -193,7 +203,7 @@ float LRTAstar::getCurrentCoord(char coordinate){
       return graphNodes.at(currentNode).posy;
       break;
     /// 'z' for now is omitted on purpose, since the height depends on the robot
-    /// (check quadcopterRosCtrl.cpp or quadNodeCount.cpp for further details)
+    /// (check quadcopterRosCtrl.cpp or quadLRTA.cpp for further details)
   }
 
 }
@@ -217,7 +227,7 @@ bool LRTAstar::getNextType(){
 
 bool LRTAstar::isCompleted(){
 
-  if(unvisitedCount == 0)
+  if(unvisitedCount==0)
     return true;
   else
     return false;

@@ -11,6 +11,7 @@
 
 #include "Utils.h"
 #include <iostream>
+#include <stdio.h>
 
 Utils::Utils()
 {
@@ -30,4 +31,11 @@ void Utils::spaced_cout(int value){
     std::cout << "  " << value;
   else if( (value >=100 && value < 1000) || (value >-100 && value <= -10) )
     std::cout << " " << value;
+}
+
+
+void Utils::spaced_cout(double value){
+  if(value == 0) printf("    0");
+  else if(value < 10)  printf("  %2.1f", value);
+  else printf(" %2.1f", value);
 }

@@ -25,6 +25,7 @@ class LRTAstar
   vector<int> access_vec;       //It could be "bool" but I left "int" for future map developments
   vector<int> unvisited;
   int unvisitedCount;
+  int reachLastOne;
 
 
   int numFreeNodes;

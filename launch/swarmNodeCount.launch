@@ -1,5 +1,5 @@
 <launch>
-  <node name="OSListener" pkg="quadcopter_ctrl" type="OnlineSearchListener" args="10" output="screen"/>
+  <node name="OSListener" pkg="quadcopter_ctrl" type="OnlineSearchListener" args="7" output="screen"/>
   <node name="quadNodeCount_0" pkg="quadcopter_ctrl" type="quadNodeCount" args="0" output="screen"/>
   <node name="quadNodeCount_1" pkg="quadcopter_ctrl" type="quadNodeCount" args="1" output="screen"/>
   <node name="quadNodeCount_2" pkg="quadcopter_ctrl" type="quadNodeCount" args="2" output="screen"/>
@@ -7,8 +7,8 @@
   <node name="quadNodeCount_4" pkg="quadcopter_ctrl" type="quadNodeCount" args="4" output="screen"/>
   <node name="quadNodeCount_5" pkg="quadcopter_ctrl" type="quadNodeCount" args="5" output="screen"/>
   <node name="quadNodeCount_6" pkg="quadcopter_ctrl" type="quadNodeCount" args="6" output="screen"/>
-  <node name="quadNodeCount_7" pkg="quadcopter_ctrl" type="quadNodeCount" args="7" output="screen"/>
+<!--  <node name="quadNodeCount_7" pkg="quadcopter_ctrl" type="quadNodeCount" args="7" output="screen"/>
   <node name="quadNodeCount_8" pkg="quadcopter_ctrl" type="quadNodeCount" args="8" output="screen"/>
   <node name="quadNodeCount_9" pkg="quadcopter_ctrl" type="quadNodeCount" args="9" output="screen"/>
-<!--  -->
+  -->
 </launch>

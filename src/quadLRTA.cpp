@@ -77,7 +77,7 @@ int main(int argc, char **argv)
   zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
 
   std::ifstream access_matrix;
-  std::string filename = "access_mat_subs";
+  std::string filename = "free_mat_10x10";
 
   std::string folder_path = get_selfpath();
   std::string file_path = folder_path + "/" + filename;
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-    if(myLRTA.isCompleted() == false && inSubPath == 1){
+    if(myLRTA.isCompleted() == false || inSubPath == 1){
 
       if(quadPosAcquired){
         quadPosAcquired = 0;
@@ -177,11 +177,12 @@ int main(int argc, char **argv)
           }
         }else{
           double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
-          if(sub_dist < treshold && dist > treshold){
+          if(dist < treshold){
+            inSubPath = 0;
+            targetObjPos_pub.publish(targetPos);
+          }else if(sub_dist < treshold){
             publishSubTarget(targetObjPos_pub);
             //std::cout << "subTarget Published!" << std::endl;
-          }else if (dist < treshold){
-            inSubPath = 0;
           }
         }
       }else{              /// THIS PART IS EXECUTED IF VREP SIMULATION IS NOT RUNNING

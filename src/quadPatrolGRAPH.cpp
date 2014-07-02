@@ -22,7 +22,9 @@
 #include "PatrolGRAPH.h"
 #include <fstream>
 #include <vector>
+#include <ctime>
 
+#define INTSTRSIZE ((CHAR_BIT * sizeof(int) - 1) / 3 + 2)
 
 using std::cout;
 using std::endl;
@@ -67,8 +69,9 @@ void updateCount(const quadcopter_ctrl::PGmsg::ConstPtr& PGinfo){
 
 int main(int argc, char **argv)
 {
-  /// argv[1] contains the ID number of the robot to be controlled (0,1,2...)
 
+  std::time_t start = time(NULL);
+  /// argv[1] contains the ID number of the robot to be controlled (0,1,2...)
   if(argc<2){
     printf("%s** argv[1] is empty! Provide quadcopter # to control! **%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
@@ -78,8 +81,8 @@ int main(int argc, char **argv)
   zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
 
   std::ifstream access_matrix;
-  std::string filename = "access_mat_subs";
-  //std::string filename = "little_matrix";
+  //std::string filename = "access_mat_subs";
+  std::string filename = "free_mat_3x3";
 
   std::string folder_path = get_selfpath();
   std::string file_path = folder_path + "/" + filename;
@@ -138,16 +141,19 @@ int main(int argc, char **argv)
   int running = 1;
   int inSubPath = 0;
 
-  float dist = 0;
+  double dist = 0;
   /// How much the quadcopter has to be near to the
   /// green sphere (target) before the target moves:
-  float treshold = 0.2;
+  double treshold = 0.3;
   int loaded = 0;
+
+  //if(clock()) cout << "Clock is available\n";
+  //else{cout << "Clock not available\n";}
+
 
   while (ros::ok())
   {
-
-    if(myPG.isCompleted() == false){
+    if(myPG.isCompleted() == false ||  inSubPath==1 || ((time(NULL) - start) < (30*60))  ){
 
       if(quadPosAcquired){
         quadPosAcquired = 0;
@@ -159,7 +165,7 @@ int main(int argc, char **argv)
         }
 
         // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
-        dist = abs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
+        dist = fabs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
         //cout << "Distance to target = " << dist << " m" << endl;
 
         if(inSubPath == 0){
@@ -179,15 +185,16 @@ int main(int argc, char **argv)
             updateTarget(updateCount_pub);
 
             //In the following if, "dist" is calculated again since updateTarget changed targetPos
-            if( abs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < treshold ){
+            if( fabs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
               targetObjPos_pub.publish(targetPos);
               //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
             }
           }
         }else{
-          double sub_dist = abs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
+          double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
           if(dist < treshold){
             inSubPath = 0;
+            targetObjPos_pub.publish(targetPos);
           }else if(sub_dist < treshold){
             publishSubTarget(targetObjPos_pub);
             //std::cout << "subTarget Published!" << std::endl;
@@ -210,11 +217,37 @@ int main(int argc, char **argv)
 
     }else{
       printf("%s[%s] ** Area coverage completed! **%s\n", TC_GREEN, argv[1], TC_NONE);
+      printf("Minutes elapsed: %d\n", (int)(time(NULL) - start)/60);
 
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myPG.getNumFreeNodes();
       osInfo.path = myPG.getFinalPath();
       completed_pub.publish(osInfo);
+
+      int gridSizeX = myPG.getGridSizeX();
+      int gridSizeY = myPG.getGridSizeY();
+      vector<graphNode> graphNodes = myPG.getGraphNodes();
+
+      ///Dump counts map on file
+      char process_id[INTSTRSIZE];
+      sprintf(process_id, "%d", (int)getpid() );
+      std::string resultsFileName(process_id);
+      resultsFileName = folder_path + "/CountMaps/CountMap_" + resultsFileName;
+
+      std::ofstream nodeCountMap;
+      nodeCountMap.open(resultsFileName.c_str());
+      if(nodeCountMap.is_open() ){
+        for(int i=0; i<gridSizeX; i++){
+          for(int j=0; j<gridSizeY; j++){
+            nodeCountMap << (int)graphNodes.at((i*gridSizeY) + j).nodeCount << " ";
+          }
+          nodeCountMap << endl;
+        }
+        nodeCountMap.close();
+
+      }else{ cout << "Error writing counts on file" << endl; }
+
+
 
       ros::shutdown();
     }

@@ -136,8 +136,9 @@ int main(int argc, char **argv)
   int inSubPath = 0;
 
   double dist;
-  double treshold = 0.3;   // How much the quadcopter has to be near
-  // to the green sphere (target) before the target moves
+  /// How much the quadcopter has to be near
+  /// to the green sphere (target) before the target moves
+  double treshold = 0.3;
   int loaded = 0;
 
   while (ros::ok())
@@ -200,10 +201,8 @@ int main(int argc, char **argv)
       osInfo.path = myNodeCount.getFinalPath();
       completed_pub.publish(osInfo);
 
-
       ros::shutdown();
     }
-
 
     ros::spinOnce();
     loop_rate.sleep();

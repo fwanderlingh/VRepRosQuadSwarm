@@ -16,9 +16,11 @@
 #include <numeric>
 #include <algorithm>
 #include <cassert>
-#include <limits>
+#include <climits> /** For CHAR_BIT **/
+#include <limits>  /** For numeric_limits **/
 #include "termColors.h"
 #include "Utils.h"
+#include "fstream"
 
 //#define DEBUG_PRINT
 #define STARTNODE 5
@@ -87,8 +89,11 @@ void PatrolGRAPH::initGraph(std::ifstream & INFILE){
   }
   unvisitedCount = std::accumulate(unvisited.begin(),unvisited.end(), 0);
 
+  numFreeNodes = unvisitedCount;
+
   createEdgeMat();
-  computeProbabilityMat();
+  //computeProbabilityMat();
+  finalPath.push_back(currentNode);
 }
 
 
@@ -157,10 +162,10 @@ void PatrolGRAPH::computeProbabilityMat(){
 
   vector< vector<double> > temp_PTM(graph.size(), vector<double>(graph.size(), 0));
 
-
   double num_edges;
+
   /// Here the sum of probabilities of IN-going edges is equal to 1
-  for(int i=0; i<graph.size(); i++){
+/*  for(int i=0; i<graph.size(); i++){
     num_edges = 0;
     // Here on a first pass we see how many are the in-going edges
     for(int j=0; j<graph.size(); j++){
@@ -174,16 +179,16 @@ void PatrolGRAPH::computeProbabilityMat(){
       }
     }
   }
-
+*/
   /// Here the sum of probabilities of OUT-going edges is equal to 1
-/*  for(int i=0; i<graph.size(); i++){
+    for(int i=0; i<graph.size(); i++){
     num_edges = std::accumulate(graph.at(i).begin(), graph.at(i).end(), 0.0);
     if(num_edges != 0){
       std::transform(graph.at(i).begin(), graph.at(i).end(),
                       temp_PTM.at(i).begin(), std::bind2nd(std::divides<double>(),num_edges));
     }
   }
-*/
+
   PTM = temp_PTM;
 
 #ifdef DEBUG_PRINT
@@ -203,19 +208,20 @@ void PatrolGRAPH::computeProbabilityMat(){
 void PatrolGRAPH::incrCount(int currIndex, bool currType, boost::array<int, 2> chosenEdge){
 
   /// Increment vertex count
-  graphNodes.at(currIndex).nodeCount++;
+  if(graphNodes.at(currIndex).occupied == 0){
+    graphNodes.at(currIndex).nodeCount++;
 
-  /// Increment edge count
-  edgeCountMat[chosenEdge.at(0)][chosenEdge.at(1)]++;
+    /// Increment edge count
+    edgeCountMat[chosenEdge.at(0)][chosenEdge.at(1)]++;
 
+    if(currType == 0){
+      unvisited.at(currIndex) = 0;
+      // The sum of all elements of unvisited is performed so that when sum is zero we
+      // know we have finished. Check is performed in "findNext()"
+      unvisitedCount = std::accumulate(unvisited.begin(),unvisited.end(), 0);
 
-  if(currType == 0){
-    unvisited.at(currIndex) = 0;
-    // The sum of all elements of unvisited is performed so that when sum is zero we
-    // know we have finished. Check is performed in "findNext()"
-    unvisitedCount = std::accumulate(unvisited.begin(),unvisited.end(), 0);
-
-    //cout << "unvisitedCount: " << unvisitedCount << endl;
+      //cout << "unvisitedCount: " << unvisitedCount << endl;
+    }
   }
 
 
@@ -237,79 +243,99 @@ void PatrolGRAPH::incrCount(int currIndex, bool currType, boost::array<int, 2> c
 /// *** MAIN METHOD *** ///
 void PatrolGRAPH::findNext(){
 
-  if( !isCompleted() ){
-    /// Look for adjacent nodes and find the one with the smallest number of visits
-    /// Before being able to do the adjacency check we have to recover the (i,j) index
-    /// values encoded in the graph 1D array as "i*gridSizeY + j" (row-major order)
+  //if( !isCompleted() ){
+  /// Look for adjacent nodes and find the one with the smallest number of visits
+  /// Before being able to do the adjacency check we have to recover the (i,j) index
+  /// values encoded in the graph 1D array as "i*gridSizeY + j" (row-major order)
 
-    /// The count is locally incremented by one (the global increment will be done
-    /// after the choosing phase by publishing a message to a common topic).
-    double currentNodeCount = graphNodes[currentNode].nodeCount + 1;
+  /// The count is locally incremented by one (the global increment will be done
+  /// after the choosing phase, by publishing a message to a common topic).
+  double currentNodeCount = graphNodes[currentNode].nodeCount + 1;
 
-    ///The "i" index of the chosen edge will be the one of the node we're on now = current node
-    chosenEdge.at(0) = currentNode;
-    std::vector<int> best_vec;
+  ///The "i" index of the chosen edge will be the one of the node we're on now = current node
+  chosenEdge.at(0) = currentNode;
+  std::vector<int> best_vec;
 
-    double deltaP_best = std::numeric_limits<double>::max();
+  double deltaP_best = std::numeric_limits<double>::max();
+  int bestEdgeCount = std::numeric_limits<int>::max();
 
-    int current_i = currentNode/gridSizeY;
-    int current_j = currentNode%gridSizeY;
+  int current_i = currentNode/gridSizeY;
+  int current_j = currentNode%gridSizeY;
 
-    for(int i_shift=-1; i_shift<=1; ++i_shift){
-      for(int j_shift=-1; j_shift<=1; ++j_shift){
+  for(int i_shift=-1; i_shift<=1; ++i_shift){
+    for(int j_shift=-1; j_shift<=1; ++j_shift){
 
-        int tent_i = current_i + i_shift;
-        int tent_j = current_j + j_shift;
+      int tent_i = current_i + i_shift;
+      int tent_j = current_j + j_shift;
 
-        if( (tent_i>=0) && (tent_i<gridSizeX) && (tent_j>=0) && (tent_j<gridSizeY) && ///RANGE CHECK
-            (i_shift!=0 || j_shift!=0)  ///<--- don't check same node of current
-            && (i_shift*j_shift == 0) ///<--- don't check oblique nodes
-        )
-        {
+      if( (tent_i>=0) && (tent_i<gridSizeX) && (tent_j>=0) && (tent_j<gridSizeY) && ///RANGE CHECK
+          (i_shift!=0 || j_shift!=0)  ///<--- don't check same node of current
+          && (i_shift*j_shift == 0) ///<--- don't check oblique nodes
+      )
+      {
 
-          int tentIndex = tent_i*gridSizeY + tent_j;
+        int tentIndex = tent_i*gridSizeY + tent_j;
 
-          if( (graphNodes.at(tentIndex).occupied == 0) ){   ///OCCUPANCY CHECK
+        if( (graphNodes.at(tentIndex).occupied == 0) ){   ///OCCUPANCY CHECK
 
-            double deltaP = ( (double)edgeCountMat[currentNode][tentIndex]/currentNodeCount )
-                              - PTM[currentNode][tentIndex];
+          double deltaP = ( (double)edgeCountMat[currentNode][tentIndex]/currentNodeCount )
+                                  - PTM[currentNode][tentIndex];
 
-            if(deltaP <= deltaP_best){
-              if(deltaP == deltaP_best){
-                best_vec.push_back(tentIndex);
-              }else{
-                best_vec.clear();
-                best_vec.push_back(tentIndex);
-              }
-              deltaP_best = deltaP;
-            }//End checkBest
-          }//End occupancy check
-        }//End range check
-      }//End j_shift for-loop (y scan)
-    } //End i_shift for-loop (x scan)
+          if(deltaP <= deltaP_best){
+            if(deltaP == deltaP_best){
+              best_vec.push_back(tentIndex);
+            }else{
+              best_vec.clear();
+              best_vec.push_back(tentIndex);
+            }
+            deltaP_best = deltaP;
+          }//End checkBest
 
-    //cout << "Best deltaP was: " << deltaP_best << endl;
+          if(tentIndex == ){
+
+          }
+
+          ///Edge Count - Disabled
+          /*
+          int tentCount = edgeCountMat[currentNode][tentIndex];
+
+          if(tentCount <= bestEdgeCount){
+            if(tentCount == bestEdgeCount){
+              best_vec.push_back(tentIndex);
+            }else{
+              best_vec.clear();
+              best_vec.push_back(tentIndex);
+            }
+            bestEdgeCount = tentCount;
+          }//End checkBest
+          */
+        }//End occupancy check
+      }//End range check
+    }//End j_shift for-loop (y scan)
+  } //End i_shift for-loop (x scan)
+
+  //cout << "Best deltaP was: " << deltaP_best << endl;
 
 
-    /// Now if there is more than one element in the vector choose one randomly.
-    /// If size()==1 the modulus function always returns 0 (the first element)
-    assert(best_vec.size() != 0);
-    int randIndex = rand()%best_vec.size();
-    /// The "j" index of the chosen edge will be the one of the (best) target node,
-    /// that now also becomes the new current node.
-    currentNode = best_vec.at(randIndex);
-    chosenEdge.at(1) = currentNode;
+  /// Now if there is more than one element in the vector choose one randomly.
+  /// If size()==1 the modulus function always returns 0 (the first element)
+  assert(best_vec.size() != 0);
+  int randIndex = rand()%best_vec.size();
+  /// The "j" index of the chosen edge will be the one of the (best) target node,
+  /// that now also becomes the new current node.
+  currentNode = best_vec.at(randIndex);
+  chosenEdge.at(1) = currentNode;
 
-    finalPath.push_back(currentNode);
-  }
-/*
+  finalPath.push_back(currentNode);
+  //}
+  /*
   cout << "Vertex 15 counts:\n"
        << "Visits: " << graphNodes[15].nodeCount << ", "
        << "Edge (15,4):  " << edgeCountMat[15][4] << ", "
        << "Edge (15,16): " << edgeCountMat[15][16] << ", "
        << "Edge (15,27): " << edgeCountMat[15][16] << endl
        << "---" << endl;
-*/
+   */
 }
 
 bool PatrolGRAPH::getCurrentType(){
@@ -333,7 +359,6 @@ float PatrolGRAPH::getCurrentCoord(char coordinate){
   }
 
 }
-
 
 
 bool PatrolGRAPH::isCompleted(){

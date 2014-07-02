@@ -15,6 +15,7 @@ public:
   virtual ~Utils();
 
   static void spaced_cout(int value);
+  static void spaced_cout(double value);
 };
 
 #endif /* UTILS_H_ */

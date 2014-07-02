@@ -123,6 +123,7 @@ add_library(CoverAnalysis src/CoverAnalysis.cpp)
 add_library(FloydWarshall src/FloydWarshall.cpp)
 add_library(Utils src/Utils.cpp)
 add_library(PatrolGRAPH src/PatrolGRAPH.cpp)
+add_library(GraphAlgs src/GraphAlgs.cpp)
 
 ## Declare a cpp executable
 # add_executable(beginner_tutorials_node src/beginner_tutorials_node.cpp)
@@ -166,6 +167,10 @@ add_executable(quadPatrolGRAPH src/quadPatrolGRAPH.cpp)
 target_link_libraries(quadPatrolGRAPH ${catkin_LIBRARIES})
 add_dependencies(quadPatrolGRAPH ${catkin_EXPORTED_TARGETS})
 
+add_executable(graphAlgsTest src/graphAlgsTest.cpp)
+target_link_libraries(graphAlgsTest ${catkin_LIBRARIES})
+add_dependencies(graphAlgsTest ${catkin_EXPORTED_TARGETS})
+
 
 
 target_link_libraries(quadcopterRosCtrl VrpGreedyFW)
@@ -200,6 +205,8 @@ target_link_libraries(quadPatrolGRAPH PatrolGRAPH)
 target_link_libraries(quadPatrolGRAPH PathPlanningAlg)
 target_link_libraries(quadPatrolGRAPH Utils)
 
+target_link_libraries(graphAlgsTest GraphAlgs)
+target_link_libraries(graphAlgsTest Utils)
 
 add_dependencies(quadcopterRosCtrl ${catkin_EXPORTED_TARGETS}) #!!!!
 add_dependencies(kernelNode ${catkin_EXPORTED_TARGETS})

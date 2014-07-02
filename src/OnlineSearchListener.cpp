@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   const int num_robots = strtol(argv[1], NULL, 0);
 
   std::string folder_path = get_selfpath();
-  std::string resultsFileName = folder_path + "/Results/OS_NC_Results";
+  std::string resultsFileName = folder_path + "/Results/OS_LRTA_Results";
   std::ofstream results_file;
 
   cout << resultsFileName;

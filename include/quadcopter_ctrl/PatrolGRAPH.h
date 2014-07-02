@@ -67,6 +67,21 @@ public:
   {
     return numFreeNodes;
   }
+
+  const vector<graphNode>& getGraphNodes() const
+  {
+    return graphNodes;
+  }
+
+  int getGridSizeX() const
+  {
+    return gridSizeX;
+  }
+
+  int getGridSizeY() const
+  {
+    return gridSizeY;
+  }
 };
 
 #endif /* PATROLGRAPH_H_ */
