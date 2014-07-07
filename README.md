@@ -8,10 +8,11 @@ This is a framework to control a series of quad-copters simulated in V-Rep by us
 The terrain to be covered is given as input to the executables which start with the "quad" prefix and is represented as a binary occupancy grid (e.g. zero for accessible point, 1 for not accessible point).
 All the algorithms are publishing the positions to be followed on ROS topic that are read by the V-Rep simulator using the *.ttt scenes provided in the package.
 
-Compilation
------------
+Compiling and running
+---------------------
 
-To build the following package you will need [ROS](http://wiki.ros.org/ROS) to be installed and clone this repository in the src of a new [catkin package](http://wiki.ros.org/ROS/Tutorials/catkin/CreatingPackage). (section in progress - further explanation will be added)
+To build the following package you will need [ROS](http://wiki.ros.org/ROS) to be installed and clone this repository in the src of a new [catkin package](http://wiki.ros.org/ROS/Tutorials/catkin/CreatingPackage). (section in progress - further explanation will be added).
+To use the scenarios (the *.ttt files) you have to install V-Rep, available from the [Coppelia Robotics](http://www.coppeliarobotics.com/) website.
 
 
 Details
