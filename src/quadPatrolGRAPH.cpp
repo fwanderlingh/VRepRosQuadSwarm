@@ -82,19 +82,28 @@ int main(int argc, char **argv)
 
   std::ifstream access_matrix;
   //std::string filename = "access_mat_subs";
-  std::string filename = "free_mat_3x3";
+  std::string filename = "free_mat_5x5";
 
   std::string folder_path = get_selfpath();
   std::string file_path = folder_path + "/" + filename;
 
   access_matrix.open( file_path.c_str() );
   if( !access_matrix.is_open() ){
-    printf("%sFile not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
+    printf("%sAccess matrix not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
-  myPG.initGraph(access_matrix);    //Constructor inputs is (mapToExplore)
+  std::ifstream PTM_matrix;
+  std::string PTM_filename = "PTM_free_mat_5x5.txt";
+  std::string PTM_file_path = folder_path + "/Input/" + PTM_filename;
+  PTM_matrix.open( PTM_file_path.c_str() );
+  if( !PTM_matrix.is_open() ){
+    printf("%sPTM matrix not found!%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
+  }
 
+  myPG.init(access_matrix, PTM_matrix);
+  //myPG.init(access_matrix);
 
   /* The following strings are used to concatenate the topic name to the argument passed to
    * the node (the argv[1]), so to name each node with a different name and send signals to
@@ -153,7 +162,7 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-    if(myPG.isCompleted() == false ||  inSubPath==1 || ((time(NULL) - start) < (30*60))  ){
+    if(myPG.isCompleted() == false ||  inSubPath==1  ){
 
       if(quadPosAcquired){
         quadPosAcquired = 0;
@@ -246,8 +255,6 @@ int main(int argc, char **argv)
         nodeCountMap.close();
 
       }else{ cout << "Error writing counts on file" << endl; }
-
-
 
       ros::shutdown();
     }

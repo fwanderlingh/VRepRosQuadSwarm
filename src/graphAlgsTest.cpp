@@ -32,7 +32,7 @@ int main(int argc, char** argv){
 
   myGraph.loadNodeCountMapFromFile(nodeCountMap_path);
 
-  myGraph.stdevFromExpectedVisits();
+  myGraph.stdevFromExpectedVisits(); //prints a matrix
 
 
 

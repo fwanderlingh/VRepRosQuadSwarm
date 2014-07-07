@@ -10,7 +10,7 @@
 
 
 struct graphNode{
-  float posx, posy, posz;
+  double posx, posy, posz;
   //FIXME
   int occupied;  //1 = not accessible, 0 = accessible (further expansion could be to keep
   int access; //1 = not accessible, 0 = accessible
@@ -21,10 +21,10 @@ struct graphNode{
 
   graphNode() : posx(0.f), posy(0.f), posz(4.0f), occupied(1), access(1), nodeCount(0), numEdges(0) {}   //Default access is 1
 
-  graphNode(float x, float y, float z, int acc, int occ) :      //Struct filler constructor
+  graphNode(double x, double y, double z, int acc, int occ) :      //Struct filler constructor
     posx(x), posy(y), posz(z), access(acc), occupied(occ), nodeCount(0) {}
 
-  void setPos(float x, float y){
+  void setPos(double x, double y){
     posx = x;
     posy = y;
   }

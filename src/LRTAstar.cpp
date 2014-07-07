@@ -46,7 +46,6 @@ LRTAstar::~LRTAstar()
 }
 
 
-
 void LRTAstar::loadMatrixFile(std::ifstream &access_mat){
 
   if( access_mat.is_open() ) {
@@ -95,6 +94,10 @@ void LRTAstar::initGraph(std::ifstream & INFILE){
 
   STARTNODE = gridSizeY/2;
   nextNode = currentNode = STARTNODE;
+  //cout << STARTNODE << endl;
+
+  finalPath.push_back(currentNode);
+
 }
 
 

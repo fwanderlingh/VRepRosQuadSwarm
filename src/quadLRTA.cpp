@@ -74,7 +74,7 @@ int main(int argc, char **argv)
   }
 
   // In this way each robot flight at a slightly different height
-  zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
+  zHeight =  (strtod(argv[1], NULL)) *0.6 + 5;
 
   std::ifstream access_matrix;
   std::string filename = "free_mat_10x10";

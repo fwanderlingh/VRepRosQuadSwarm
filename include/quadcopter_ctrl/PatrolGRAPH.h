@@ -17,6 +17,7 @@ using std::vector;
 
 class PatrolGRAPH
 {
+  int STARTNODE;
   int gridSizeX;
   int gridSizeY;
   vector<int> access_vec;       // It could be "bool" but I left "int" for future map developments
@@ -26,6 +27,7 @@ class PatrolGRAPH
   vector< vector <int> > graph;
   vector< vector <int> > edgeCountMat;
   vector< vector <double> > PTM; /// PTM=Probability Transition Matrix
+  bool optimized;
   int currentNode;
   boost::array<int, 2> chosenEdge;
 
@@ -35,18 +37,22 @@ class PatrolGRAPH
 
   void createEdgeMat();
   void computeProbabilityMat();
+  void initGraph(std::ifstream & INFILE);
   void loadMatrixFile(std::ifstream &access_mat);
+  void loadPTMFile2Mat(std::ifstream &PTM_mat);
 
 
 public:
   PatrolGRAPH();
   virtual ~PatrolGRAPH();
-  void initGraph(std::ifstream & INFILE);
+  void init(std::ifstream & INFILE);
+  void init(std::ifstream & INFILE, std::ifstream & PTM_mat);
   void incrCount(int currIndex, bool currType, boost::array<int, 2> edge);
   void findNext();
   bool getCurrentType();
   bool isCompleted();
   float getCurrentCoord(char coordinate);
+
 
   int getCurrentNode() const
   {
