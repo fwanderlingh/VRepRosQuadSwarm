@@ -40,14 +40,16 @@ int main(int argc, char **argv)
   std::string folder_path = get_selfpath();
   //std::string filename = "access_mat_subs";
 
-  char mapDimension[INTSTRSIZE];
-  sprintf(mapDimension, "%d", mapDim );
-  std::string map_dim(mapDimension);
-  std::string filename = "free_mat_" + map_dim + "x" + map_dim;
-
-  std::ofstream map_file;
+  std::string map_dim(argv[1]);
+  std::string sizeTag = map_dim + "x" + map_dim;
+  std::string filename = "free_mat_" + sizeTag;
   std::string map_matrix_path = folder_path + "/" + filename;
 
+  std::string save_path = folder_path + "/Results/VRP_Results_Astar_" + sizeTag;
+
+
+/*
+  std::ofstream map_file;
   map_file.open ( map_matrix_path.c_str());
 
   for(int i=0; i<mapDim; i++){
@@ -59,13 +61,13 @@ int main(int argc, char **argv)
   }
 
   map_file.close();
-
+*/
 
   for(int i=1; i<=10; i++){
     int num_robots = i;
     /// Constructor inputs are (mapToExplore, numOfAgents) ///
-    VrpGreedy myVrp(map_matrix_path, num_robots);
-    //VrpGreedyAstar myVrp(acc_matrix_path, num_robots);
+    //VrpGreedy myVrp(map_matrix_path, num_robots);
+    VrpGreedyAstar myVrp(map_matrix_path, num_robots);
 
     struct timespec requestStart, requestEnd;
 
@@ -75,7 +77,7 @@ int main(int argc, char **argv)
     double timeElapsed = ( requestEnd.tv_sec - requestStart.tv_sec )
                            + ( requestEnd.tv_nsec - requestStart.tv_nsec ) / 1E9;
 
-    performanceIndexes(myVrp, folder_path, timeElapsed*1E3); ///We multiply the time to get it in milliseconds
+    performanceIndexes(myVrp, save_path, timeElapsed*1E3); /// We multiply the time to get it in milliseconds
 
     //std::cin.get();
   }

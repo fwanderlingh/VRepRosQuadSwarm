@@ -201,7 +201,6 @@ float NodeCounting::getCurrentCoord(char coordinate){
     /// 'z' for now is omitted on purpose, since the height depends on the robot
     /// (check quadcopterRosCtrl.cpp or quadNodeCount.cpp for further details)
   }
-
 }
 
 

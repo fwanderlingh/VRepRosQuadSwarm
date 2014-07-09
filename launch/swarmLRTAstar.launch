@@ -9,6 +9,6 @@
   <node name="quadLRTAstar_6" pkg="quadcopter_ctrl" type="quadLRTA" args="6" output="screen"/>
   <node name="quadLRTAstar_7" pkg="quadcopter_ctrl" type="quadLRTA" args="7" output="screen"/>
   <node name="quadLRTAstar_8" pkg="quadcopter_ctrl" type="quadLRTA" args="8" output="screen"/>
-  <node name="quadLRTAstar_9" pkg="quadcopter_ctrl" type="quadLRTA" args="9" output="screen"/>
-<!-- -->
+<!--  <node name="quadLRTAstar_9" pkg="quadcopter_ctrl" type="quadLRTA" args="9" output="screen"/>
+ -->
 </launch>

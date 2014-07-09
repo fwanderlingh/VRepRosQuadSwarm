@@ -73,11 +73,12 @@ int main(int argc, char **argv)
   }
 
   // In this way each robot flies at a slightly different height
+  //(strtol(argv[1], NULL, 0)
   zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
 
   std::ifstream access_matrix;
   //std::string filename = "access_mat_subs";
-  std::string filename = "free_mat_15x15";
+  std::string filename = "free_mat_10x10";
 
   std::string folder_path = get_selfpath();
   std::string file_path = folder_path + "/" + filename;
@@ -99,6 +100,8 @@ int main(int argc, char **argv)
   std::string nodeName = add_argv("quadNodeCount", argv[1]);
   std::string targetObjPosName = add_argv("vrep/targetObjPos", argv[1]);
   std::string quadcopPosName = add_argv("vrep/quadcopPos", argv[1]);
+
+
 
   ros::init(argc, argv, nodeName);
   ros::NodeHandle n;

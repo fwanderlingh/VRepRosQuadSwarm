@@ -23,7 +23,7 @@ using std::cout;
 using std::endl;
 
 
-LRTAstar::LRTAstar() :  gridSizeX(0), gridSizeY(0), reachLastOne(0),
+LRTAstar::LRTAstar() :  gridSizeX(0), gridSizeY(0),
                           unvisitedCount(std::numeric_limits<int>::max())
 {
 
@@ -33,7 +33,7 @@ LRTAstar::LRTAstar() :  gridSizeX(0), gridSizeY(0), reachLastOne(0),
 }
 
 
-LRTAstar::LRTAstar(std::ifstream & INFILE) : reachLastOne(0), unvisitedCount(std::numeric_limits<int>::max())
+LRTAstar::LRTAstar(std::ifstream & INFILE) : unvisitedCount(std::numeric_limits<int>::max())
 {
 
   initGraph(INFILE);
@@ -69,7 +69,7 @@ void LRTAstar::loadMatrixFile(std::ifstream &access_mat){
 
 void LRTAstar::initGraph(std::ifstream & INFILE){
 
-  srand(time(NULL) xor getpid()<<16);
+  srand(time(NULL) xor getpid()<<16); // xor getpid()<<16);
   loadMatrixFile(INFILE);       /// Filling the "access_vec" and defining grid sizes
 
   //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;

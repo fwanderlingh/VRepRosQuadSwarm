@@ -77,8 +77,8 @@ VrpGreedy::~VrpGreedy()
 
 double VrpGreedy::pathLength(vector<int> &path){
 
-//FIXME distance//
-  double length = FLT_MIN;
+  //FIXME distance//
+  double length = 0;
   for(vector<graphNode>::size_type i = 0; i < (path.size() - 1); i++){
     length = length + sqrt(pow((graphNodes[path[i]].posx - graphNodes[path[i+1]].posx),2) +
                            pow((graphNodes[path[i]].posy - graphNodes[path[i+1]].posy),2) /*+
@@ -235,6 +235,8 @@ void VrpGreedy::solve(){
 
   int start1, start2, target;
   vector<int> fwPath;
+
+  pathTentative.reserve(numFreeNodes+2);
 
 
   while(unvisitedNodes.size() > 0){

@@ -26,29 +26,28 @@ class VrpGreedyAstar
   vector<graphNode> graphNodes;
   vector<int> unvisitedNodes;
   vector<int> access_vec;
-  float minDist;			//distance between two adjacent blocks
+  double minDist;			//distance between two adjacent blocks
   vector< vector<int> > Paths;
   vector<int> pathTentative;
   vector<int> astarTent;
-  vector<int> bestAstar;
   vip choice;
-  float deltaBest;
-  float deltavip;
-  float bigL;
-  float bigLTent;
-  float liMin;
+  double deltaBest;
+  double deltavip;
+  double bigL;
+  double liMin;
+
   int numFreeNodes;
 
   vector< vector<int> >::iterator it;
-  vector< vector<int> >::iterator itr;
-  vector<int>::iterator itc;
-  vector<int>::size_type v;
+  vector< vector<int> >::iterator itr; // Iterator for Paths
+  vector<int>::iterator itc; // Iterator for position inside path
+  vector<int>::size_type v; // Iterator for unvisited nodes
 
 
   void checkBest(bool neighbour);
-  float pathLength(vector<int> &pathToEvaluate);
+  double pathLength(vector<int> &pathToEvaluate);
   void loadMatrixFile(std::string acc_matrix_path);
-  float dist(graphNode &a, graphNode &b);
+  double dist(graphNode &a, graphNode &b);
   void init();
   void printTentative();
 

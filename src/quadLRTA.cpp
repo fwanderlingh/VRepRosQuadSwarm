@@ -53,6 +53,7 @@ void quadPosFromVrep(const geometry_msgs::PoseStamped::ConstPtr& pubQuadPose)
   quadPos.pose.position.y = pubQuadPose->pose.position.y;
   quadPos.pose.position.z = pubQuadPose->pose.position.z;
   quadPosAcquired = 1;
+  //cout << "Pos Acquired!" << endl;
 }
 
 
@@ -74,10 +75,11 @@ int main(int argc, char **argv)
   }
 
   // In this way each robot flight at a slightly different height
-  zHeight =  (strtod(argv[1], NULL)) *0.6 + 5;
+  zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
+  //cout << "zHeight=" << zHeight << endl;
 
   std::ifstream access_matrix;
-  std::string filename = "free_mat_10x10";
+  std::string filename = "free_mat_15x15";
 
   std::string folder_path = get_selfpath();
   std::string file_path = folder_path + "/" + filename;
@@ -137,14 +139,15 @@ int main(int argc, char **argv)
   int inSubPath = 0;
 
   double dist = 0;
-  double treshold = 0.3;   // How much the quadcopter has to be near
+  double threshold = 0.3;   // How much the quadcopter has to be near
                            // to the green sphere (target) before the target moves
   int loaded = 0;
 
   while (ros::ok())
   {
+    // FIXME not running if the robot starts in a position lower than threshold
     if(myLRTA.isCompleted() == false || inSubPath == 1){
-
+      //cout << "myLRTA.isCompleted() " << myLRTA.isCompleted() << endl;
       if(quadPosAcquired){
         quadPosAcquired = 0;
         running = 1;
@@ -163,7 +166,7 @@ int main(int argc, char **argv)
             inSubPath = 1;
             publishSubTarget(targetObjPos_pub);
             //std::cout << "First subTarget Published!" << std::endl;
-          }else if(dist < treshold){
+          }else if(dist < threshold){
 
             //cout << "Finding next node:" << endl;
             myLRTA.findNext();
@@ -174,13 +177,17 @@ int main(int argc, char **argv)
               targetObjPos_pub.publish(targetPos);
               //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
             }
-          }
+          }/*else{
+            /// We enter here if we happen to be between threshold and CRIT_DIST
+            inSubPath = 1;
+            publishSubTarget(targetObjPos_pub);
+          }*/
         }else{
           double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
-          if(dist < treshold){
+          if(dist < threshold){
             inSubPath = 0;
             targetObjPos_pub.publish(targetPos);
-          }else if(sub_dist < treshold){
+          }else if(sub_dist < threshold){
             publishSubTarget(targetObjPos_pub);
             //std::cout << "subTarget Published!" << std::endl;
           }

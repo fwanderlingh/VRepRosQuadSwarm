@@ -26,7 +26,7 @@ using std::vector;
 
 
 template<typename T>
-void performanceIndexes(T VRP, std::string folder_save_path, double execTime){
+void performanceIndexes(T VRP, std::string save_path, double execTime){
 
   int numRobots = VRP.getNumRobots();
   int numFreeNodes = VRP.getNumFreeNodes();
@@ -45,11 +45,11 @@ void performanceIndexes(T VRP, std::string folder_save_path, double execTime){
 
   std::ofstream results_file;
 
-  std::string resultsFileName = folder_save_path + "/Results/VRP_Results";
+  //std::string resultsFileName = save_path + "/Results/VRP_Results_Astar";
 
-  results_file.open ( resultsFileName.c_str(), std::fstream::app );
+  results_file.open ( save_path.c_str(), std::fstream::app );
 
-  results_file << numRobots << "\t" << numFreeNodes
+  results_file << numRobots << "\t" << numFreeNodes + 1
       << "\t" << longest << "\t" << total << "\t" << st_dev << "\t" << execTime << "\n";
 
   results_file.close();

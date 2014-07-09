@@ -11,7 +11,7 @@
 
 #include <quadcopter_ctrl/CoverAnalysis.h>
 #include <quadcopter_ctrl/termColors.h>
-#include <algorithm>
+#include <algorithm>   /* max_element */
 #include <cstdio>
 #include <iostream>
 #include <iterator>

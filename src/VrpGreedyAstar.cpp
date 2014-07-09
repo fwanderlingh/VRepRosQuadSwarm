@@ -56,7 +56,6 @@ VrpGreedyAstar::VrpGreedyAstar() :
   deltaBest = FLT_MAX;
   deltavip = FLT_MAX;
   bigL = -FLT_MAX;
-  bigLTent = -FLT_MAX;
   liMin = FLT_MAX;
 
 }
@@ -88,10 +87,10 @@ VrpGreedyAstar::~VrpGreedyAstar()
 }
 
 
-float VrpGreedyAstar::pathLength(vector<int> &path){
+double VrpGreedyAstar::pathLength(vector<int> &path){
 
 
-  float length = FLT_MIN;
+  double length = 0;
   for(vector<graphNode>::size_type i = 0; i < (path.size() - 1); i++){
     length = length + sqrt(pow((graphNodes[path[i]].posx - graphNodes[path[i+1]].posx),2) +
                            pow((graphNodes[path[i]].posy - graphNodes[path[i+1]].posy),2) /*+
@@ -222,7 +221,6 @@ void VrpGreedyAstar::solve(){
     deltaBest = FLT_MAX;
     deltavip = FLT_MAX;
     bigL = -FLT_MAX;
-    bigLTent = -FLT_MAX;
     //liMin = FLT_MAX;
 
     /// Initialise bigL as the MAX path length among all the current paths
@@ -268,7 +266,6 @@ void VrpGreedyAstar::solve(){
               start1 = *(itc-1);
               //cout << "Target:" << target << " start_1:" << start1 << endl;
 
-
               astar.run(start1, target);
               //cout << "way there: ";
               for(int i=1; i<astar.path.size()-1; i++){
@@ -300,7 +297,6 @@ void VrpGreedyAstar::solve(){
             checkBest(false);
 
           }
-
         } // END P(positions)
       } // END I (robots)
     } // END V (nodes)
@@ -339,9 +335,9 @@ void VrpGreedyAstar::solve(){
 
 
 
-float VrpGreedyAstar::dist(graphNode &a, graphNode &b){
+double VrpGreedyAstar::dist(graphNode &a, graphNode &b){
 
-  float dist = sqrt ( pow(a.posx - b.posx, 2.0) +
+  double dist = sqrt ( pow(a.posx - b.posx, 2.0) +
                       pow(a.posy - b.posy, 2.0) );
 
   //cout << "Dist=" << dist << endl;
