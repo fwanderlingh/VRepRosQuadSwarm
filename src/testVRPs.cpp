@@ -38,36 +38,22 @@ int main(int argc, char **argv)
 
 
   std::string folder_path = get_selfpath();
-  //std::string filename = "access_mat_subs";
 
   std::string map_dim(argv[1]);
   std::string sizeTag = map_dim + "x" + map_dim;
-  std::string filename = "free_mat_" + sizeTag;
+  //std::string filename = "free_mat_" + sizeTag;
+
+  std::string filename = "access_mat_subs";
   std::string map_matrix_path = folder_path + "/" + filename;
 
-  std::string save_path = folder_path + "/Results/VRP_Results_Astar_" + sizeTag;
+  std::string save_path = folder_path + "/Results/VRP_Results_FW_" + filename;
 
-
-/*
-  std::ofstream map_file;
-  map_file.open ( map_matrix_path.c_str());
-
-  for(int i=0; i<mapDim; i++){
-    for(int j=0; j<mapDim; j++){
-      map_file << "0";
-      if(j != (mapDim-1) ) map_file << " ";
-    }
-    map_file << "\n";
-  }
-
-  map_file.close();
-*/
 
   for(int i=1; i<=10; i++){
     int num_robots = i;
     /// Constructor inputs are (mapToExplore, numOfAgents) ///
-    //VrpGreedy myVrp(map_matrix_path, num_robots);
-    VrpGreedyAstar myVrp(map_matrix_path, num_robots);
+    VrpGreedy myVrp(map_matrix_path, num_robots);
+    //VrpGreedyAstar myVrp(map_matrix_path, num_robots);
 
     struct timespec requestStart, requestEnd;
 

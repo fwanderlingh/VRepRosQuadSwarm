@@ -28,7 +28,7 @@
 using std::cout;
 using std::endl;
 
-PatrolGRAPH::PatrolGRAPH() : gridSizeX(0), gridSizeY(0),
+PatrolGRAPH::PatrolGRAPH() : STARTNODE(0), gridSizeX(0), gridSizeY(0),
     currentNode(STARTNODE), optimized(false),
     unvisitedCount(std::numeric_limits<int>::max())
 {
@@ -59,14 +59,57 @@ void PatrolGRAPH::loadMatrixFile(std::ifstream &access_mat){
 
   }
   else{ cout << "Error reading file!" << endl; }
+}
+
+
+void PatrolGRAPH::loadGraphFile(std::ifstream &graph_mat){
+
+  std::string line;
+  while ( getline( graph_mat, line ) ) {
+    std::istringstream is( line );
+    graph.push_back(
+        std::vector<int>( std::istream_iterator<int>(is),
+                           std::istream_iterator<int>() ) );
+  }
+
+  numFreeNodes = static_cast<int>(graph.size());
+
+  vector< vector<int> > _graph(numFreeNodes, vector<int> (numFreeNodes, 0));
+  edgeCountMat = _graph;
+
+  unvisited.resize(numFreeNodes, 1);
+  unvisitedCount = numFreeNodes;
+}
+
+
+
+void PatrolGRAPH::loadPosVecFile(std::ifstream &Pos_vec){
+
+  std::string line;
+  std::vector< std::vector<double> > positionVec;
+
+  while ( getline( Pos_vec, line ) ) {
+    std::istringstream is( line );
+    positionVec.push_back(
+        std::vector<double>( std::istream_iterator<double>(is),
+                             std::istream_iterator<double>() ) );
+  }
+
+  graphNodes.resize(numFreeNodes);
+  for(int i=0; i < numFreeNodes; i++){
+    graphNodes.at(i).setPos(static_cast<double>(positionVec[0][i]),
+                            static_cast<double>(positionVec[1][i]) );
+  }
+
 
 }
 
 
-void PatrolGRAPH::loadPTMFile2Mat(std::ifstream &PTM_mat){
+
+
+void PatrolGRAPH::loadPTMFile(std::ifstream &PTM_mat){
 
   std::string line;
-  //std::vector< std::vector<double> > all_doubles;
 
   while ( getline( PTM_mat, line ) ) {
     std::istringstream is( line );
@@ -91,23 +134,57 @@ void PatrolGRAPH::loadPTMFile2Mat(std::ifstream &PTM_mat){
    */
 }
 
-void PatrolGRAPH::init(std::ifstream & INFILE){
-  /** If input argument of init is only one then we assume we have no
-   * optimized Probability Transition Matrix.
+
+void PatrolGRAPH::init_acc(std::ifstream & access_mat){
+  /** If input argument of init is only 1 then we assume we have no
+   * optimized Probability Transition Matrix and the input file is
+   * the Occupancy Grid (access_mat).
    */
   optimized = false;
   cout << "Optimized: false" << endl;
-  initGraph(INFILE);
+  initGraph(access_mat);
+  finalPath.push_back(currentNode);
+  computeProbabilityMat();
 }
 
-void PatrolGRAPH::init(std::ifstream & INFILE, std::ifstream & PTM_mat){
-  /** If input arguments are two then we assume we do have an
-   * optimized Probability Transition Matrix and so we load it.
+
+void PatrolGRAPH::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec){
+  /** In this case we don't have an occupancy grid but already a matrix
+   * representing the graph so we need to know the position of the vertices,
+   * information contained in Pos_Vec. No optimised PTM.
+   */
+  optimized = false;
+  cout << "Optimized: true" << endl;
+  loadGraphFile(graph_mat);
+  loadPosVecFile(Pos_vec);
+  computeProbabilityMat();
+  finalPath.push_back(currentNode);
+}
+
+
+void PatrolGRAPH::init_acc_ptm(std::ifstream & access_mat, std::ifstream & PTM_mat){
+  /** In this case we have an Occupancy Grid and an optimised
+   *  Probability Transition Matrix.
    */
   optimized = true;
   cout << "Optimized: true" << endl;
-  initGraph(INFILE);
-  loadPTMFile2Mat(PTM_mat);
+  initGraph(access_mat);
+  loadPTMFile(PTM_mat);
+  finalPath.push_back(currentNode);
+}
+
+
+void PatrolGRAPH::init_graph_pos_ptm(std::ifstream &graph_mat, std::ifstream &Pos_vec, std::ifstream &PTM_mat){
+  /** In this case we don't have an occupancy grid but already a matrix
+   * representing the graph so we need to know the position of the vertices,
+   * information contained in Pos_Vec. We also load the optimised PTM.
+   */
+  optimized = true;
+  cout << "Optimized: true" << endl;
+  loadPosVecFile(Pos_vec);
+  loadGraphFile(graph_mat);
+  loadPTMFile(PTM_mat);
+  finalPath.push_back(currentNode);
 }
 
 
@@ -124,7 +201,7 @@ void PatrolGRAPH::initGraph(std::ifstream & INFILE){
   // Graph initialisation - to every node is assigned a position in a Row-Major order
   for(int i=0; i<gridSizeX; i++){
     for(int j=0; j<gridSizeY; j++){
-      graphNodes.at((i*gridSizeY) + j).setPos((float)i, (float)j);
+      graphNodes.at((i*gridSizeY) + j).setPos((double)i, (double)j);
       graphNodes.at((i*gridSizeY) + j).occupied = access_vec.at((i*gridSizeY) + j);
 
       if(access_vec.at((i*gridSizeY) + j) == 0)  unvisited.at((i*gridSizeY) + j) = 1;
@@ -138,14 +215,9 @@ void PatrolGRAPH::initGraph(std::ifstream & INFILE){
 
   STARTNODE = gridSizeY/2;
   currentNode = STARTNODE;
-  //cout << STARTNODE << endl;
 
   createEdgeMat();
 
-  /// Here we check if the user has given an optimized PTM,
-  /// if not we compute the simple version of PTM
-  if(!optimized)  computeProbabilityMat();
-  finalPath.push_back(currentNode);
 }
 
 
@@ -155,10 +227,10 @@ void PatrolGRAPH::createEdgeMat(){
 
   assert(n == access_vec.size());
   /// Here we create a zero matrix of the size of the graph
-
   vector< vector<int> > _graph(n, vector<int> (n, 0));
   graph = _graph;
   edgeCountMat = _graph;
+
   int row, col;    // Main indexes
   int row_shift, col_shift; // To move around spatial adjacents
   int nb_row, nb_col;       // Adjacent indexes
@@ -218,22 +290,6 @@ void PatrolGRAPH::computeProbabilityMat(){
 
   double num_edges;
 
-  /// Here the sum of probabilities of IN-going edges is equal to 1
-  /*  for(int i=0; i<graph.size(); i++){
-    num_edges = 0;
-    // Here on a first pass we see how many are the in-going edges
-    for(int j=0; j<graph.size(); j++){
-      num_edges += graph[j][i];
-    }
-    if(num_edges != 0){
-      // Here on a second pass we divide the value in graph,
-      // which is 1 if there is an edge, for the total # of in-going edges
-      for(int j=0; j<graph.size(); j++){
-        temp_PTM[j][i] = (double)graph[j][i]/num_edges;
-      }
-    }
-  }
-   */
   /// Here the sum of probabilities of OUT-going edges is equal to 1
   for(int i=0; i<graph.size(); i++){
     num_edges = std::accumulate(graph.at(i).begin(), graph.at(i).end(), 0.0);
@@ -316,69 +372,37 @@ void PatrolGRAPH::findNext(){
     double deltaP_best = std::numeric_limits<double>::max();
     int bestEdgeCount = std::numeric_limits<int>::max();
 
-    int current_i = currentNode/gridSizeY;
-    int current_j = currentNode%gridSizeY;
 
-    for(int i_shift=-1; i_shift<=1; ++i_shift){
-      for(int j_shift=-1; j_shift<=1; ++j_shift){
+    for(int j=0; j < graph.size(); j++){
+      if(graph[currentNode][j] == 1){
+        int tentIndex = j;
 
-        int tent_i = current_i + i_shift;
-        int tent_j = current_j + j_shift;
+        if(PTM[currentNode][tentIndex] == 0){
+          printf("%sWARNING: 0-probability detected on (%d,%d)%s\n", TC_RED, currentNode, tentIndex, TC_NONE);
+        }
 
-        if( (tent_i>=0) && (tent_i<gridSizeX) && (tent_j>=0) && (tent_j<gridSizeY) && ///RANGE CHECK
-            (i_shift!=0 || j_shift!=0)  ///<--- don't check same node of current
-            && (i_shift*j_shift == 0) ///<--- don't check oblique nodes
-        )
-        {
+        double deltaP = ( (double)edgeCountMat[currentNode][tentIndex]/currentNodeCount )
+                                                                  - PTM[currentNode][tentIndex];
 
-          int tentIndex = tent_i*gridSizeY + tent_j;
+        if(deltaP <= deltaP_best){
+          if(deltaP == deltaP_best){
+            best_vec.push_back(tentIndex);
+          }else{
+            best_vec.clear();
+            best_vec.push_back(tentIndex);
+          }
+          deltaP_best = deltaP;
+        }//End checkBest
+      }
 
-          if( (graphNodes.at(tentIndex).occupied == 0) ){   ///OCCUPANCY CHECK
 
-            if(PTM[currentNode][tentIndex] == 0){
-              printf("%sWARNING: 0-probability detected on (%d,%d)%s\n", TC_RED, currentNode, tentIndex, TC_NONE);
-            }
-            double deltaP = ( (double)edgeCountMat[currentNode][tentIndex]/currentNodeCount )
-                                                      - PTM[currentNode][tentIndex];
-
-            if(deltaP <= deltaP_best){
-              if(deltaP == deltaP_best){
-                best_vec.push_back(tentIndex);
-              }else{
-                best_vec.clear();
-                best_vec.push_back(tentIndex);
-              }
-              deltaP_best = deltaP;
-            }//End checkBest
+    }
 
 #ifdef DEBUG_PRINT
             if(currentNode == 1){
               cout << "Edge(" << currentNode << ", " << tentIndex << ") delta=" << deltaP << endl;
             }
 #endif
-
-            ///Edge Count - Disabled
-            /*
-          int tentCount = edgeCountMat[currentNode][tentIndex];
-
-          if(tentCount <= bestEdgeCount){
-            if(tentCount == bestEdgeCount){
-              best_vec.push_back(tentIndex);
-            }else{
-              best_vec.clear();
-              best_vec.push_back(tentIndex);
-            }
-            bestEdgeCount = tentCount;
-          }//End checkBest
-             */
-
-          }//End occupancy check
-        }//End range check
-      }//End j_shift for-loop (y scan)
-    } //End i_shift for-loop (x scan)
-
-    //cout << "Best deltaP was: " << deltaP_best << endl;
-
 
     /// Now if there is more than one element in the vector choose one randomly.
     /// If size()==1 the modulus function always returns 0 (the first element)

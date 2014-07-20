@@ -80,13 +80,14 @@ int main(int argc, char **argv)
   // In this way each robot flight at a slightly different height
   zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
 
-  std::ifstream access_matrix;
+
   //std::string filename = "access_mat_subs";
-  std::string filename = "free_mat_5x5";
+  std::string filename = "Grid_4x4_1";
 
   std::string folder_path = get_selfpath();
-  std::string file_path = folder_path + "/" + filename;
+  std::string file_path = folder_path + "/Input/Grids/" + filename;
 
+  std::ifstream access_matrix;
   access_matrix.open( file_path.c_str() );
   if( !access_matrix.is_open() ){
     printf("%sAccess matrix not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
@@ -94,18 +95,32 @@ int main(int argc, char **argv)
   }
 
   std::ifstream PTM_matrix;
-  std::string PTM_filename = "PTM_free_mat_5x5.txt";
-  std::string PTM_file_path = folder_path + "/Input/" + PTM_filename;
+  std::string PTM_filename = "PTM_" + filename + ".txt";
+  std::string PTM_file_path = folder_path + "/Input/PTMs/" + PTM_filename;
   PTM_matrix.open( PTM_file_path.c_str() );
   if( !PTM_matrix.is_open() ){
     printf("%sPTM matrix not found!%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
-  myPG.init(access_matrix, PTM_matrix);
-  //myPG.init(access_matrix);
+  std::ifstream pos_Vec;
+  std::string posV_filename = "posV_" + filename;
+  std::string posV_file_path = folder_path + "/Input/PTMs/" + PTM_filename;
+  pos_Vec.open( posV_file_path.c_str() );
+  if( !pos_Vec.is_open() ){
+    printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
+  }
 
-  /* The following strings are used to concatenate the topic name to the argument passed to
+  /// Run withOut offline optimisation
+  //myPG.init_acc(access_matrix);
+
+  /// Run with offline optimisation
+  //myPG.init_acc_ptm(access_matrix, PTM_matrix);
+  myPG.init_graph_pos_ptm(access_matrix, pos_Vec, PTM_matrix);
+
+
+  /** The following strings are used to concatenate the topic name to the argument passed to
    * the node (the argv[1]), so to name each node with a different name and send signals to
    *  different topics.
    * (e.g. if argv[1] = 0 the node will be named quadcopterRosCtrl_0, publish to
@@ -156,13 +171,11 @@ int main(int argc, char **argv)
   double treshold = 0.3;
   int loaded = 0;
 
-  //if(clock()) cout << "Clock is available\n";
-  //else{cout << "Clock not available\n";}
-
+  // || ((time(NULL) - start) < (60 * #))  <-- # minutes
 
   while (ros::ok())
   {
-    if(myPG.isCompleted() == false ||  inSubPath==1  ){
+    if(myPG.isCompleted() == false ||  inSubPath == 1 ){
 
       if(quadPosAcquired){
         quadPosAcquired = 0;
@@ -175,13 +188,13 @@ int main(int argc, char **argv)
 
         // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
         dist = fabs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
-        //cout << "Distance to target = " << dist << " m" << endl;
+        cout << "Distance to target = " << dist << " m" << endl;
 
         if(inSubPath == 0){
           if( dist > CRITICAL_DIST ){
             inSubPath = 1;
             publishSubTarget(targetObjPos_pub);
-            //std::cout << "First subTarget Published!" << std::endl;
+            std::cout << "First subTarget Published!" << std::endl;
           }else if(dist < treshold){
 
             /// Here we save the index of the node to which we arrived since after executing
@@ -206,7 +219,7 @@ int main(int argc, char **argv)
             targetObjPos_pub.publish(targetPos);
           }else if(sub_dist < treshold){
             publishSubTarget(targetObjPos_pub);
-            //std::cout << "subTarget Published!" << std::endl;
+            std::cout << "subTarget Published!" << std::endl;
           }
 
           /*if(sub_dist < treshold && dist > treshold){
@@ -226,13 +239,13 @@ int main(int argc, char **argv)
 
     }else{
       printf("%s[%s] ** Area coverage completed! **%s\n", TC_GREEN, argv[1], TC_NONE);
-      printf("Minutes elapsed: %d\n", (int)(time(NULL) - start)/60);
+      //printf("Minutes elapsed: %d\n", (int)(time(NULL) - start)/60);
 
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myPG.getNumFreeNodes();
       osInfo.path = myPG.getFinalPath();
       completed_pub.publish(osInfo);
-
+/*
       int gridSizeX = myPG.getGridSizeX();
       int gridSizeY = myPG.getGridSizeY();
       vector<graphNode> graphNodes = myPG.getGraphNodes();
@@ -240,11 +253,11 @@ int main(int argc, char **argv)
       ///Dump counts map on file
       char process_id[INTSTRSIZE];
       sprintf(process_id, "%d", (int)getpid() );
-      std::string resultsFileName(process_id);
-      resultsFileName = folder_path + "/CountMaps/CountMap_" + resultsFileName;
+      std::string resultsName(process_id);
+      resultsName = folder_path + "/CountMaps/CountMap_" + resultsName + filename;
 
       std::ofstream nodeCountMap;
-      nodeCountMap.open(resultsFileName.c_str());
+      nodeCountMap.open(resultsName.c_str());
       if(nodeCountMap.is_open() ){
         for(int i=0; i<gridSizeX; i++){
           for(int j=0; j<gridSizeY; j++){
@@ -255,7 +268,7 @@ int main(int argc, char **argv)
         nodeCountMap.close();
 
       }else{ cout << "Error writing counts on file" << endl; }
-
+*/
       ros::shutdown();
     }
 

@@ -86,8 +86,8 @@ int main(int argc, char **argv)
 
 
   double dist;
-  double treshold = 0.3;	// How much the quadcopter has to be near to the green sphere before the target moves
-  float posZ  =  1.5;		// z for now is fixed!
+  /// How much the quadcopter has to be near to the green sphere before the target moves
+  double threshold = 0.3;
 
   int wpIndex = 0;     // Waypoint index, used to navigate through the robotPath vector
 
@@ -121,8 +121,7 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-    if( (controlSignal.data != 0) && (completedPath.data == 0) && (inSubPath == 1) ){
-
+    if( ((controlSignal.data != 0) && (completedPath.data == 0)) || (inSubPath == 1) ){
 
       if(quadPosAcquired){
         quadPosAcquired = 0;
@@ -143,7 +142,7 @@ int main(int argc, char **argv)
             inSubPath = 1;
             publishSubTarget(targetObjPos_pub);
             //std::cout << "First subTarget Published!" << std::endl;
-          }else if(dist < treshold){
+          }else if(dist < threshold){
 
             ++wpIndex;
             if(wpIndex == (int)robotPathVec.size() ){
@@ -151,17 +150,17 @@ int main(int argc, char **argv)
             }
             updateTarget(wpIndex, robotPathVec, argv[1]);
 
-            if( fabs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < treshold ){
+            if( fabs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
               targetObjPos_pub.publish(targetPos);
               //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
             }
           }
         }else{
           double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
-          if(dist < treshold){
+          if(dist < threshold){
             inSubPath = 0;
             targetObjPos_pub.publish(targetPos);
-          }else if(sub_dist < treshold){
+          }else if(sub_dist < threshold){
             publishSubTarget(targetObjPos_pub);
             //std::cout << "subTarget Published!" << std::endl;
           }

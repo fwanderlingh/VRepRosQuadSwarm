@@ -79,7 +79,7 @@ int main(int argc, char **argv)
   //cout << "zHeight=" << zHeight << endl;
 
   std::ifstream access_matrix;
-  std::string filename = "free_mat_15x15";
+  std::string filename = "free_mat_10x10";
 
   std::string folder_path = get_selfpath();
   std::string file_path = folder_path + "/" + filename;
@@ -177,11 +177,10 @@ int main(int argc, char **argv)
               targetObjPos_pub.publish(targetPos);
               //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
             }
-          }/*else{
-            /// We enter here if we happen to be between threshold and CRIT_DIST
+          }else{
+            //updateTarget(updateCount_pub);
             inSubPath = 1;
-            publishSubTarget(targetObjPos_pub);
-          }*/
+          }
         }else{
           double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
           if(dist < threshold){

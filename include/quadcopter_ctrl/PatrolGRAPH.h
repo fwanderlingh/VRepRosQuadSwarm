@@ -37,16 +37,20 @@ class PatrolGRAPH
 
   void createEdgeMat();
   void computeProbabilityMat();
+  void loadPosVecFile(std::ifstream &Pos_vec);
   void initGraph(std::ifstream & INFILE);
   void loadMatrixFile(std::ifstream &access_mat);
-  void loadPTMFile2Mat(std::ifstream &PTM_mat);
-
+  void loadPTMFile(std::ifstream &PTM_mat);
+  void loadGraphFile(std::ifstream &graph_mat);
 
 public:
   PatrolGRAPH();
   virtual ~PatrolGRAPH();
-  void init(std::ifstream & INFILE);
-  void init(std::ifstream & INFILE, std::ifstream & PTM_mat);
+  void init_acc(std::ifstream & graph_mat);
+  void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec);
+  void init_acc_ptm(std::ifstream & access_mat, std::ifstream & PTM_mat);
+  void init_graph_pos_ptm(std::ifstream &graph_mat, std::ifstream &Pos_vec, std::ifstream &PTM_mat);
+
   void incrCount(int currIndex, bool currType, boost::array<int, 2> edge);
   void findNext();
   bool getCurrentType();

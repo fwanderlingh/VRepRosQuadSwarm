@@ -1,5 +1,5 @@
 <launch>
-  <node name="OSListener" pkg="quadcopter_ctrl" type="OnlineSearchListener" args="9" output="screen"/>
+  <node name="OSListener" pkg="quadcopter_ctrl" type="OnlineSearchListener" args="10" output="screen"/>
   <node name="quadLRTAstar_0" pkg="quadcopter_ctrl" type="quadLRTA" args="0" output="screen"/>
   <node name="quadLRTAstar_1" pkg="quadcopter_ctrl" type="quadLRTA" args="1" output="screen"/>
   <node name="quadLRTAstar_2" pkg="quadcopter_ctrl" type="quadLRTA" args="2" output="screen"/>
@@ -9,6 +9,6 @@
   <node name="quadLRTAstar_6" pkg="quadcopter_ctrl" type="quadLRTA" args="6" output="screen"/>
   <node name="quadLRTAstar_7" pkg="quadcopter_ctrl" type="quadLRTA" args="7" output="screen"/>
   <node name="quadLRTAstar_8" pkg="quadcopter_ctrl" type="quadLRTA" args="8" output="screen"/>
-<!--  <node name="quadLRTAstar_9" pkg="quadcopter_ctrl" type="quadLRTA" args="9" output="screen"/>
- -->
+  <node name="quadLRTAstar_9" pkg="quadcopter_ctrl" type="quadLRTA" args="9" output="screen"/>
+<!-- -->
 </launch>

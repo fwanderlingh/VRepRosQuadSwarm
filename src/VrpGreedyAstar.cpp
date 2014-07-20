@@ -125,8 +125,6 @@ void VrpGreedyAstar::loadMatrixFile(std::string acc_matrix_path){
   }
   else{ cout << "Error reading file!" << endl; }
 
-
-
 }
 
 
