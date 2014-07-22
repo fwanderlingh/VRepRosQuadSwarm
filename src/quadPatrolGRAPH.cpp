@@ -72,18 +72,17 @@ int main(int argc, char **argv)
 
   std::time_t start = time(NULL);
   /// argv[1] contains the ID number of the robot to be controlled (0,1,2...)
-  if(argc<2){
-    printf("%s** argv[1] is empty! Provide quadcopter # to control! **%s\n", TC_RED, TC_NONE);
+  if(argc<3){
+    printf("%s** ERROR **\n"
+              "argv[1]: Quadcopter # to control\n"
+              "argv[2] Input file%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
   // In this way each robot flight at a slightly different height
   zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
 
-
-  //std::string filename = "access_mat_subs";
-  std::string filename = "Grid_4x4_1";
-
+  std::string filename(argv[2]);
   std::string folder_path = get_selfpath();
   std::string file_path = folder_path + "/Input/Grids/" + filename;
 
@@ -103,9 +102,10 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  std::ifstream pos_Vec;
+
   std::string posV_filename = "posV_" + filename;
-  std::string posV_file_path = folder_path + "/Input/PTMs/" + PTM_filename;
+  std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
+  std::ifstream pos_Vec;
   pos_Vec.open( posV_file_path.c_str() );
   if( !pos_Vec.is_open() ){
     printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
@@ -188,13 +188,13 @@ int main(int argc, char **argv)
 
         // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
         dist = fabs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
-        cout << "Distance to target = " << dist << " m" << endl;
+        //cout << "Distance to target = " << dist << " m" << endl;
 
         if(inSubPath == 0){
           if( dist > CRITICAL_DIST ){
             inSubPath = 1;
             publishSubTarget(targetObjPos_pub);
-            std::cout << "First subTarget Published!" << std::endl;
+            //std::cout << "First subTarget Published!" << std::endl;
           }else if(dist < treshold){
 
             /// Here we save the index of the node to which we arrived since after executing
@@ -219,7 +219,7 @@ int main(int argc, char **argv)
             targetObjPos_pub.publish(targetPos);
           }else if(sub_dist < treshold){
             publishSubTarget(targetObjPos_pub);
-            std::cout << "subTarget Published!" << std::endl;
+            //std::cout << "subTarget Published!" << std::endl;
           }
 
           /*if(sub_dist < treshold && dist > treshold){
@@ -244,6 +244,7 @@ int main(int argc, char **argv)
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myPG.getNumFreeNodes();
       osInfo.path = myPG.getFinalPath();
+      osInfo.fileName = filename;
       completed_pub.publish(osInfo);
 /*
       int gridSizeX = myPG.getGridSizeX();

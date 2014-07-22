@@ -18,6 +18,10 @@
 #include <fstream>
 #include <vector>
 
+///Used API Services
+#include "vrep_common/simRosStartSimulation.h"
+#include "vrep_common/simRosStopSimulation.h"
+
 #define DEF_LOOP_RATE 2      // Loop frequency of node in hertz
 
 using std::cout;
@@ -27,6 +31,7 @@ using std::vector;
 quadcopter_ctrl::OSmsg osInfo;
 int numOfCollected = 0;
 
+std::string testName;
 int numFreeNodes;
 vector<vector<int> > finalPaths;
 
@@ -41,6 +46,7 @@ void pathFromQuads(const quadcopter_ctrl::OSmsg::ConstPtr& onlineSearchInfo){
   cout << "Listener Says: Collected Path [" << onlineSearchInfo->ID << "]" << endl;
   numFreeNodes = onlineSearchInfo->numNodes;
   finalPaths.push_back(onlineSearchInfo->path);
+  testName = onlineSearchInfo->fileName;
   numOfCollected++;
 }
 
@@ -55,10 +61,7 @@ int main(int argc, char **argv)
   const int num_robots = strtol(argv[1], NULL, 0);
 
   std::string folder_path = get_selfpath();
-  std::string resultsFileName = folder_path + "/Results/OS_Results";
-  std::ofstream results_file;
 
-  cout << resultsFileName;
 
   ros::init(argc, argv, "OnlineSearchListener");
   ros::NodeHandle n;
@@ -67,11 +70,28 @@ int main(int argc, char **argv)
 
   ros::Rate loop_rate(DEF_LOOP_RATE); //Loop at DEF_LOOP_RATE
 
+  bool firstLoopRun = true;
+
 
   while (ros::ok())
   {
+    if(firstLoopRun){
+      firstLoopRun = false;
+
+      /** STARRT SIMULATION IN V-REP **/
+      ros::ServiceClient client_startSimulation =
+           n.serviceClient<vrep_common::simRosStartSimulation>("/vrep/simRosStartSimulation");
+      vrep_common::simRosStartSimulation srv_startSimulation;
+      client_startSimulation.call(srv_startSimulation);
+    }
 
     if(numOfCollected == num_robots){
+
+      /** STOP SIMULATION IN V-REP **/
+      ros::ServiceClient client_stopSimulation =
+           n.serviceClient<vrep_common::simRosStopSimulation>("/vrep/simRosStopSimulation");
+      vrep_common::simRosStopSimulation srv_stopSimulation;
+      client_stopSimulation.call(srv_stopSimulation);
 
       printf("%sAll %d paths collected!%s\n", TC_GREEN, num_robots, TC_NONE);
 
@@ -84,6 +104,11 @@ int main(int argc, char **argv)
       printf("%sPaths length standard deviation: %f%s\n", TC_MAGENTA, st_dev, TC_NONE);
 
       /** SAVING RESULTS TO FILE **/
+      std::string resultsFileName = folder_path + "/Results/" + testName + "_Results";
+      std::ofstream results_file;
+
+      cout << resultsFileName;
+
       results_file.open ( resultsFileName.c_str(), std::fstream::app );
       results_file << num_robots << "\t" << numFreeNodes
           << "\t" << longest << "\t" << total << "\t" << st_dev << "\n";

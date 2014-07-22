@@ -21,6 +21,7 @@ class NodeCounting
   int gridSizeY;
   int currentNode;
   vector<graphNode> graphNodes;
+  vector< vector <int> > graph;
   vector<int> access_vec;       //It could be "bool" but I left "int" for future map developments
   vector<int> unvisited;
   int unvisitedCount;
@@ -28,13 +29,19 @@ class NodeCounting
   int numFreeNodes;
   vector<int> finalPath;
 
+  void createEdgeMat();
   void loadMatrixFile(std::ifstream &access_mat);
+  void createGraph(std::ifstream & INFILE);
+  void loadGraphFile(std::ifstream &graph_mat);
+  void loadPosVecFile(std::ifstream &Pos_vec);
 
 public:
   NodeCounting();
   NodeCounting(std::ifstream & INFILE);
   virtual ~NodeCounting();
-  void initGraph(std::ifstream & INFILE);
+  void init_acc(std::ifstream & INFILE);
+  void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec);
+
   void incrCount(int nodeIndex, bool nodeType);
   void findNext();
   float getCurrentCoord(char coordinate);

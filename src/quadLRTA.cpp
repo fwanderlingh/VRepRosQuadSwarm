@@ -68,29 +68,37 @@ void updateCount(const quadcopter_ctrl::LRTAmsg::ConstPtr& LRTAinfo){
 int main(int argc, char **argv)
 {
   /// argv[1] contains the ID number of the robot to be controlled (0,1,2...)
-
-  if(argc<2){
-    printf("%s** argv[1] is empty! Provide quadcopter # to control! **%s\n", TC_RED, TC_NONE);
+  if(argc<3){
+    printf("%s** ERROR **\n"
+              "argv[1]: Quadcopter # to control\n"
+              "argv[2] Input file%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
   // In this way each robot flight at a slightly different height
   zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
-  //cout << "zHeight=" << zHeight << endl;
+
+  std::string filename(argv[2]);
+  std::string folder_path = get_selfpath();
+  std::string file_path = folder_path + "/Input/Grids/" + filename;
 
   std::ifstream access_matrix;
-  std::string filename = "free_mat_10x10";
-
-  std::string folder_path = get_selfpath();
-  std::string file_path = folder_path + "/" + filename;
-
   access_matrix.open( file_path.c_str() );
   if( !access_matrix.is_open() ){
-    printf("%sFile not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
+    printf("%sAccess matrix not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
-  myLRTA.initGraph(access_matrix);    //Constructor inputs is (mapToExplore)
+  std::string posV_filename = "posV_" + filename;
+  std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
+  std::ifstream pos_Vec;
+  pos_Vec.open( posV_file_path.c_str() );
+  if( !pos_Vec.is_open() ){
+    printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
+  }
+
+  myLRTA.init_graph_pos(access_matrix, pos_Vec);    //Constructor inputs is (mapToExplore)
 
 
   /* The following strings are used to concatenate the topic name to the argument passed to
@@ -205,6 +213,8 @@ int main(int argc, char **argv)
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myLRTA.getNumFreeNodes();
       osInfo.path = myLRTA.getFinalPath();
+      filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
+      osInfo.fileName = filename;
       completed_pub.publish(osInfo);
 
       ros::shutdown();
@@ -245,8 +255,8 @@ std::string add_argv(std::string str, char* argvalue){
 
 
 void updateTarget(ros::Publisher& countPub){
-  targetPos.pose.position.x = myLRTA.getCurrentCoord('x') - VREP_X0;     /// The constant is added due to the
-  targetPos.pose.position.y = myLRTA.getCurrentCoord('y') - VREP_Y0;     /// different origin of the GRF used in Vrep
+  targetPos.pose.position.x = myLRTA.getCurrentCoord('x')*2 - VREP_X0;     /// The constant is added due to the
+  targetPos.pose.position.y = myLRTA.getCurrentCoord('y')*2 - VREP_Y0;     /// different origin of the GRF used in Vrep
   targetPos.pose.position.z = zHeight;
 
   LRTAinfo.currNode = myLRTA.getCurrentIndex();

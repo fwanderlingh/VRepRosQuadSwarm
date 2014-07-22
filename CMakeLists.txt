@@ -106,6 +106,7 @@ include_directories(
   include/quadcopter_ctrl
   include/quadcopter_ctrl/astar
   include ${catkin_INCLUDE_DIRS}
+  
 )
 
 ## Declare a cpp library

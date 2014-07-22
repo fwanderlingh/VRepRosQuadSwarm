@@ -16,6 +16,8 @@
 #include <numeric>      /* multiply, accumulate */
 #include <cstdlib>
 #include <cassert>
+#include <sstream>
+#include <iterator>
 
 //#define STARTNODE 5
 
@@ -23,7 +25,7 @@ using std::cout;
 using std::endl;
 
 
-LRTAstar::LRTAstar() :  gridSizeX(0), gridSizeY(0),
+LRTAstar::LRTAstar() :  STARTNODE(0), gridSizeX(0), gridSizeY(0), currentNode(STARTNODE),
                           unvisitedCount(std::numeric_limits<int>::max())
 {
 
@@ -33,11 +35,10 @@ LRTAstar::LRTAstar() :  gridSizeX(0), gridSizeY(0),
 }
 
 
-LRTAstar::LRTAstar(std::ifstream & INFILE) : unvisitedCount(std::numeric_limits<int>::max())
+LRTAstar::LRTAstar(std::ifstream & INFILE) : STARTNODE(0), currentNode(STARTNODE),
+    unvisitedCount(std::numeric_limits<int>::max())
 {
-
-  initGraph(INFILE);
-
+  createGraph(INFILE);
 }
 
 LRTAstar::~LRTAstar()
@@ -67,7 +68,65 @@ void LRTAstar::loadMatrixFile(std::ifstream &access_mat){
 }
 
 
-void LRTAstar::initGraph(std::ifstream & INFILE){
+void LRTAstar::loadGraphFile(std::ifstream &graph_mat){
+
+  std::string line;
+  while ( getline( graph_mat, line ) ) {
+    std::istringstream is( line );
+    graph.push_back(
+        std::vector<int>( std::istream_iterator<int>(is),
+                          std::istream_iterator<int>() ) );
+  }
+  /*
+  cout << "\nGraph:\n";
+  for(int i=0;i<graph.size();i++){
+    for(int j=0; j<graph.at(1).size();j++){
+      printf("%d  ",graph[i][j]);;
+    }
+    cout << endl;
+  }
+   */
+  numFreeNodes = static_cast<int>(graph.size());
+
+  unvisited.resize(numFreeNodes, 1);
+  unvisitedCount = numFreeNodes;
+
+  graphNodes.resize(numFreeNodes);
+}
+
+
+void LRTAstar::loadPosVecFile(std::ifstream &Pos_vec){
+
+  std::string line;
+  std::vector< std::vector<int> > positionVec;
+
+  while ( getline( Pos_vec, line ) ) {
+    std::istringstream is( line );
+    positionVec.push_back(
+        std::vector<int>( std::istream_iterator<int>(is),
+                          std::istream_iterator<int>() ) );
+  }
+  /*
+  cout << "\nPos Vec:\n";
+  for(int i=0;i<positionVec.size();i++){
+    for(int j=0; j<positionVec.at(1).size();j++){
+      printf("%d  ",positionVec[i][j]);;
+    }
+    cout << endl;
+  }
+   */
+
+  for(int i=0; i < numFreeNodes; i++){
+    graphNodes.at(i).setPos(static_cast<double>(positionVec[0][i]),
+                            static_cast<double>(positionVec[1][i]) );
+  }
+
+  assert(graphNodes.size() == graph.size());
+
+}
+
+
+void LRTAstar::createGraph(std::ifstream & INFILE){
 
   srand(time(NULL) xor getpid()<<16); // xor getpid()<<16);
   loadMatrixFile(INFILE);       /// Filling the "access_vec" and defining grid sizes
@@ -95,9 +154,27 @@ void LRTAstar::initGraph(std::ifstream & INFILE){
   STARTNODE = gridSizeY/2;
   nextNode = currentNode = STARTNODE;
   //cout << STARTNODE << endl;
+}
 
+
+void LRTAstar::init_acc(std::ifstream & access_mat){
+  /** If input argument of init is only 1 then we assume we have no
+   * optimized Probability Transition Matrix and the input file is
+   * the Occupancy Grid (access_mat).
+   */
+  createGraph(access_mat);
   finalPath.push_back(currentNode);
+}
 
+
+void LRTAstar::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec){
+  /** In this case we don't have an occupancy grid but already a matrix
+   * representing the graph so we need to know the position of the vertices,
+   * information contained in Pos_Vec. No optimised PTM.
+   */
+  loadGraphFile(graph_mat);
+  loadPosVecFile(Pos_vec);
+  finalPath.push_back(currentNode);
 }
 
 
@@ -147,43 +224,28 @@ void LRTAstar::findNext(){
     currentNode = nextNode;
 
     int bestCount = std::numeric_limits<int>::max();
-    int bestNeighbour = currentNode;
     std::vector<int> best_vec;
 
-    int current_i = currentNode/gridSizeY;
-    int current_j = currentNode%gridSizeY;
+    for(int j=0; j < graph.size(); j++){
+      if(graph[currentNode][j] == 1){
+        int tentIndex = j;
+        int tentCount = graphNodes.at(tentIndex).nodeCount;
 
-    for(int i_shift=-1; i_shift<=1; ++i_shift){
-      for(int j_shift=-1; j_shift<=1; ++j_shift){
+        if( tentCount <= bestCount ){
 
-        int tent_i = current_i + i_shift;
-        int tent_j = current_j + j_shift;
+          ///Look if there are other nodes with same count
+          if( tentCount == bestCount ){
+            best_vec.push_back(tentIndex);
+          }else{
+            best_vec.clear();
+            best_vec.push_back(tentIndex);
+          }
 
-        if( (tent_i>=0) && (tent_i<gridSizeX) && (tent_j>=0) && (tent_j<gridSizeY) ///RANGE CHECK
-            && (i_shift!=0 || j_shift!=0)  ///<--- don't check same node of current
-            && (i_shift*j_shift == 0)  ///<--- don't allow diagonal movements
-            )
-        {
-          int tentIndex = tent_i*gridSizeY + tent_j;
+          bestCount = tentCount;
 
-          if( (graphNodes.at(tentIndex).occupied == 0) ){   ///OCCUPANCY CHECK
-
-            if( graphNodes.at(tentIndex).nodeCount <= bestCount ){
-
-              ///Look if there are other nodes with same count
-              if( graphNodes.at(tentIndex).nodeCount == bestCount ){
-                best_vec.push_back(tentIndex);
-              }else{
-                best_vec.clear();
-                best_vec.push_back(tentIndex);
-                bestCount = graphNodes.at(tentIndex).nodeCount;
-              }
-
-            }//End checkBest
-          }//End occupancy check
-        }//End range check
-      }//End j_shift for-loop (y scan)
-    } //End i_shift for-loop (x scan)
+        }//End checkBest
+      }
+    }
 
     /// Now if there is more than one element in the vector choose one randomly.
     /// If size()==1 the modulus function always returns 0 (the first element)

@@ -38,7 +38,7 @@ class PatrolGRAPH
   void createEdgeMat();
   void computeProbabilityMat();
   void loadPosVecFile(std::ifstream &Pos_vec);
-  void initGraph(std::ifstream & INFILE);
+  void createGraph(std::ifstream & INFILE);
   void loadMatrixFile(std::ifstream &access_mat);
   void loadPTMFile(std::ifstream &PTM_mat);
   void loadGraphFile(std::ifstream &graph_mat);

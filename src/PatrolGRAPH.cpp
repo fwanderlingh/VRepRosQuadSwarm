@@ -69,9 +69,17 @@ void PatrolGRAPH::loadGraphFile(std::ifstream &graph_mat){
     std::istringstream is( line );
     graph.push_back(
         std::vector<int>( std::istream_iterator<int>(is),
-                           std::istream_iterator<int>() ) );
+                          std::istream_iterator<int>() ) );
   }
-
+  /*
+  cout << "\nGraph:\n";
+  for(int i=0;i<graph.size();i++){
+    for(int j=0; j<graph.at(1).size();j++){
+      printf("%d  ",graph[i][j]);;
+    }
+    cout << endl;
+  }
+   */
   numFreeNodes = static_cast<int>(graph.size());
 
   vector< vector<int> > _graph(numFreeNodes, vector<int> (numFreeNodes, 0));
@@ -79,6 +87,8 @@ void PatrolGRAPH::loadGraphFile(std::ifstream &graph_mat){
 
   unvisited.resize(numFreeNodes, 1);
   unvisitedCount = numFreeNodes;
+
+  graphNodes.resize(numFreeNodes);
 }
 
 
@@ -86,24 +96,32 @@ void PatrolGRAPH::loadGraphFile(std::ifstream &graph_mat){
 void PatrolGRAPH::loadPosVecFile(std::ifstream &Pos_vec){
 
   std::string line;
-  std::vector< std::vector<double> > positionVec;
+  std::vector< std::vector<int> > positionVec;
 
   while ( getline( Pos_vec, line ) ) {
     std::istringstream is( line );
     positionVec.push_back(
-        std::vector<double>( std::istream_iterator<double>(is),
-                             std::istream_iterator<double>() ) );
+        std::vector<int>( std::istream_iterator<int>(is),
+                          std::istream_iterator<int>() ) );
   }
+  /*
+  cout << "\nPos Vec:\n";
+  for(int i=0;i<positionVec.size();i++){
+    for(int j=0; j<positionVec.at(1).size();j++){
+      printf("%d  ",positionVec[i][j]);;
+    }
+    cout << endl;
+  }
+   */
 
-  graphNodes.resize(numFreeNodes);
   for(int i=0; i < numFreeNodes; i++){
     graphNodes.at(i).setPos(static_cast<double>(positionVec[0][i]),
                             static_cast<double>(positionVec[1][i]) );
   }
 
+  assert(graphNodes.size() == graph.size());
 
 }
-
 
 
 
@@ -125,7 +143,7 @@ void PatrolGRAPH::loadPTMFile(std::ifstream &PTM_mat){
   /*
   cout << "\nOptimized PTM:\n";
   for(int i=0;i<PTM.size();i++){
-    for(int j=0; j<PTM.size();j++){
+    for(int j=0; j<PTM.at(1).size();j++){
       if(PTM[i][j] == 0) printf("   0  ");
       else printf("%.2f  ",PTM[i][j]);;
     }
@@ -142,7 +160,7 @@ void PatrolGRAPH::init_acc(std::ifstream & access_mat){
    */
   optimized = false;
   cout << "Optimized: false" << endl;
-  initGraph(access_mat);
+  createGraph(access_mat);
   finalPath.push_back(currentNode);
   computeProbabilityMat();
 }
@@ -168,7 +186,7 @@ void PatrolGRAPH::init_acc_ptm(std::ifstream & access_mat, std::ifstream & PTM_m
    */
   optimized = true;
   cout << "Optimized: true" << endl;
-  initGraph(access_mat);
+  createGraph(access_mat);
   loadPTMFile(PTM_mat);
   finalPath.push_back(currentNode);
 }
@@ -181,14 +199,14 @@ void PatrolGRAPH::init_graph_pos_ptm(std::ifstream &graph_mat, std::ifstream &Po
    */
   optimized = true;
   cout << "Optimized: true" << endl;
-  loadPosVecFile(Pos_vec);
   loadGraphFile(graph_mat);
+  loadPosVecFile(Pos_vec);
   loadPTMFile(PTM_mat);
   finalPath.push_back(currentNode);
 }
 
 
-void PatrolGRAPH::initGraph(std::ifstream & INFILE){
+void PatrolGRAPH::createGraph(std::ifstream & INFILE){
 
   srand(time(NULL) xor getpid()<<16);
   loadMatrixFile(INFILE);       /// Filling the "access_vec" and defining grid sizes
@@ -382,7 +400,7 @@ void PatrolGRAPH::findNext(){
         }
 
         double deltaP = ( (double)edgeCountMat[currentNode][tentIndex]/currentNodeCount )
-                                                                  - PTM[currentNode][tentIndex];
+                                                                      - PTM[currentNode][tentIndex];
 
         if(deltaP <= deltaP_best){
           if(deltaP == deltaP_best){
@@ -394,14 +412,12 @@ void PatrolGRAPH::findNext(){
           deltaP_best = deltaP;
         }//End checkBest
       }
-
-
     }
 
 #ifdef DEBUG_PRINT
-            if(currentNode == 1){
-              cout << "Edge(" << currentNode << ", " << tentIndex << ") delta=" << deltaP << endl;
-            }
+    if(currentNode == 1){
+      cout << "Edge(" << currentNode << ", " << tentIndex << ") delta=" << deltaP << endl;
+    }
 #endif
 
     /// Now if there is more than one element in the vector choose one randomly.

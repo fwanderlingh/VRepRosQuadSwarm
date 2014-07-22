@@ -11,26 +11,27 @@
 
 #include "NodeCounting.h"
 #include <iostream>
+#include <cstdlib>
+#include <cstdio>
 #include <cmath>        /* sqrt, pow */
 #include <limits>       /* numeric_limits */
 #include <numeric>      /* multiply, accumulate */
 #include <stdlib.h>     /* srand, rand */
 #include <cassert>
-
+#include <sstream>
+#include <iterator>
 //#define STARTNODE 5
 
 using std::cout;
 using std::endl;
 
 
-NodeCounting::NodeCounting() : gridSizeX(0), gridSizeY(0),
-                                  unvisitedCount(std::numeric_limits<int>::max())
+NodeCounting::NodeCounting() : STARTNODE(0),gridSizeX(0), gridSizeY(0),
+    currentNode(STARTNODE), unvisitedCount(std::numeric_limits<int>::max())
 {
-
+  /// XXX Read! XXX
   // THE DEFAULT CONSTRUCTOR IS ONLY USED TO DECLARE CLASS INSTANCES AS
-  // GLOBAL. WITHOUT RUNNING "initGraph()" AFTER, THE CLASS CANNOT WORK.
-  //cout << "Unvisited initial count: " <<  unvisitedCount << endl;
-
+  // GLOBAL. WITHOUT RUNNING one of the "init_*()" functions AFTER, THE CLASS CANNOT WORK.
 
 }
 
@@ -38,7 +39,7 @@ NodeCounting::NodeCounting() : gridSizeX(0), gridSizeY(0),
 NodeCounting::NodeCounting(std::ifstream & INFILE) : unvisitedCount(std::numeric_limits<int>::max())
 {
 
-  initGraph(INFILE);
+  createGraph(INFILE);
 
 }
 
@@ -50,7 +51,7 @@ NodeCounting::~NodeCounting()
 
 
 void NodeCounting::loadMatrixFile(std::ifstream &access_mat){
-/// Loading the access_vec and defining grid sizes
+  /// Loading the access_vec and defining grid sizes
 
   if( access_mat.is_open() ) {
     int val;
@@ -71,7 +72,7 @@ void NodeCounting::loadMatrixFile(std::ifstream &access_mat){
 }
 
 
-void NodeCounting::initGraph(std::ifstream & INFILE){
+void NodeCounting::createGraph(std::ifstream & INFILE){
 
   srand(time(NULL));
   loadMatrixFile(INFILE);       /// THe access_vec and defining grid sizes
@@ -84,7 +85,7 @@ void NodeCounting::initGraph(std::ifstream & INFILE){
   // Graph initialisation - to every node is assigned a position in a Row-Major order
   for(int i=0; i<gridSizeX; i++){
     for(int j=0; j<gridSizeY; j++){
-      graphNodes.at((i*gridSizeY) + j).setPos((float)i*2, (float)j*2);  ///Position is multiplied by 2 since the access map is sub-sampled
+      graphNodes.at((i*gridSizeY) + j).setPos((float)i, (float)j);  ///Position is multiplied by 2 since the access map is sub-sampled
       graphNodes.at((i*gridSizeY) + j).occupied = access_vec.at((i*gridSizeY) + j);
 
       if(access_vec.at((i*gridSizeY) + j) == 0)  unvisited.at((i*gridSizeY) + j) = 1;
@@ -99,9 +100,145 @@ void NodeCounting::initGraph(std::ifstream & INFILE){
   STARTNODE = gridSizeY/2;
   currentNode = STARTNODE;
 
-  finalPath.push_back(currentNode);
+  createEdgeMat();
+}
+
+
+void NodeCounting::createEdgeMat(){
+
+  const int n = gridSizeX*gridSizeY;
+
+  assert(n == access_vec.size());
+  /// Here we create a zero matrix of the size of the graph
+  vector< vector<int> > _graph(n, vector<int> (n, 0));
+  graph = _graph;
+
+  int row, col;    // Main indexes
+  int row_shift, col_shift; // To move around spatial adjacents
+  int nb_row, nb_col;       // Adjacent indexes
+
+#ifdef DEBUG_PRINT
+  printf("%sOccupancy Map:%s",TC_RED, TC_NONE);
+  for(int j=0; j<n; j++){
+    if(j%gridSizeY == 0) cout << endl;
+    if( access_vec[j] == 1 ){
+      printf("%s",TC_RED);
+      Utils::spaced_cout(j);
+      printf("%s", TC_NONE);
+    }
+    else Utils::spaced_cout(j);
+  }
+  cout << endl << endl;
+#endif
+
+  for(int i=0; i<n; i++){
+    if(access_vec[i] == 0){
+      row = i/gridSizeY;
+      col = i%gridSizeY;
+      for(row_shift=-1; row_shift<=1; row_shift++){
+        for(col_shift=-1; col_shift<=1; col_shift++){
+          nb_row = row + row_shift;
+          nb_col = col + col_shift;
+          if( (nb_row>=0) && (nb_row<gridSizeX) && (nb_col>=0) && (nb_col<gridSizeY) ///RANGE CHECK
+              && (row_shift!=0 || col_shift!=0)  ///<--- don't check same node of current
+              && (row_shift*col_shift == 0)  ///<--- don't allow diagonal movements
+          )
+            //&& ( (row_shift*row_shift xor col_shift*col_shift)==1 ) <--last 2 statements compressed in one condition
+          {
+            if(access_vec[nb_row*gridSizeY+nb_col] == 0){
+              /// Create the edge between "i" and its "free neighbour"
+              graph[i][nb_row*gridSizeY+nb_col] = 1;
+              graph[nb_row*gridSizeY+nb_col][i] = 1;
+              graphNodes.at(i).numEdges++;
+            }
+          }
+        }
+      }
+    }
+  }
 
 }
+
+
+
+void NodeCounting::loadGraphFile(std::ifstream &graph_mat){
+
+  std::string line;
+  while ( getline( graph_mat, line ) ) {
+    std::istringstream is( line );
+    graph.push_back(
+        std::vector<int>( std::istream_iterator<int>(is),
+                          std::istream_iterator<int>() ) );
+  }
+  /*
+  cout << "\nGraph:\n";
+  for(int i=0;i<graph.size();i++){
+    for(int j=0; j<graph.at(1).size();j++){
+      printf("%d  ",graph[i][j]);;
+    }
+    cout << endl;
+  }
+   */
+  numFreeNodes = static_cast<int>(graph.size());
+
+  unvisited.resize(numFreeNodes, 1);
+  unvisitedCount = numFreeNodes;
+
+  graphNodes.resize(numFreeNodes);
+}
+
+
+
+void NodeCounting::loadPosVecFile(std::ifstream &Pos_vec){
+
+  std::string line;
+  std::vector< std::vector<int> > positionVec;
+
+  while ( getline( Pos_vec, line ) ) {
+    std::istringstream is( line );
+    positionVec.push_back(
+        std::vector<int>( std::istream_iterator<int>(is),
+                          std::istream_iterator<int>() ) );
+  }
+  /*
+  cout << "\nPos Vec:\n";
+  for(int i=0;i<positionVec.size();i++){
+    for(int j=0; j<positionVec.at(1).size();j++){
+      printf("%d  ",positionVec[i][j]);;
+    }
+    cout << endl;
+  }
+   */
+
+  for(int i=0; i < numFreeNodes; i++){
+    graphNodes.at(i).setPos(static_cast<double>(positionVec[0][i]),
+                            static_cast<double>(positionVec[1][i]) );
+  }
+
+  assert(graphNodes.size() == graph.size());
+
+}
+
+
+void NodeCounting::init_acc(std::ifstream & access_mat){
+  /** If input argument of init is only 1 then the input file is
+   * the Occupancy Grid (access_mat).
+   */
+  createGraph(access_mat);
+  finalPath.push_back(currentNode);
+}
+
+
+void NodeCounting::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec){
+  /** In this case we don't have an occupancy grid but already a matrix
+   * representing the graph so we need to know the position of the vertices,
+   * information contained in Pos_Vec.
+   */
+  loadGraphFile(graph_mat);
+  loadPosVecFile(Pos_vec);
+  finalPath.push_back(currentNode);
+}
+
 
 
 void NodeCounting::incrCount(int nodeIndex, bool isNodeVisited){
@@ -116,7 +253,7 @@ void NodeCounting::incrCount(int nodeIndex, bool isNodeVisited){
   }
 
 
-/*
+  /*
   for(int i=0; i<gridSizeX; i++){
     for(int j=0; j<gridSizeY; j++){
       cout << (int)graphNodes.at((i*gridSizeY) + j).nodeCount << " ";
@@ -125,7 +262,7 @@ void NodeCounting::incrCount(int nodeIndex, bool isNodeVisited){
   }
 
   cout << "====================================" << endl;
-*/
+   */
 }
 
 
@@ -133,14 +270,37 @@ void NodeCounting::incrCount(int nodeIndex, bool isNodeVisited){
 void NodeCounting::findNext(){
 
   if( !isCompleted() ){
-    /// Look for adjacent nodes and find the one with the smallest number of visits
-    /// Before being able to do the adjacency check we have to recover the (i,j) index
-    /// values encoded in the graph 1D array as "i*gridSizeY + j" (row-major order)
 
     int bestCount = std::numeric_limits<int>::max();
-    int bestNeighbour = currentNode;
     std::vector<int> best_vec;
 
+    for(int j=0; j < graph.size(); j++){
+      if(graph[currentNode][j] == 1){
+        int tentIndex = j;
+        int tentCount = graphNodes.at(tentIndex).nodeCount;
+
+        if( tentCount <= bestCount ){
+
+          ///Look if there are other nodes with same count
+          if( tentCount == bestCount ){
+            best_vec.push_back(tentIndex);
+          }else{
+            best_vec.clear();
+            best_vec.push_back(tentIndex);
+          }
+
+          bestCount = tentCount;
+
+        }//End checkBest
+      }
+    }
+
+    /* OLD STUFF COMMENT:
+     * Look for adjacent nodes and find the one with the smallest number of visits
+    / Before being able to do the adjacency check we have to recover the (i,j) index
+    / values encoded in the graph 1D array as "i*gridSizeY + j" (row-major order) */
+
+    /*
     int current_i = currentNode/gridSizeY;
     int current_j = currentNode%gridSizeY;
 
@@ -177,6 +337,7 @@ void NodeCounting::findNext(){
         }//End range check
       }//End j_shift for-loop (y scan)
     } //End i_shift for-loop (x scan)
+     */
 
     /// Now if there is more than one element in the vector choose one randomly.
     /// If size()==1 the modulus function always returns 0 (the first element)
@@ -186,7 +347,6 @@ void NodeCounting::findNext(){
     finalPath.push_back(currentNode);
 
   }
-
 }
 
 
@@ -198,8 +358,8 @@ float NodeCounting::getCurrentCoord(char coordinate){
     case 'y':
       return graphNodes.at(currentNode).posy;
       break;
-    /// 'z' for now is omitted on purpose, since the height depends on the robot
-    /// (check quadcopterRosCtrl.cpp or quadNodeCount.cpp for further details)
+      /// 'z' for now is omitted on purpose, since the height depends on the robot
+      /// (check quadcopterRosCtrl.cpp or quadNodeCount.cpp for further details)
   }
 }
 
