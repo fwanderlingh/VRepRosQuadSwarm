@@ -32,10 +32,10 @@ geometry_msgs::PoseStamped subTarget;
 int quadPosAcquired = 0;
 
 std::string get_selfpath(void);
-void loadPathFromFile(std::ifstream &file, vector< vector<float> > &robotPath);
-void loadPath(vector< vector<float> > &robotPath, char * argvalue);
+void loadPathFromFile(std::ifstream &file, vector< vector<double> > &robotPath);
+void loadPath(vector< vector<double> > &robotPath, char * argvalue);
 std::string add_argv(std::string str, char* argvalue);
-void updateTarget(int index,  vector< vector<float> > &path, char * argvalue);
+void updateTarget(int index,  vector< vector<double> > &path, char * argvalue);
 void publishSubTarget(ros::Publisher& pub);
 
 
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  vector< vector<float> > robotPathVec;
+  vector< vector<double> > robotPathVec;
 
   /* The following strings are used to concatenate the topic name to the argument passed to
    * the node (the argv[1]), so to name each node with a different name and send signals to
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 
   int wpIndex = 0;     // Waypoint index, used to navigate through the robotPath vector
 
-  float subDist = 0;
+  double subDist = 0;
   int inSubPath = 0;
 
   int running = 1;
@@ -103,14 +103,14 @@ int main(int argc, char **argv)
   //		  string frame_id
   //		geometry_msgs/Pose pose
   //		  geometry_msgs/Point position
-  //			float64 x
-  //			float64 y
-  //			float64 z
+  //			double64 x
+  //			double64 y
+  //			double64 z
   //		  geometry_msgs/Quaternion orientation
-  //			float64 x
-  //			float64 y
-  //			float64 z
-  //			float64 w
+  //			double64 x
+  //			double64 y
+  //			double64 z
+  //			double64 w
   */
 
   cout << "[" << argv[1] << "] Waiting for start....    " << endl;
@@ -188,13 +188,13 @@ int main(int argc, char **argv)
 }
 
 
-void loadPathFromFile(std::ifstream &file, vector< vector<float> > &robotPath, char * argvalue){
+void loadPathFromFile(std::ifstream &file, vector< vector<double> > &robotPath, char * argvalue){
 
-  robotPath.push_back( vector<float>() );
+  robotPath.push_back( vector<double>() );
 
   int pathVecIndex = 0;
   if( file.is_open() ) {
-    float val;
+    double val;
     while( file >> val ){
       /// Here x and y coordinates are inserted in the path vector
       robotPath[pathVecIndex].push_back( val );
@@ -202,8 +202,8 @@ void loadPathFromFile(std::ifstream &file, vector< vector<float> > &robotPath, c
       if(file.peek() == '\n'){
         /// Here the z coordinate is inserted and it's value depends on the robot number
         /// so that every quadcopter flies at a different height
-        robotPath[pathVecIndex].push_back( (float)(*argvalue - '0') *0.75 + 5 );
-        robotPath.push_back( vector<float>() );
+        robotPath[pathVecIndex].push_back( (double)(*argvalue - '0') *0.75 + 6 );
+        robotPath.push_back( vector<double>() );
         ++pathVecIndex;
       }
     }
@@ -215,8 +215,8 @@ void loadPathFromFile(std::ifstream &file, vector< vector<float> > &robotPath, c
 
 /*
   std::cout << "The contents of Path are:" << endl;
-  for (std::vector< vector<float> >::iterator itr = robotPath.begin(); itr != robotPath.end(); ++itr){
-    for (std::vector<float>::iterator itc = itr->begin(); itc != itr->end(); ++itc){
+  for (std::vector< vector<double> >::iterator itr = robotPath.begin(); itr != robotPath.end(); ++itr){
+    for (std::vector<double>::iterator itc = itr->begin(); itc != itr->end(); ++itc){
         std::cout << *itc << ' ';
     }
     std::cout << '\n';
@@ -226,7 +226,7 @@ void loadPathFromFile(std::ifstream &file, vector< vector<float> > &robotPath, c
 }
 
 
-void loadPath(vector< vector<float> > &robotPath, char * argvalue){
+void loadPath(vector< vector<double> > &robotPath, char * argvalue){
 
     std::ifstream robotPathFile;
     std::string filename = "path";
@@ -240,8 +240,8 @@ void loadPath(vector< vector<float> > &robotPath, char * argvalue){
     loadPathFromFile(robotPathFile, robotPath, argvalue);
 /*
     std::cout << "The contents of Path are:" << endl;
-    for (std::vector< vector<float> >::iterator itr = robotPath.begin(); itr != robotPath.end(); ++itr){
-      for (std::vector<float>::iterator itc = itr->begin(); itc != itr->end(); ++itc){
+    for (std::vector< vector<double> >::iterator itr = robotPath.begin(); itr != robotPath.end(); ++itr){
+      for (std::vector<double>::iterator itc = itr->begin(); itc != itr->end(); ++itc){
           std::cout << *itc << ' ';
       }
       std::cout << '\n';
@@ -275,7 +275,7 @@ std::string add_argv(std::string str, char* argvalue){
 }
 
 
-void updateTarget(int index, vector< vector<float> > &path, char * argvalue){
+void updateTarget(int index, vector< vector<double> > &path, char * argvalue){
   if(index < (int)path.size()){
   ///Position is multiplied by 2 since the access map is sub-sampled
   targetPos.pose.position.x = path[index][X] - VREP_X0;     /// The constant is added due to the

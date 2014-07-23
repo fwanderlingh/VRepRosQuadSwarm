@@ -34,9 +34,9 @@ public:
   FloydWarshall();
   FloydWarshall(vector< vector <int> >& G);
   virtual ~FloydWarshall();
+  void loadGraph(vector< vector <int> >& G);
 
   void printMatrix(vector< vector<int> >& matrix);
-  void loadGraph(vector< vector <int> >& G);
   void solve(vector< vector <int> >& D);
   void getPath(int i, int j, vector <int>& path);
 

@@ -20,7 +20,7 @@ using std::vector;
 
 class VrpGreedy
 {
-
+  int STARTNODE;
   int gridSizeX;
   int gridSizeY;
   int numRobots;
@@ -41,28 +41,31 @@ class VrpGreedy
 
   int numFreeNodes;
 
-  double minDist; //distance between two adjacent blocks
-
   vector< vector<int> >::iterator it;
   vector< vector<int> >::iterator itr;
   vector<int>::iterator itc;
   vector<int>::size_type v;
 
+
   double pathLength(vector<int> &pathToEvaluate);
-  void loadMatrixFile(std::string acc_matrix_path);
-  void createGraph();
-  float dist(graphNode &a, graphNode &b);
+  void loadMatrixFile(std::ifstream &INFILE);
+  void loadGraphFile(std::ifstream &graph_mat);
+  void loadPosVecFile(std::ifstream &Pos_vec);
+  void createGraph(std::ifstream &INFILE);
+  void createEdgeMat();
   void checkBest(bool isNeighbour);
 
 
 
 public:
+
   VrpGreedy();
-  VrpGreedy(std::string acc_matrix_path);
-  VrpGreedy(std::string acc_matrix_path, int agents);
   virtual ~VrpGreedy();
-  void init();
+  void init_acc(std::ifstream &INFILE, int agents);
+  void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int agents);
+
   void solve();
+
 
   int getNumRobots() const
   {

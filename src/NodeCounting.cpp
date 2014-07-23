@@ -20,15 +20,20 @@
 #include <cassert>
 #include <sstream>
 #include <iterator>
+#include <termColors.h>
+#include <Utils.h>
 //#define STARTNODE 5
 
 using std::cout;
 using std::endl;
 
+#define DEBUG_PRINT
+
 
 NodeCounting::NodeCounting() : STARTNODE(0),gridSizeX(0), gridSizeY(0),
     currentNode(STARTNODE), unvisitedCount(std::numeric_limits<int>::max())
 {
+  srand(time(NULL) xor getpid()<<16); // xor getpid()<<16);
   /// XXX Read! XXX
   // THE DEFAULT CONSTRUCTOR IS ONLY USED TO DECLARE CLASS INSTANCES AS
   // GLOBAL. WITHOUT RUNNING one of the "init_*()" functions AFTER, THE CLASS CANNOT WORK.
@@ -38,13 +43,13 @@ NodeCounting::NodeCounting() : STARTNODE(0),gridSizeX(0), gridSizeY(0),
 
 NodeCounting::NodeCounting(std::ifstream & INFILE) : unvisitedCount(std::numeric_limits<int>::max())
 {
-
+  srand(time(NULL) xor getpid()<<16); // xor getpid()<<16);
   createGraph(INFILE);
-
 }
 
 NodeCounting::~NodeCounting()
 {
+
   // TODO Auto-generated destructor stub
 }
 
@@ -74,7 +79,6 @@ void NodeCounting::loadMatrixFile(std::ifstream &access_mat){
 
 void NodeCounting::createGraph(std::ifstream & INFILE){
 
-  srand(time(NULL));
   loadMatrixFile(INFILE);       /// THe access_vec and defining grid sizes
 
   //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
@@ -85,7 +89,7 @@ void NodeCounting::createGraph(std::ifstream & INFILE){
   // Graph initialisation - to every node is assigned a position in a Row-Major order
   for(int i=0; i<gridSizeX; i++){
     for(int j=0; j<gridSizeY; j++){
-      graphNodes.at((i*gridSizeY) + j).setPos((float)i, (float)j);  ///Position is multiplied by 2 since the access map is sub-sampled
+      graphNodes.at((i*gridSizeY) + j).setPos((double)i, (double)j);  ///Position is multiplied by 2 since the access map is sub-sampled
       graphNodes.at((i*gridSizeY) + j).occupied = access_vec.at((i*gridSizeY) + j);
 
       if(access_vec.at((i*gridSizeY) + j) == 0)  unvisited.at((i*gridSizeY) + j) = 1;

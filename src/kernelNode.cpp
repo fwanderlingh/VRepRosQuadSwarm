@@ -39,24 +39,45 @@ void completedSignal(const std_msgs::Int64::ConstPtr& control)
 int main(int argc, char **argv)
 {
 
-  /// argv[1] contains the size of the swarm, e.g. the number of robots to be controlled
-  if(argc<2){
-    printf("%s** argv[1] is empty! Provide size of swarm! **%s\n", TC_RED, TC_NONE);
+  if(argc<3){
+    printf("%s** ERROR **\n"
+              "argv[1]: Input Map\n"
+              "argv[2]: Number of quadcopters%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-  int num_robots = strtol(argv[1], NULL, 0);
 
 
-  std::string filename = "access_mat_subs";
-  //std::string filename = "little_matrix";
+  std::string filename(argv[1]);
   std::string folder_path = get_selfpath();
-  std::string map_matrix_path = folder_path + "/" + filename;
+
+  std::string file_path = folder_path + "/Input/Grids/" + filename;
+  std::ifstream access_matrix;
+  access_matrix.open( file_path.c_str() );
+  if( !access_matrix.is_open() ){
+    printf("%sAccess matrix not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
+  }
+
+  std::string posV_filename = "posV_" + filename;
+  std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
+  std::ifstream pos_Vec;
+  pos_Vec.open( posV_file_path.c_str() );
+  if( !pos_Vec.is_open() ){
+    printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
+  }
 
 
-  /// Constructor inputs are (mapToExplore, numOfAgents) ///
+  std::string save_path = folder_path + "/Results/VRP_Results_FW_" + filename;
 
-  VrpGreedy myVrp(map_matrix_path, num_robots);
-  //VrpGreedyAstar myVrp(map_matrix_path, num_robots);
+
+  int num_robots = static_cast<int>(strtol(argv[2], NULL, 0));
+  cout << "\n num robots: " << num_robots << endl;
+  VrpGreedy myVrp;
+  //myVrp.init_acc(access_matrix, num_robots);
+  myVrp.init_graph_pos(access_matrix, pos_Vec, 3);
+  myVrp.solve();
+
 
   struct timespec requestStart, requestEnd;
 

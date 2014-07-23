@@ -57,7 +57,7 @@ void GraphAlgs::printRowMajorMat(T matrix){
 
   for(int j=0; j<gridSizeX*gridSizeY; j++){
     if(j%gridSizeY == 0) cout << endl;
-    if(graphNodes.at(j).access == 1){
+    if(graphNodes.at(j).occupied == 1){
       printf("%s", TC_RED);
       Utils::spaced_cout(matrix[j]);
       printf("%s", TC_NONE);

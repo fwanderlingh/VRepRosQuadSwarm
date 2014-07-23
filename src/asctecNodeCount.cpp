@@ -46,7 +46,7 @@ void updateTarget(ros::Publisher& countPub);
 void publishSubTarget(ros::Publisher& posPub);
 
 
-void quadPosFromVrep(const geometry_msgs::PoseStamped::ConstPtr& pubQuadPose)
+void quadPosFromEthnos(const geometry_msgs::PoseStamped::ConstPtr& pubQuadPose)
 {
   quadPos.pose.position.x = pubQuadPose->pose.position.x;
   quadPos.pose.position.y = pubQuadPose->pose.position.y;
@@ -75,11 +75,11 @@ int main(int argc, char **argv)
   }
 
   // In this way each robot flies at a slightly different height
-  zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
+  zHeight =  static_cast<double>((strtol(argv[1], NULL, 0)) *0.6 + 5);
 
   std::string filename(argv[2]);
   std::string folder_path = get_selfpath();
-  std::string file_path = folder_path + "/Input/Grids/" + filename;
+  std::string file_path = folder_path + "/" + filename;
 
   std::ifstream access_matrix;
   access_matrix.open( file_path.c_str() );
@@ -88,17 +88,9 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  std::string posV_filename = "posV_" + filename;
-  std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
-  std::ifstream pos_Vec;
-  pos_Vec.open( posV_file_path.c_str() );
-  if( !pos_Vec.is_open() ){
-    printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
-    exit(EXIT_FAILURE);
-  }
 
-  //myNodeCount.init_acc(access_matrix);    //Constructor inputs is (mapToExplore)
-  myNodeCount.init_graph_pos(access_matrix, pos_Vec);
+  myNodeCount.init_acc(access_matrix);    //Constructor inputs is (mapToExplore)
+  //myNodeCount.init_graph_pos(access_matrix, pos_Vec);
 
   /* The following strings are used to concatenate the topic name to the argument passed to
    * the node (the argv[1]), so to name each node with a different name and send signals to
@@ -107,15 +99,15 @@ int main(int argc, char **argv)
    *  vrep/targetObjPos_0, etc...)
    */
   std::string nodeName = add_argv("quadNodeCount", argv[1]);
-  std::string targetObjPosName = add_argv("vrep/targetObjPos", argv[1]);
-  std::string quadcopPosName = add_argv("vrep/quadcopPos", argv[1]);
+  std::string targetObjPosName = add_argv("targetObjPos", argv[1]);
+  std::string quadcopPosName = add_argv("quadcopPos", argv[1]);
 
 
   ros::init(argc, argv, nodeName);
   ros::NodeHandle n;
 
   ros::Publisher targetObjPos_pub = n.advertise<geometry_msgs::PoseStamped>(targetObjPosName, 100);
-  ros::Subscriber quadcopPos_sub = n.subscribe(quadcopPosName, 100, quadPosFromVrep);
+  ros::Subscriber quadcopPos_sub = n.subscribe(quadcopPosName, 100, quadPosFromEthnos);
 
   ros::Publisher nodeCount_pub = n.advertise<quadcopter_ctrl::NCmsg>("updateNodeCount", 100);
   ros::Subscriber nodeCount_sub = n.subscribe("updateNodeCount", 100, updateCount);
@@ -154,14 +146,21 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
+    //cout << "myNodeCount.isCompleted()=" << myNodeCount.isCompleted() << endl;
+
     if(myNodeCount.isCompleted() == false || inSubPath == 1){
 
       if(quadPosAcquired){
+        //cout << "quadPosAcquired!" << endl;
         quadPosAcquired = 0;
-        running = 1;
+        if(running == 0){
+          printf("%s[%s] On my way Sir Captain!%s\n", TC_YELLOW, argv[1], TC_NONE);
+          running = 1;
+        }
 
         if (loaded == 0){
           loaded = 1;
+          //cout << "First Target Published!" << endl;
           updateTarget(nodeCount_pub);
         }
 
@@ -200,20 +199,20 @@ int main(int argc, char **argv)
 
         if (running == 1) {
           printf("%s[%s] ** No incoming vrep/quadcopPos! (waiting...) **%s\n", TC_YELLOW, argv[1], TC_NONE);
+          running = 0;
         }
-        running = 0;              //
+        //
       }
 
     }else{
       printf("%s[%s] ** Area coverage completed! **%s\n", TC_GREEN, argv[1], TC_NONE);
-
+      /*
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myNodeCount.getNumFreeNodes();
       osInfo.path = myNodeCount.getFinalPath();
-      filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
       osInfo.fileName = "NC_" + filename;
       completed_pub.publish(osInfo);
-
+       */
       ros::shutdown();
     }
 
@@ -252,13 +251,15 @@ std::string add_argv(std::string str, char* argvalue){
 
 
 void updateTarget(ros::Publisher& countPub){
-  targetPos.pose.position.x = myNodeCount.getCurrentCoord('x')*MAP_SCALE - VREP_X0;     /// The constant is added due to the
-  targetPos.pose.position.y = myNodeCount.getCurrentCoord('y')*MAP_SCALE - VREP_Y0;     /// different origin of the GRF used in Vrep
+  targetPos.pose.position.x = myNodeCount.getCurrentCoord('x')*MAP_SCALE;     /// The constant is added due to the
+  targetPos.pose.position.y = myNodeCount.getCurrentCoord('y')*MAP_SCALE;     /// different origin of the GRF used in Vrep
   targetPos.pose.position.z = zHeight;
 
   ncInfo.node = myNodeCount.getCurrentIndex();
   ncInfo.isVisited = myNodeCount.getCurrentType();
   countPub.publish(ncInfo);
+  //posPub.publish(targetPos);
+
 
 }
 

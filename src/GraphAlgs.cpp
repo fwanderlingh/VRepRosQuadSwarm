@@ -91,7 +91,7 @@ void GraphAlgs::createGraph(){
 
   for(int i=0; i<n; i++){
     if(access_vec[i] == 0){
-      graphNodes.at(i).access = 0;
+      graphNodes.at(i).occupied = 0;
       row = i/gridSizeY;
       col = i%gridSizeY;
       for(row_shift=-1; row_shift<=1; row_shift++){

@@ -28,10 +28,12 @@
 using std::cout;
 using std::endl;
 
+
 PatrolGRAPH::PatrolGRAPH() : STARTNODE(0), gridSizeX(0), gridSizeY(0),
     currentNode(STARTNODE), optimized(false),
     unvisitedCount(std::numeric_limits<int>::max())
 {
+  srand(time(NULL) xor getpid()<<16); // xor getpid()<<16);
   // TODO Auto-generated constructor stub
 
 }
@@ -208,7 +210,6 @@ void PatrolGRAPH::init_graph_pos_ptm(std::ifstream &graph_mat, std::ifstream &Po
 
 void PatrolGRAPH::createGraph(std::ifstream & INFILE){
 
-  srand(time(NULL) xor getpid()<<16);
   loadMatrixFile(INFILE);       /// Filling the "access_vec" and defining grid sizes
 
   //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;

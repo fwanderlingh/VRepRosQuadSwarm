@@ -29,44 +29,56 @@ std::string get_selfpath(void);
 
 int main(int argc, char **argv)
 {
-  /// argv[1] contains the size of the swarm, e.g. the number of robots to be controlled
-  if(argc<2){
-    printf("%s** argv[1] is empty! Provide size of Map! **%s\n", TC_RED, TC_NONE);
+  if(argc<3){
+    printf("%s** ERROR **\n"
+              "argv[1]: Input Map\n"
+              "argv[2]: Number of quadcopters%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-  int mapDim = strtol(argv[1], NULL, 0);
 
 
+  std::string filename(argv[1]);
   std::string folder_path = get_selfpath();
 
-  std::string map_dim(argv[1]);
-  std::string sizeTag = map_dim + "x" + map_dim;
-  //std::string filename = "free_mat_" + sizeTag;
+  std::string file_path = folder_path + "/Input/Grids/" + filename;
+  std::ifstream access_matrix;
+  access_matrix.open( file_path.c_str() );
+  if( !access_matrix.is_open() ){
+    printf("%sAccess matrix not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
+  }
 
-  std::string filename = "access_mat_subs";
-  std::string map_matrix_path = folder_path + "/" + filename;
+  std::string posV_filename = "posV_" + filename;
+  std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
+  std::ifstream pos_Vec;
+  pos_Vec.open( posV_file_path.c_str() );
+  if( !pos_Vec.is_open() ){
+    printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
+  }
+
 
   std::string save_path = folder_path + "/Results/VRP_Results_FW_" + filename;
 
 
-  for(int i=1; i<=10; i++){
-    int num_robots = i;
-    /// Constructor inputs are (mapToExplore, numOfAgents) ///
-    VrpGreedy myVrp(map_matrix_path, num_robots);
-    //VrpGreedyAstar myVrp(map_matrix_path, num_robots);
+  int num_robots = static_cast<int>(strtol(argv[2], NULL, 0));
+  cout << "\n num robots: " << num_robots << endl;
+  VrpGreedy myVrp;
+  //myVrp.init_acc(access_matrix, num_robots);
+  myVrp.init_graph_pos(access_matrix, pos_Vec, 3);
+  myVrp.solve();
+  //VrpGreedyAstar myVrp(map_matrix_path, num_robots);
 
-    struct timespec requestStart, requestEnd;
+  struct timespec requestStart, requestEnd;
 
-    clock_gettime(CLOCK_REALTIME, &requestStart);
-    myVrp.solve();
-    clock_gettime(CLOCK_REALTIME, &requestEnd);
-    double timeElapsed = ( requestEnd.tv_sec - requestStart.tv_sec )
-                           + ( requestEnd.tv_nsec - requestStart.tv_nsec ) / 1E9;
+  clock_gettime(CLOCK_REALTIME, &requestStart);
+  myVrp.solve();
+  clock_gettime(CLOCK_REALTIME, &requestEnd);
+  double timeElapsed = ( requestEnd.tv_sec - requestStart.tv_sec )
+                               + ( requestEnd.tv_nsec - requestStart.tv_nsec ) / 1E9;
 
-    performanceIndexes(myVrp, save_path, timeElapsed*1E3); /// We multiply the time to get it in milliseconds
+  performanceIndexes(myVrp, save_path, timeElapsed*1E3); /// We multiply the time to get it in milliseconds
 
-    //std::cin.get();
-  }
 
   //savePathsToFile(myVrp, folder_path);
 

@@ -19,6 +19,9 @@
 #include <cassert>
 #include <cmath>
 #include <ctime>
+#include <sstream>
+#include <iterator>
+#include <algorithm>
 
 
 #define MAX_FOV 2
@@ -34,14 +37,21 @@ using std::cout;
 using std::endl;
 using std::vector;
 
+struct IncGenerator {
+  int current_;
+  IncGenerator (int start) : current_(start) {}
+  int operator() () { return current_++; }
+};
 
-VrpGreedy::VrpGreedy() : gridSizeX(DEF_GRID_X),
-    gridSizeY(DEF_GRID_Y),
-    numRobots(DEF_NUM_ROB),  // Default Initialisation
-    minDist(FLT_MAX),
+
+
+VrpGreedy::VrpGreedy() : STARTNODE(0),
+    gridSizeX(0),
+    gridSizeY(0),
+    numRobots(0),  // Default Initialisation
     v(0)
 {
-  cout << "Default configuration:" << endl;
+/*  cout << "Default configuration:" << endl;
   cout << "- Default grid is empty" << endl;
   cout << "- " << numRobots << " Robots" << endl;
 
@@ -51,21 +61,8 @@ VrpGreedy::VrpGreedy() : gridSizeX(DEF_GRID_X),
   deltaBest = FLT_MAX;
   deltavip = FLT_MAX;
   bigL = -FLT_MAX;
-  liMin = FLT_MAX;
+  liMin = FLT_MAX;*/
 
-}
-
-
-VrpGreedy::VrpGreedy(std::string acc_matrix_path) : numRobots(DEF_NUM_ROB)
-{
-  loadMatrixFile(acc_matrix_path);
-}
-
-
-VrpGreedy::VrpGreedy(std::string acc_matrix_path, int agents)
-{
-  loadMatrixFile(acc_matrix_path);
-  numRobots = agents;
 }
 
 
@@ -75,26 +72,88 @@ VrpGreedy::~VrpGreedy()
 }
 
 
-double VrpGreedy::pathLength(vector<int> &path){
+void VrpGreedy::loadGraphFile(std::ifstream &graph_mat){
 
-  //FIXME distance//
-  double length = 0;
-  for(vector<graphNode>::size_type i = 0; i < (path.size() - 1); i++){
-    length = length + sqrt(pow((graphNodes[path[i]].posx - graphNodes[path[i+1]].posx),2) +
-                           pow((graphNodes[path[i]].posy - graphNodes[path[i+1]].posy),2) /*+
-                           pow((graphNodes[path[i]].posz - graphNodes[path[i+1]].posz),2)*/ );
+  std::string line;
+  while ( getline( graph_mat, line ) ) {
+    std::istringstream is( line );
+    graph.push_back(
+        std::vector<int>( std::istream_iterator<int>(is),
+                          std::istream_iterator<int>() ) );
   }
-  return length;
+  /*
+  cout << "\nGraph:\n";
+  for(int i=0;i<graph.size();i++){
+    for(int j=0; j<graph.at(1).size();j++){
+      printf("%d  ",graph[i][j]);;
+    }
+    cout << endl;
+  }
+   */
+  numFreeNodes = static_cast<int>(graph.size());
+
+  graphNodes.resize(numFreeNodes);
+
+  unvisitedNodes.resize(numFreeNodes);
+  IncGenerator g (0);
+  std::generate(unvisitedNodes.begin(), unvisitedNodes.end(), g); // Fill with 0, 1, ..., numFreeNodes.
+
+  std::cin.get();
 }
 
 
-void VrpGreedy::loadMatrixFile(std::string acc_matrix_path){
+void VrpGreedy::loadPosVecFile(std::ifstream &Pos_vec){
+
+  std::string line;
+  std::vector< std::vector<int> > positionVec;
+
+  while ( getline( Pos_vec, line ) ) {
+    std::istringstream is( line );
+    positionVec.push_back(
+        std::vector<int>( std::istream_iterator<int>(is),
+                          std::istream_iterator<int>() ) );
+  }
+  /*
+  cout << "\nPos Vec:\n";
+  for(int i=0;i<positionVec.size();i++){
+    for(int j=0; j<positionVec.at(1).size();j++){
+      printf("%d  ",positionVec[i][j]);;
+    }
+    cout << endl;
+  }
+   */
+
+  for(int i=0; i < numFreeNodes; i++){
+    graphNodes.at(i).setPos(static_cast<double>(positionVec[0][i]),
+                            static_cast<double>(positionVec[1][i]) );
+  }
+
+  assert(graphNodes.size() == graph.size());
+}
+
+
+void VrpGreedy::init_acc(std::ifstream &access_mat, int agents){
+
+  numRobots = agents;
+  createGraph(access_mat);
+}
+
+
+void VrpGreedy::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int agents){
+  /** In this case we don't have an occupancy grid but already a matrix
+   * representing the graph so we need to know the position of the vertices,
+   * information contained in Pos_Vec. No optimised PTM.
+   */
+  numRobots = agents;
+  loadGraphFile(graph_mat);
+  loadPosVecFile(Pos_vec);
+}
+
+
+void VrpGreedy::loadMatrixFile(std::ifstream &access_mat){
   /**
    * Here gridSizeX and gridSizeY are deducted from the size of the input matrix file
    */
-
-  std::ifstream access_mat;
-  access_mat.open( acc_matrix_path.c_str() );
 
   if( access_mat.is_open() ) {
     int val;
@@ -115,7 +174,7 @@ void VrpGreedy::loadMatrixFile(std::string acc_matrix_path){
 }
 
 
-void VrpGreedy::createGraph(){
+void VrpGreedy::createEdgeMat(){
 
     const int n = gridSizeX*gridSizeY;
 
@@ -172,23 +231,22 @@ void VrpGreedy::createGraph(){
 }
 
 
-void VrpGreedy::init(){
+void VrpGreedy::createGraph(std::ifstream & INFILE){
 
-  createGraph();
+  loadMatrixFile(INFILE);
 
   //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
 
   graphNodes.resize(gridSizeX*gridSizeY);
   unvisitedNodes.reserve( graphNodes.size() );
 
-  int STARTNODE = gridSizeY/2;
+  STARTNODE = gridSizeY/2;
   access_vec.at(STARTNODE) = 1;    //STARTNODE is set as start for all the agents
-
 
   /// Graph initialisation - to every node is assigned a position
   for(int i=0; i<gridSizeX; i++){
     for(int j=0; j<gridSizeY; j++){
-      graphNodes.at((i*gridSizeY) + j).setPos((float)i*2, (float)j*2);
+      graphNodes.at((i*gridSizeY) + j).setPos((double)i*2, (double)j*2);
       graphNodes.at((i*gridSizeY) + j).occupied = access_vec.at((i*gridSizeY) + j);
       //cout << (int)graphNodes.at((i*gridSizeY) + j).occupied << " ";
       if (graphNodes.at((i*gridSizeY)+ j).occupied == 0){
@@ -198,28 +256,29 @@ void VrpGreedy::init(){
     //cout << endl;
   }
 
+  //unvisitedNodes.shrink_to_fit();
+
   numFreeNodes = unvisitedNodes.size();
 
-  minDist = (dist(graphNodes.at(0), graphNodes.at(1)) + FLT_MIN)*SQRT2;
-  //cout << "minDist=" << minDist << endl;
+  createEdgeMat();
 
-  // Path initialisation
-  vector<int> path;
-  path.push_back(STARTNODE);       // Every path initially is just 2 nodes: Start + End(=start)
-  path.push_back(STARTNODE);
-
-  for(int i = 0; i < numRobots; i++){
-    Paths.push_back(path); // Define a path for every agent
-  }
-
-  Paths.reserve( graphNodes.size() * numRobots);
 
 }
 
 
 void VrpGreedy::solve(){
 
-  init();
+  /// Path initialisation
+   vector<int> path;
+   path.push_back(STARTNODE);       // Every path initially is just 2 nodes: Start + End(=start)
+   path.push_back(STARTNODE);
+
+   for(int i = 0; i < numRobots; i++){
+     Paths.push_back(path); // Define a path for every robot
+   }
+
+   Paths.reserve( graphNodes.size() * numRobots); // To avoid an excessive number of implicit resizes
+
 
   printf("\n%s** Using the VRP-FloydWarshall algorithm **%s\n", TC_CYAN, TC_NONE);
 
@@ -382,15 +441,17 @@ void VrpGreedy::solve(){
 }
 
 
-float VrpGreedy::dist(graphNode &a, graphNode &b){
 
-  float dist = sqrt ( pow(a.posx - b.posx, 2.0)
-                      + pow(a.posy - b.posy, 2.0)
-                      //+ pow(a.posz - b.posz, 2.0)
-                      );
+double VrpGreedy::pathLength(vector<int> &path){
 
-  //cout << "Dist=" << dist << endl;
-  return dist;
+  //FIXME distance//
+  double length = 0;
+  for(vector<graphNode>::size_type i = 0; i < (path.size() - 1); i++){
+    length = length + sqrt(pow((graphNodes[path[i]].posx - graphNodes[path[i+1]].posx),2) +
+                           pow((graphNodes[path[i]].posy - graphNodes[path[i+1]].posy),2) /*+
+                           pow((graphNodes[path[i]].posz - graphNodes[path[i+1]].posz),2)*/ );
+  }
+  return length;
 }
 
 

@@ -98,7 +98,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  myLRTA.init_graph_pos(access_matrix, pos_Vec);    //Constructor inputs is (mapToExplore)
+  myLRTA.init_graph_pos(access_matrix, pos_Vec);    //Constructor inputs is (graph, position of nodes in space)
 
 
   /* The following strings are used to concatenate the topic name to the argument passed to
@@ -212,9 +212,14 @@ int main(int argc, char **argv)
 
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myLRTA.getNumFreeNodes();
-      osInfo.path = myLRTA.getFinalPath();
+      std::vector<int> finalPath = myLRTA.getFinalPath();
+      // FIXME there is an issue with the last execution of the LRTA class:
+      // the result is that an additional waypoint is added to the path so
+      // we have to remove it before sending the information to the listener
+      finalPath.pop_back();
+      osInfo.path = finalPath;
       filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
-      osInfo.fileName = filename;
+      osInfo.fileName = "LRTA_" + filename;
       completed_pub.publish(osInfo);
 
       ros::shutdown();

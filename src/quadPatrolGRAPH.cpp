@@ -43,7 +43,7 @@ geometry_msgs::PoseStamped subTarget;
 PatrolGRAPH myPG;
 
 int quadPosAcquired = 0;
-float zHeight = 0;
+double zHeight = 0;
 
 ///FUNCTIONS
 std::string get_selfpath(void);
@@ -244,7 +244,8 @@ int main(int argc, char **argv)
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myPG.getNumFreeNodes();
       osInfo.path = myPG.getFinalPath();
-      osInfo.fileName = filename;
+      filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
+      osInfo.fileName = "PG_" + filename;
       completed_pub.publish(osInfo);
 /*
       int gridSizeX = myPG.getGridSizeX();

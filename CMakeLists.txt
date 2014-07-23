@@ -172,6 +172,10 @@ add_executable(graphAlgsTest src/graphAlgsTest.cpp)
 target_link_libraries(graphAlgsTest ${catkin_LIBRARIES})
 add_dependencies(graphAlgsTest ${catkin_EXPORTED_TARGETS})
 
+add_executable(asctecNodeCount src/asctecNodeCount.cpp)
+target_link_libraries(asctecNodeCount ${catkin_LIBRARIES})
+add_dependencies(asctecNodeCount ${catkin_EXPORTED_TARGETS})
+
 
 
 target_link_libraries(quadcopterRosCtrl VrpGreedyFW)
@@ -196,6 +200,7 @@ target_link_libraries(FloydWarshall Utils)
 
 target_link_libraries(quadNodeCount NodeCounting)
 target_link_libraries(quadNodeCount PathPlanningAlg)
+target_link_libraries(quadNodeCount Utils)
 
 target_link_libraries(quadLRTA LRTAstar)
 target_link_libraries(quadLRTA PathPlanningAlg)
@@ -216,6 +221,13 @@ add_dependencies(quadNodeCount ${catkin_EXPORTED_TARGETS})
 add_dependencies(quadLRTA ${catkin_EXPORTED_TARGETS})
 add_dependencies(OnlineSearchListener ${catkin_EXPORTED_TARGETS})
 
+
+## ASCTEC TEST ##
+target_link_libraries(asctecNodeCount NodeCounting)
+target_link_libraries(asctecNodeCount PathPlanningAlg)
+target_link_libraries(asctecNodeCount Utils)
+
+add_dependencies(asctecNodeCount ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##

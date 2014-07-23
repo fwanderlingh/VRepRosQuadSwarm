@@ -28,9 +28,10 @@ using std::endl;
 LRTAstar::LRTAstar() :  STARTNODE(0), gridSizeX(0), gridSizeY(0), currentNode(STARTNODE),
                           unvisitedCount(std::numeric_limits<int>::max())
 {
-
+  srand(time(NULL) xor getpid()<<16);
   // THE DEFAULT CONSTRUCTOR IS ONLY USED TO DECLARE CLASS INSTANCES AS
   // GLOBAL. WITHOUT RUNNING "initGraph()" AFTER, THE CLASS CANNOT WORK.
+
 
 }
 
@@ -38,6 +39,7 @@ LRTAstar::LRTAstar() :  STARTNODE(0), gridSizeX(0), gridSizeY(0), currentNode(ST
 LRTAstar::LRTAstar(std::ifstream & INFILE) : STARTNODE(0), currentNode(STARTNODE),
     unvisitedCount(std::numeric_limits<int>::max())
 {
+  srand(time(NULL) xor getpid()<<16); // xor getpid()<<16);
   createGraph(INFILE);
 }
 
@@ -128,7 +130,6 @@ void LRTAstar::loadPosVecFile(std::ifstream &Pos_vec){
 
 void LRTAstar::createGraph(std::ifstream & INFILE){
 
-  srand(time(NULL) xor getpid()<<16); // xor getpid()<<16);
   loadMatrixFile(INFILE);       /// Filling the "access_vec" and defining grid sizes
 
   //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
