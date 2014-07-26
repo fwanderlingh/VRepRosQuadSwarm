@@ -10,7 +10,7 @@
  */
 
 
-#include "quadcopterRosCtrl.h"
+#include "asctecRosCtrl.h"
 #include "ros/ros.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "quadcopter_ctrl/NCmsg.h"
@@ -37,13 +37,12 @@ geometry_msgs::PoseStamped subTarget;
 NodeCounting myNodeCount;
 
 int quadPosAcquired = 0;
-float zHeight = 0;
+double zHeight;
 
 ///FUNCTIONS
 std::string get_selfpath(void);
 std::string add_argv(std::string str, char* argvalue);
 void updateTarget(ros::Publisher& countPub);
-void publishSubTarget(ros::Publisher& posPub);
 
 
 void quadPosFromEthnos(const geometry_msgs::PoseStamped::ConstPtr& pubQuadPose)
@@ -66,16 +65,17 @@ void updateCount(const quadcopter_ctrl::NCmsg::ConstPtr& nodeCountInfo){
 int main(int argc, char **argv)
 {
   /// argv[1] contains the ID number of the robot to be controlled (0,1,2...)
-
-  if(argc<3){
+  if(argc<4){
     printf("%s** ERROR **\n"
         "argv[1]: Quadcopter # to control\n"
-        "argv[2] Input file%s\n", TC_RED, TC_NONE);
+        "argv[2]: Input file\n"
+        "argv[3]: zHeight of flight%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
-  // In this way each robot flies at a slightly different height
-  zHeight =  static_cast<double>((strtol(argv[1], NULL, 0)) *0.6 + 5);
+  /// In this way each robot flies at a slightly different height
+  zHeight = static_cast<double>(strtod(argv[3], NULL));
+  cout << "zHeight:" << zHeight << endl;
 
   std::string filename(argv[2]);
   std::string folder_path = get_selfpath();
@@ -136,22 +136,21 @@ int main(int argc, char **argv)
   cout << "[" << argv[1] << "] Waiting for start....    " << endl;
 
   int running = 1;
-  int inSubPath = 0;
 
   double dist;
   /// How much the quadcopter has to be near
   /// to the green sphere (target) before the target moves
-  double treshold = 0.3;
+  double threshold = 1.0;
   int loaded = 0;
 
   while (ros::ok())
   {
-    //cout << "myNodeCount.isCompleted()=" << myNodeCount.isCompleted() << endl;
 
-    if(myNodeCount.isCompleted() == false || inSubPath == 1){
+    if(myNodeCount.isCompleted() == false){
 
       if(quadPosAcquired){
-        //cout << "quadPosAcquired!" << endl;
+        cout << ".";
+        fflush(stdout);
         quadPosAcquired = 0;
         if(running == 0){
           printf("%s[%s] On my way Sir Captain!%s\n", TC_YELLOW, argv[1], TC_NONE);
@@ -162,43 +161,27 @@ int main(int argc, char **argv)
           loaded = 1;
           //cout << "First Target Published!" << endl;
           updateTarget(nodeCount_pub);
+          targetObjPos_pub.publish(targetPos);
+
         }
 
-        // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
+        /// Calculating current l^2-norm between target and quadcopter (Euclidean distance)
         dist = fabs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
         //cout << "Distance to target = " << dist << " m" << endl;
+        if( dist < threshold){
 
-        if(inSubPath == 0){
-          if( dist > CRITICAL_DIST ){
-            inSubPath = 1;
-            publishSubTarget(targetObjPos_pub);
-            //std::cout << "First subTarget Published!" << std::endl;
-          }else if(dist < treshold){
+          cout << "TARGET REACHED!" << endl;
+          sleep(5);
+          myNodeCount.findNext();
+          updateTarget(nodeCount_pub);
+          targetObjPos_pub.publish(targetPos);
 
-            //cout << "Finding next node:" << endl;
-            myNodeCount.findNext();
-            updateTarget(nodeCount_pub);
 
-            //In the following if, "dist" is calculated again since updateTarget changed targetPos
-            if( fabs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
-              targetObjPos_pub.publish(targetPos);
-              //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
-            }
-          }
-        }else{
-          double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
-          if(dist < treshold){
-            inSubPath = 0;
-            targetObjPos_pub.publish(targetPos);
-          }else if(sub_dist < treshold){
-            publishSubTarget(targetObjPos_pub);
-            //std::cout << "subTarget Published!" << std::endl;
-          }
         }
-      }else{              /// THIS PART IS EXECUTED IF VREP SIMULATION IS NOT RUNNING
+      }else{ /// THIS PART IS EXECUTED IF VREP SIMULATION IS NOT RUNNING
 
         if (running == 1) {
-          printf("%s[%s] ** No incoming vrep/quadcopPos! (waiting...) **%s\n", TC_YELLOW, argv[1], TC_NONE);
+          printf("%s[%s] ** No incoming /quadcopPos! (waiting...) **%s\n", TC_YELLOW, argv[1], TC_NONE);
           running = 0;
         }
         //
@@ -206,13 +189,13 @@ int main(int argc, char **argv)
 
     }else{
       printf("%s[%s] ** Area coverage completed! **%s\n", TC_GREEN, argv[1], TC_NONE);
-      /*
+
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myNodeCount.getNumFreeNodes();
       osInfo.path = myNodeCount.getFinalPath();
       osInfo.fileName = "NC_" + filename;
       completed_pub.publish(osInfo);
-       */
+
       ros::shutdown();
     }
 
@@ -263,13 +246,4 @@ void updateTarget(ros::Publisher& countPub){
 
 }
 
-
-void publishSubTarget(ros::Publisher& posPub){
-  double dSubWP[3];
-  PathPlanningAlg::InterpNewPoint(&quadPos, &targetPos, dSubWP);
-  subTarget.pose.position.x = quadPos.pose.position.x + dSubWP[X];
-  subTarget.pose.position.y = quadPos.pose.position.y + dSubWP[Y];
-  subTarget.pose.position.z = quadPos.pose.position.z + dSubWP[Z];
-  posPub.publish(subTarget);
-}
 

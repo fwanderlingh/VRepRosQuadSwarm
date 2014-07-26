@@ -101,7 +101,7 @@ void NodeCounting::createGraph(std::ifstream & INFILE){
 
   numFreeNodes = unvisitedCount;
 
-  STARTNODE = gridSizeY/2;
+  STARTNODE = 0;
   currentNode = STARTNODE;
 
   createEdgeMat();

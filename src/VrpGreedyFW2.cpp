@@ -3,13 +3,13 @@
 //	License: BSD (http://opensource.org/licenses/BSD-3-Clause)	//
 
 /*
- * VrpGreedy.cpp
+ * VrpGreedy2.cpp
  *
  *  Created on: Apr 29, 2014
  *      Author: francescow
  */
 
-#include "VrpGreedyFW.h"
+#include "VrpGreedyFW2.h"
 #include "quadcopter_ctrl/FloydWarshall.h"
 #include <quadcopter_ctrl/CoverAnalysis.h>
 #include "Utils.h"
@@ -47,7 +47,7 @@ struct IncGenerator {
 
 
 
-VrpGreedy::VrpGreedy() : STARTNODE(0),
+VrpGreedy2::VrpGreedy2() : STARTNODE(0),
     gridSizeX(0),
     gridSizeY(0),
     numRobots(0),  // Default Initialisation
@@ -68,13 +68,13 @@ VrpGreedy::VrpGreedy() : STARTNODE(0),
 }
 
 
-VrpGreedy::~VrpGreedy()
+VrpGreedy2::~VrpGreedy2()
 {
   // TODO Auto-generated destructor stub
 }
 
 
-void VrpGreedy::loadGraphFile(std::ifstream &graph_mat){
+void VrpGreedy2::loadGraphFile(std::ifstream &graph_mat){
 
   STARTNODE = 0;
 
@@ -106,7 +106,7 @@ void VrpGreedy::loadGraphFile(std::ifstream &graph_mat){
 }
 
 
-void VrpGreedy::loadPosVecFile(std::ifstream &Pos_vec){
+void VrpGreedy2::loadPosVecFile(std::ifstream &Pos_vec){
 
   std::string line;
   std::vector< std::vector<int> > positionVec;
@@ -118,12 +118,13 @@ void VrpGreedy::loadPosVecFile(std::ifstream &Pos_vec){
                           std::istream_iterator<int>() ) );
   }
 
+#ifdef DEBUG_PRINT
   cout << "\nPos Vec:\n";
   for(int i=0;i<positionVec[0].size();i++){
     printf("(%d %d), ",positionVec[0][i], positionVec[1][i]);
   }
   cout << endl;
-
+#endif
 
   for(int i=0; i < numFreeNodes; i++){
     graphNodes.at(i).setPos(static_cast<double>(positionVec[0][i]),
@@ -134,14 +135,14 @@ void VrpGreedy::loadPosVecFile(std::ifstream &Pos_vec){
 }
 
 
-void VrpGreedy::init_acc(std::ifstream &access_mat, int agents){
+void VrpGreedy2::init_acc(std::ifstream &access_mat, int agents){
 
   numRobots = agents;
   createGraph(access_mat);
 }
 
 
-void VrpGreedy::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int agents){
+void VrpGreedy2::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int agents){
   /** In this case we don't have an occupancy grid but already a matrix
    * representing the graph so we need to know the position of the vertices,
    * information contained in Pos_Vec. No optimised PTM.
@@ -152,7 +153,7 @@ void VrpGreedy::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec,
 }
 
 
-void VrpGreedy::loadMatrixFile(std::ifstream &access_mat){
+void VrpGreedy2::loadMatrixFile(std::ifstream &access_mat){
   /**
    * Here gridSizeX and gridSizeY are deducted from the size of the input matrix file
    */
@@ -192,7 +193,7 @@ void VrpGreedy::loadMatrixFile(std::ifstream &access_mat){
 }
 
 
-void VrpGreedy::createEdgeMat(){
+void VrpGreedy2::createEdgeMat(){
 
   const int n = gridSizeX*gridSizeY;
 
@@ -239,7 +240,7 @@ void VrpGreedy::createEdgeMat(){
 }
 
 
-void VrpGreedy::createGraph(std::ifstream & INFILE){
+void VrpGreedy2::createGraph(std::ifstream & INFILE){
 
   loadMatrixFile(INFILE);
 
@@ -274,12 +275,12 @@ void VrpGreedy::createGraph(std::ifstream & INFILE){
 }
 
 
-void VrpGreedy::solve(){
+void VrpGreedy2::solve(){
 
   /// Path initialisation
   vector<int> path;
   path.push_back(STARTNODE);       // Every path initially is just 2 nodes: Start + End(=start)
-  path.push_back(STARTNODE);
+  //path.push_back(STARTNODE);
 
   for(int i = 0; i < numRobots; i++){
     Paths.push_back(path); // Define a path for every robot
@@ -292,21 +293,20 @@ void VrpGreedy::solve(){
   myFW.loadGraph(graph);
   myFW.solve(distanceMat);
 
+
 #ifdef DEBUG_PRINT
   myFW.printMatrix(graph);
   cout << "\nDistances: ";
   myFW.printMatrix(distanceMat);
-  std::cin.get();
 #endif
+
+  createFirstFeasibleSol();
 
   int start1, start2, target;
   vector<int> fwPath;
 
   pathTentative.reserve(numFreeNodes+2);
 
-  //createFirstFeasibleSol();
-
-  cout << "**** SOLVE LOOP ****\n";
 
   while(unvisitedNodes.size() > 0){
     /*
@@ -348,65 +348,16 @@ void VrpGreedy::solve(){
                    unvisitedNodes[v], *itc, graph[*itc][unvisitedNodes[v]]);
            */
 
-
           /** This is necessary to avoid modifying the current path
            * vector (which is NOT allowed since we're iterating
            * inside it), and keep track of the insertion index.  **/
           pathTentative = *itr;
           vector<int>::iterator iTent = pathTentative.begin() + (itc - itr->begin());
 
-          /// Following if: If node is adjacent to path just insert it ///
-          if( graph[*(itc-1)][unvisitedNodes[v]] == 1 &&  graph[*itc][unvisitedNodes[v]] == 1){
+          pathTentative.insert(iTent, unvisitedNodes[v]);
 
-            pathTentative.insert(iTent, unvisitedNodes[v]);
+          checkBest();
 
-            checkBest(true);
-
-          }
-          /// Otherwise: insert the shortest traversable path to "get there and go back" ///
-          else{
-            target = unvisitedNodes[v];
-            fwTent.clear();
-
-
-            if(graph[*(itc-1)][unvisitedNodes[v]] != 1){
-
-              ///Way there
-              //cout << "\nWay there: ";
-              start1 = *(itc-1);
-              myFW.getPath(start1, target, fwPath);
-              if(fwPath.size()>2){
-                for(int i=1; i<(fwPath.size()-1); i++){
-                  //cout << fwPath[i] << " ";
-                  fwTent.push_back(fwPath[i]);
-                }
-              }
-            }
-            fwPath.clear();
-
-
-            fwTent.push_back(unvisitedNodes[v]);
-
-
-            if(graph[*itc][unvisitedNodes[v]] != 1){
-
-              ///Way back
-              //cout << "\nWay back: ";
-              start2 = *itc;
-              myFW.getPath(target, start2, fwPath);
-              if(fwPath.size()>2){
-                for(int i=1; i<(fwPath.size()-1); i++){
-                  //cout << fwPath[i] << " ";
-                  fwTent.push_back(fwPath[i]);
-                }
-              }
-            }
-            fwPath.clear();
-
-            pathTentative.insert(iTent, fwTent.begin(), fwTent.end());
-
-            checkBest(false);
-          }
 
         } // END P(positions)
       } // END I (robots)
@@ -420,13 +371,10 @@ void VrpGreedy::solve(){
     std::cin.get();
      */
 
-    if(choice.neighb == true){
-      /// Inserting chosen best node v, in position p, in path of robot i
-      choice.i->insert(choice.p, unvisitedNodes[choice.v]);
-    }else{
-      /// Inserting chosen best node v, along with all the path to reach it
-      choice.i->insert(choice.p, choice.interPath.begin(), choice.interPath.end());
-    }
+
+    /// Inserting chosen best node v, in position p, in path of robot i
+    choice.i->insert(choice.p, unvisitedNodes[choice.v]);
+
 
     //cout << "About to erase it from unvisited list\n";
     unvisitedNodes.erase(unvisitedNodes.begin() + choice.v);     // Delete it from list of unvisited
@@ -435,6 +383,8 @@ void VrpGreedy::solve(){
     cout.flush();
 
   } // END WHILE
+
+  completePaths();
 
   cout << '\n';
 #ifdef DEBUG_PRINT
@@ -452,9 +402,8 @@ void VrpGreedy::solve(){
 }
 
 
-void VrpGreedy::createFirstFeasibleSol(){
+void VrpGreedy2::createFirstFeasibleSol(){
 
-  cout << "**** FIRST FEASIBLE ****\n";
 
   int start1, start2, target;
   vector<int> fwPath;
@@ -476,6 +425,13 @@ void VrpGreedy::createFirstFeasibleSol(){
       liMin = FLT_MAX;
       itc = itr->end();
 
+      //cout << "_ Insert position = " << (itc - itr->begin()) << " _" << endl;
+      /*
+      printf("Inserting node %d between node %d and %d\n", unvisitedNodes[v], *(itc-1), *itc );
+      printf("The edges value are: e(%d,%d)=%d, e(%d,%d)=%d\n",
+       *(itc-1), unvisitedNodes[v], graph[*(itc-1)][unvisitedNodes[v]],
+               unvisitedNodes[v], *itc, graph[*itc][unvisitedNodes[v]]);
+       */
 
       /** This is necessary to avoid modifying the current path
        * vector (which is NOT allowed since we're iterating
@@ -483,51 +439,14 @@ void VrpGreedy::createFirstFeasibleSol(){
       pathTentative = *itr;
       vector<int>::iterator iTent = pathTentative.begin() + (itc - itr->begin());
 
-      /// Following if: If node is adjacent to path just insert it ///
-      if( graph[*(itc-1)][unvisitedNodes[v]]){
+      pathTentative.insert(iTent, unvisitedNodes[v]);
 
-        pathTentative.insert(iTent, unvisitedNodes[v]);
+      checkBest();
 
-        checkBest(true);
-
-      }
-      /// Otherwise: insert the shortest traversable path to "get there and go back" ///
-      else{
-        target = unvisitedNodes[v];
-        fwTent.clear();
-
-
-        if(graph[*(itc-1)][unvisitedNodes[v]] != 1){
-
-          ///Way there
-          //cout << "\nWay there: ";
-          start1 = *(itc-1);
-          myFW.getPath(start1, target, fwPath);
-          if(fwPath.size()>2){
-            for(int i=1; i<(fwPath.size()-1); i++){
-              //cout << fwPath[i] << " ";
-              fwTent.push_back(fwPath[i]);
-            }
-          }
-        }
-        fwPath.clear();
-
-
-        fwTent.push_back(unvisitedNodes[v]);
-
-        pathTentative.insert(iTent, fwTent.begin(), fwTent.end());
-
-        checkBest(false);
-      }
     } // END V
 
-    if(choice.neighb == true){
-      /// Inserting chosen best node v, in position p, in path of robot i
-      choice.i->push_back(unvisitedNodes[choice.v]);
-    }else{
-      /// Inserting chosen best node v, along with all the path to reach it
-      choice.i->insert(itc, choice.interPath.begin(), choice.interPath.end());
-    }
+    /// Inserting chosen best node v, in position p, in path of robot i
+    choice.i->insert(choice.p, unvisitedNodes[choice.v]);
 
     //cout << "About to erase it from unvisited list\n";
     unvisitedNodes.erase(unvisitedNodes.begin() + choice.v);     // Delete it from list of unvisited
@@ -547,8 +466,6 @@ void VrpGreedy::createFirstFeasibleSol(){
    */
 
 
-
-  cout << '\n';
 #ifdef DEBUG_PRINT
   cout << "The contents of Paths are:" << endl;
   for (itr = Paths.begin(); itr != Paths.end(); ++itr){
@@ -563,21 +480,53 @@ void VrpGreedy::createFirstFeasibleSol(){
 }
 
 
+void VrpGreedy2::completePaths(){
 
-double VrpGreedy::pathLength(vector<int> &path){
+  int start, target;
+  vector<int> fwPath;
+
+  for (itr = Paths.begin(); itr != Paths.end(); ++itr){            // On every path i
+    ///Firstly put in the very first vertex of the path
+    vector<int> completedPath;
+    completedPath.push_back( itr->front() );
+
+    ///Then check all the subsequent vertices and add FW paths where needed
+    for (itc = (itr->begin()+1); itc != itr->end(); ++itc){        // In every position p
+
+      if( graph[*itc][*(itc-1)] == 1 ){
+        /// If vertex is near to previous one just insert it
+        completedPath.push_back(*itc);
+
+      }else{
+
+        /// Otherwise insert the shortest traversable path (target vertex included)
+        start = *(itc-1);
+        target = *itc;
+        myFW.getPath(start, target, fwPath);
+
+        completedPath.insert(completedPath.end(), fwPath.begin()+1, fwPath.end());
+
+        fwPath.clear();
+      }
+    }
+
+    *itr = completedPath;
+  }
+}
+
+
+double VrpGreedy2::pathLength(vector<int> &path){
 
   //FIXME distance//
-  double length = 0;
+  double length = 0.0;
   for(int i = 0; i < (path.size() - 1); i++){
-    length = length + sqrt(pow((graphNodes[path[i]].posx - graphNodes[path[i+1]].posx),2) +
-                           pow((graphNodes[path[i]].posy - graphNodes[path[i+1]].posy),2) /*+
-                           pow((graphNodes[path[i]].posz - graphNodes[path[i+1]].posz),2)*/ );
+    length = length + distanceMat[path.at(i)][path.at(i+1)];
   }
   return length;
 }
 
 
-void VrpGreedy::checkBest(bool isNeighbour){
+void VrpGreedy2::checkBest(){
 
   double tentPathLenght = pathLength(pathTentative);
 
@@ -589,10 +538,8 @@ void VrpGreedy::checkBest(bool isNeighbour){
 
     if(deltavip < deltaBest){
       deltaBest = deltavip;
-      choice.set_vipn(v, itr, itc, isNeighbour);
-      if(!isNeighbour){
-        choice.interPath = fwTent;
-      }
+      choice.set_vip(v, itr, itc);
+
     }//End Check Global Best
   }//End Check Local Best
 

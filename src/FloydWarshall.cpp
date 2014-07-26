@@ -50,29 +50,29 @@ void FloydWarshall::loadGraph(vector< vector <int> >& G){
 
 
 void FloydWarshall::printMatrix(vector< vector<int> >& matrix){
-   int i, j ,k;
-   int n = matrix.size();
-   printf("%s\n    ", TC_GREEN);
-   for(j=0; j<n; j++){
+  int i, j ,k;
+  int n = matrix.size();
+  printf("%s\n    ", TC_GREEN);
+  for(j=0; j<n; j++){
     Utils::spaced_cout(j);
-   }
-   printf("%s", TC_NONE);
-   cout << endl;
-   for(j=0; j<n; j++){
-     printf("%s", TC_GREEN);
-     Utils::spaced_cout(j);
-     printf("%s", TC_NONE);
-     for(k=0; k<n; k++){
-       if (matrix[j][k] == -1) cout << "   -";
-       else if (matrix[j][k] == Inf) cout << "   ∞";
-       else{
-         Utils::spaced_cout(matrix[j][k]);
-       }
-     }
-     cout << endl;
-   }
-   cout << endl;
- }
+  }
+  printf("%s", TC_NONE);
+  cout << endl;
+  for(j=0; j<n; j++){
+    printf("%s", TC_GREEN);
+    Utils::spaced_cout(j);
+    printf("%s", TC_NONE);
+    for(k=0; k<n; k++){
+      if (matrix[j][k] == -1) cout << "   -";
+      else if (matrix[j][k] == Inf) cout << "   ∞";
+      else{
+        Utils::spaced_cout(matrix[j][k]);
+      }
+    }
+    cout << endl;
+  }
+  cout << endl;
+}
 
 
 void FloydWarshall::solve(vector< vector <int> >& D){
@@ -83,32 +83,30 @@ void FloydWarshall::solve(vector< vector <int> >& D){
 
   //cout << "Size is " << n << endl;
 
-    for(int i = 0; i < n; i++ ){
-      for(int j = 0; j < n; j++ ){
-        if ( dist[i][j] != 0 && dist[i][j] != Inf ){
-          parent[i][j] = i;
-        }
-        else{
-          parent[i][j] = -1;
-        }
+  for(int i = 0; i < n; i++ ){
+    for(int j = 0; j < n; j++ ){
+      if ( i == j || dist[i][j] == Inf ){
+        parent[i][j] = -1;
       }
+      else parent[i][j] = i;
     }
-
-    for( int k = 0; k < n; k++ ){
-      for( int i = 0; i < n; i++ ){
-        for( int j = 0; j < n; j++ ){
-          int kDist = dist[i][k] + dist[k][j];
-          if( kDist < dist[i][j] ){
-            dist[i][j] = kDist;
-            parent[i][j] = parent[k][j];
-          }
-        }
-      }
-    }
-
-    D = dist;
-
   }
+
+  for( int k = 0; k < n; k++ ){
+    for( int i = 0; i < n; i++ ){
+      for( int j = 0; j < n; j++ ){
+        int kDist = dist[i][k] + dist[k][j];
+        if( kDist < dist[i][j] ){
+          dist[i][j] = kDist;
+          parent[i][j] = parent[k][j];
+        }
+      }
+    }
+  }
+
+  D = dist;
+
+}
 
 
 void FloydWarshall::getPath(int i, int j, vector <int>& path){
@@ -123,3 +121,6 @@ void FloydWarshall::getPath(int i, int j, vector <int>& path){
     path.push_back(j);
   }
 }
+
+
+

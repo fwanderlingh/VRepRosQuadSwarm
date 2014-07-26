@@ -3,7 +3,7 @@ project(quadcopter_ctrl)
 
 # WHEN BUILT IN RELEASE MODE THERE IS NO BOUNDS CHECK IN VECTORS !!!
 # SO TO DEBUNG AND FIND ERRORS COMMENT THE FOLLOWING "set" LINE  !!!
-#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -117,6 +117,7 @@ include_directories(
 
 add_library(PathPlanningAlg src/PathPlanningAlg.cpp)
 add_library(VrpGreedyFW src/VrpGreedyFW.cpp)
+add_library(VrpGreedyFW2 src/VrpGreedyFW2.cpp)
 add_library(NodeCounting src/NodeCounting.cpp)
 add_library(VrpGreedyAstar src/VrpGreedyAstar.cpp)
 add_library(LRTAstar src/LRTAstar.cpp)
@@ -182,6 +183,7 @@ target_link_libraries(quadcopterRosCtrl VrpGreedyFW)
 target_link_libraries(quadcopterRosCtrl PathPlanningAlg)
 
 target_link_libraries(kernelNode VrpGreedyFW)
+target_link_libraries(kernelNode VrpGreedyFW2)
 target_link_libraries(kernelNode FloydWarshall)
 target_link_libraries(kernelNode Utils)
 target_link_libraries(kernelNode VrpGreedyAstar)
@@ -189,6 +191,7 @@ target_link_libraries(kernelNode CoverAnalysis)
 target_link_libraries(kernelNode -lrt)
 
 target_link_libraries(testVRPs VrpGreedyFW)
+target_link_libraries(testVRPs VrpGreedyFW2)
 target_link_libraries(testVRPs FloydWarshall)
 target_link_libraries(testVRPs Utils)
 target_link_libraries(testVRPs VrpGreedyAstar)

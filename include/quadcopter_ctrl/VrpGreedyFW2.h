@@ -1,12 +1,12 @@
 /*
- * VrpGreedy.h
+ * VrpGreedy2.h
  *
  *  Created on: Apr 29, 2014
  *      Author: francescow
  */
 
-#ifndef VRPGREEDY_H_
-#define VRPGREEDY_H_
+#ifndef VRPGREEDY2_H_
+#define VRPGREEDY2_H_
 
 #include <vector>
 #include <fstream>
@@ -19,7 +19,7 @@
 using std::vector;
 
 
-class VrpGreedy
+class VrpGreedy2
 {
   int STARTNODE;
   int gridSizeX;
@@ -55,15 +55,16 @@ class VrpGreedy
   void loadPosVecFile(std::ifstream &Pos_vec);
   void createGraph(std::ifstream &INFILE);
   void createEdgeMat();
-  void checkBest(bool isNeighbour);
+  void checkBest();
   void createFirstFeasibleSol();
+  void completePaths();
 
 
 
 public:
 
-  VrpGreedy();
-  virtual ~VrpGreedy();
+  VrpGreedy2();
+  virtual ~VrpGreedy2();
   void init_acc(std::ifstream &INFILE, int agents);
   void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int agents);
 
@@ -87,7 +88,7 @@ public:
 
   int getNumFreeNodes() const
   {
-    return numFreeNodes;
+    return numFreeNodes+1;
   }
 };
 
@@ -95,4 +96,4 @@ public:
 
 
 
-#endif /* VRPGREEDY_H_ */
+#endif /* VrpGreedy2_H_ */

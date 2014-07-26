@@ -58,15 +58,10 @@ int main(int argc, char **argv)
   }
 
 
-  std::string save_path = folder_path + "/Results/VRP_Results_FW_" + filename;
-
-
   int num_robots = static_cast<int>(strtol(argv[2], NULL, 0));
-  cout << "\n num robots: " << num_robots << endl;
-  VrpGreedy myVrp;
+  VrpGreedy2 myVrp;
   //myVrp.init_acc(access_matrix, num_robots);
-  myVrp.init_graph_pos(access_matrix, pos_Vec, 3);
-  myVrp.solve();
+  myVrp.init_graph_pos(access_matrix, pos_Vec, num_robots);
   //VrpGreedyAstar myVrp(map_matrix_path, num_robots);
 
   struct timespec requestStart, requestEnd;
@@ -77,6 +72,9 @@ int main(int argc, char **argv)
   double timeElapsed = ( requestEnd.tv_sec - requestStart.tv_sec )
                                + ( requestEnd.tv_nsec - requestStart.tv_nsec ) / 1E9;
 
+
+  filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
+  std::string save_path = folder_path + "/Results/VRP_FW_" + filename + "_Results";
   performanceIndexes(myVrp, save_path, timeElapsed*1E3); /// We multiply the time to get it in milliseconds
 
 

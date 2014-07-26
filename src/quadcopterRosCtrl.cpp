@@ -125,6 +125,10 @@ int main(int argc, char **argv)
 
       if(quadPosAcquired){
         quadPosAcquired = 0;
+        if(running == 0){
+          printf("%s[%s] On my way Sir Captain!%s\n", TC_YELLOW, argv[1], TC_NONE);
+          running = 1;
+        }
         running = 1;
 
         if (loaded == 0){
@@ -202,7 +206,7 @@ void loadPathFromFile(std::ifstream &file, vector< vector<double> > &robotPath, 
       if(file.peek() == '\n'){
         /// Here the z coordinate is inserted and it's value depends on the robot number
         /// so that every quadcopter flies at a different height
-        robotPath[pathVecIndex].push_back( (double)(*argvalue - '0') *0.75 + 6 );
+        robotPath[pathVecIndex].push_back( (double)(*argvalue - '0') *0.75 + 5 );
         robotPath.push_back( vector<double>() );
         ++pathVecIndex;
       }
@@ -210,7 +214,7 @@ void loadPathFromFile(std::ifstream &file, vector< vector<double> > &robotPath, 
     robotPath.pop_back();
     file.close();
   }else{
-    cout << "Error reading file!" << endl;
+    printf("%s[%s] ** ERROR reading path file! **%s\n", TC_RED, argvalue, TC_NONE);
   }
 
 /*
@@ -277,12 +281,11 @@ std::string add_argv(std::string str, char* argvalue){
 
 void updateTarget(int index, vector< vector<double> > &path, char * argvalue){
   if(index < (int)path.size()){
-  ///Position is multiplied by 2 since the access map is sub-sampled
-  targetPos.pose.position.x = path[index][X] - VREP_X0;     /// The constant is added due to the
-  targetPos.pose.position.y = path[index][Y] - VREP_Y0;     /// different origin of the GRF used in Vrep
+  targetPos.pose.position.x = path[index][X]*MAP_SCALE - VREP_X0;     /// The constant is added due to the
+  targetPos.pose.position.y = path[index][Y]*MAP_SCALE - VREP_Y0;     /// different origin of the GRF used in Vrep
   targetPos.pose.position.z = path[index][Z];
   }else{
-    printf("ERROR: Vector index out of range");
+    printf("ERROR: Path index out of range");
   }
   //std::cout << "[" << argvalue << "] New target: "
   //          << targetPos.pose.position.x << "  " << targetPos.pose.position.y << "  " << targetPos.pose.position.z << std::endl;
@@ -291,6 +294,7 @@ void updateTarget(int index, vector< vector<double> > &path, char * argvalue){
 
 
 void publishSubTarget(ros::Publisher& pub){
+
   double dSubWP[3];
   PathPlanningAlg::InterpNewPoint(&quadPos, &targetPos, dSubWP);
   subTarget.pose.position.x = quadPos.pose.position.x + dSubWP[X];

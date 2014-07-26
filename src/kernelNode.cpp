@@ -11,13 +11,17 @@
  */
 
 
+#include "kernelNode.h"
 #include "ros/ros.h"
 #include "std_msgs/Int64.h"
-#include "kernelNode.h"
 #include <cstring>
 #include <sstream>
 #include <unistd.h>
 #include <ctime>
+
+///Used API Services
+#include "vrep_common/simRosStartSimulation.h"
+#include "vrep_common/simRosStopSimulation.h"
 
 
 using std::cout;
@@ -50,7 +54,8 @@ int main(int argc, char **argv)
   std::string filename(argv[1]);
   std::string folder_path = get_selfpath();
 
-  std::string file_path = folder_path + "/Input/Grids/" + filename;
+  std::string file_path = folder_path + "/Input/" + filename;
+  //cout << file_path << endl;
   std::ifstream access_matrix;
   access_matrix.open( file_path.c_str() );
   if( !access_matrix.is_open() ){
@@ -58,6 +63,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
+/*
   std::string posV_filename = "posV_" + filename;
   std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
   std::ifstream pos_Vec;
@@ -66,18 +72,15 @@ int main(int argc, char **argv)
     printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-
-
-  std::string save_path = folder_path + "/Results/VRP_Results_FW_" + filename;
+*/
+  std::string save_path = folder_path + "/Results/VRP_FW_" + filename + "_Results";
 
 
   int num_robots = static_cast<int>(strtol(argv[2], NULL, 0));
-  cout << "\n num robots: " << num_robots << endl;
-  VrpGreedy myVrp;
-  //myVrp.init_acc(access_matrix, num_robots);
-  myVrp.init_graph_pos(access_matrix, pos_Vec, 3);
-  myVrp.solve();
-
+  cout << "\nNum robots: " << num_robots << endl;
+  VrpGreedy2 myVrp;
+  myVrp.init_acc(access_matrix, num_robots);
+  //myVrp.init_graph_pos(access_matrix, pos_Vec, num_robots);
 
   struct timespec requestStart, requestEnd;
 
@@ -87,12 +90,11 @@ int main(int argc, char **argv)
   double timeElapsed = ( requestEnd.tv_sec - requestStart.tv_sec )
                + ( requestEnd.tv_nsec - requestStart.tv_nsec ) / 1E9;
 
-  performanceIndexes(myVrp, folder_path, timeElapsed*1E3); ///We multiply the time to get it in milliseconds
+  performanceIndexes(myVrp, save_path, timeElapsed*1E3); ///We multiply the time to get it in milliseconds
 
   savePathsToFile(myVrp, folder_path);
 
 
-  //std::cin.get();
 
   ros::init(argc, argv, "kernelNode");
   ros::NodeHandle n;
@@ -114,12 +116,24 @@ int main(int argc, char **argv)
       ctrlSignal_pub.publish(controlSignal);
       cout << "Start control triggered!" << endl;
       firstrun = 0;
+
+      /** STARRT SIMULATION IN V-REP **/
+      ros::ServiceClient client_startSimulation =
+           n.serviceClient<vrep_common::simRosStartSimulation>("/vrep/simRosStartSimulation");
+      vrep_common::simRosStartSimulation srv_startSimulation;
+      client_startSimulation.call(srv_startSimulation);
     }
 
     if( completed < num_robots){
       ctrlSignal_pub.publish(controlSignal);
 
     }else{
+      /** STOP SIMULATION IN V-REP **/
+      ros::ServiceClient client_stopSimulation =
+           n.serviceClient<vrep_common::simRosStopSimulation>("/vrep/simRosStopSimulation");
+      vrep_common::simRosStopSimulation srv_stopSimulation;
+      client_stopSimulation.call(srv_stopSimulation);
+
       printf("%sAll paths covered!%s\n", TC_GREEN, TC_NONE);
       ros::shutdown();
     }

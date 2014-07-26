@@ -14,6 +14,7 @@
 #include "graphStructs.h"
 #include "termColors.h"
 #include "VrpGreedyFW.h"
+#include "VrpGreedyFW2.h"
 #include "VrpGreedyAstar.h"
 #include "CoverAnalysis.h"
 
@@ -44,15 +45,19 @@ void performanceIndexes(T VRP, std::string save_path, double execTime){
   printf("%sAlgorithm execution time: %f ms%s\n", TC_MAGENTA, execTime, TC_NONE);
 
   std::ofstream results_file;
-
-  //std::string resultsFileName = save_path + "/Results/VRP_Results_Astar";
+  //cout << "save_path" << save_path << endl;
 
   results_file.open ( save_path.c_str(), std::fstream::app );
 
-  results_file << numRobots << "\t" << numFreeNodes + 1
-      << "\t" << longest << "\t" << total << "\t" << st_dev << "\t" << execTime << "\n";
+  if( results_file.is_open() ) {
 
-  results_file.close();
+    results_file << numRobots << "\t" << numFreeNodes + 1
+        << "\t" << longest << "\t" << total << "\t" << st_dev << "\t" << execTime << "\n";
+    results_file.close();
+
+  }else{
+    printf("%s ** ERROR writing results file! **%s\n", TC_RED, TC_NONE);
+  }
 
 
 }
@@ -77,17 +82,24 @@ void savePathsToFile(T VRP, std::string folder_save_path){
     pathfileName = folder_save_path + "/path_"  + pathfileName;
 
     pathfile.open ( pathfileName.c_str() );
-    for (std::vector<int>::iterator itc = itr->begin(); itc != itr->end(); ++itc){
-      pathfile << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
-      //cout << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
-      pathfile << '\n';
+
+    if( pathfile.is_open() ) {
+
+      for (std::vector<int>::iterator itc = itr->begin(); itc != itr->end(); ++itc){
+        pathfile << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
+        //cout << graphNodes.at(*itc).posx << ' ' << graphNodes.at(*itc).posy;
+        pathfile << '\n';
+        //cout << endl;
+      }
       //cout << endl;
+      pathfile.close();
+      printf("%sPath_%s file created...%s\n", TC_GREEN, pathIndex, TC_NONE);
+
+    }else{
+      printf("%s ** ERROR writing path_%s file! **%s\n", TC_RED, pathIndex, TC_NONE);
     }
-    //cout << endl;
-    pathfile.close();
 
   }
-  std::cout << "\"Paths\" files created!" << endl;
 }
 
 
