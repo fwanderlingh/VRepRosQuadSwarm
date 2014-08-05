@@ -509,7 +509,6 @@ float PatrolGRAPH::getCurrentCoord(char coordinate){
 
 bool PatrolGRAPH::isCompleted(){
 
-
   int count_reached = 0;
   for(int i=0; i<graphNodes.size(); ++i){
     //if(i%gridSizeY == 0) cout << endl;

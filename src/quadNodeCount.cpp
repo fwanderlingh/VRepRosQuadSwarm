@@ -77,6 +77,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
+
   /// In this way each robot flies at a different height
   zHeight = static_cast<double>(strtod(argv[3], NULL));
   printf("%s[%s] My zHeight is: %f%s\n", TC_YELLOW, argv[1], zHeight, TC_NONE);
@@ -93,7 +94,7 @@ int main(int argc, char **argv)
     printf("%sAccess matrix not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-
+/*
   std::string posV_filename = "posV_" + filename;
   std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
   std::ifstream pos_Vec;
@@ -102,9 +103,9 @@ int main(int argc, char **argv)
     printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-
-  //myNodeCount.init_acc(access_matrix, startNode);    //Constructor inputs is (mapToExplore)
-  myNodeCount.init_graph_pos(access_matrix, pos_Vec, startNode);
+*/
+  myNodeCount.init_acc(access_matrix, startNode);    //Constructor inputs is (mapToExplore)
+  //myNodeCount.init_graph_pos(access_matrix, pos_Vec, startNode);
 
   std::string controlMode(argv[4]);
   printf("%s[%s] Control Mode: %s%s\n", TC_YELLOW, argv[1], controlMode.c_str(), TC_NONE);
@@ -167,7 +168,7 @@ int main(int argc, char **argv)
 
       if(quadPosAcquired){
         quadPosAcquired = 0;
-        printf("%s[%s]. %s", TC_YELLOW, argv[1], TC_NONE);
+        //printf("%s[%s]. %s", TC_YELLOW, argv[1], TC_NONE);
         if(running == 0){
           printf("%s[%s] On my way Sir Captain!%s\n", TC_YELLOW, argv[1], TC_NONE);
           running = 1;

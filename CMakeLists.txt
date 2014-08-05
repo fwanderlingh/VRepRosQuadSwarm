@@ -203,6 +203,7 @@ target_link_libraries(quadNodeCount Utils)
 
 target_link_libraries(quadLRTA LRTAstar)
 target_link_libraries(quadLRTA PathPlanningAlg)
+target_link_libraries(quadLRTA Utils)
 
 target_link_libraries(OnlineSearchListener CoverAnalysis)
 

@@ -17,16 +17,18 @@
 #include <cstdlib>
 #include <cassert>
 #include <sstream>
+#include <termColors.h>
 #include <iterator>
+#include <Utils.h>
 
-//#define STARTNODE 5
+#define DEBUG_PRINT
 
 using std::cout;
 using std::endl;
 
 
 LRTAstar::LRTAstar() :  STARTNODE(0), gridSizeX(0), gridSizeY(0), currentNode(STARTNODE),
-                          unvisitedCount(std::numeric_limits<int>::max())
+    unvisitedCount(std::numeric_limits<int>::max())
 {
   srand(time(NULL) xor getpid()<<16);
   // THE DEFAULT CONSTRUCTOR IS ONLY USED TO DECLARE CLASS INSTANCES AS
@@ -194,10 +196,10 @@ void LRTAstar::incrCount(int currIndex, int nextIndex, bool isNextVisited){
   }
 
 
-/*
- * PRINT MAP FOR DEBUGGING PURPOSES
-*/
-/*
+  /*
+   * PRINT MAP FOR DEBUGGING PURPOSES
+   */
+  /*
   for(int i=0; i<gridSizeX; i++){
     for(int j=0; j<gridSizeY; j++){
       cout << (int)graphNodes.at((i*gridSizeY) + j).nodeCount << " ";
@@ -206,7 +208,7 @@ void LRTAstar::incrCount(int currIndex, int nextIndex, bool isNextVisited){
   }
 
   cout << "====================================" << endl;
-*/
+   */
 }
 
 void LRTAstar::createEdgeMat(){
@@ -269,18 +271,24 @@ void LRTAstar::createEdgeMat(){
 void LRTAstar::findNext(){
 
 
-//FIXME quadcopter is reaching position before last one, fix!
-/*
-  if(unvisitedCount == 0){
-    reachLastOne++;
-  }
-*/
+
+
   if( !isCompleted() ){
     /// Look for adjacent nodes and find the one with the smallest number of visits
     /// Before being able to do the adjacency check we have to recover the (i,j) index
     /// values encoded in the graph 1D array as "i*gridSizeY + j" (row-major order)
 
     currentNode = nextNode;
+
+#ifdef DEBUG_PRINT
+    cout << "\n---\n";
+    for(int i=0; i<graphNodes.size(); ++i){
+      if(i%gridSizeY == 0) cout << endl;
+      cout << graphNodes.at(i).nodeCount << " ";
+    }
+    cout << "\n\n";
+    cout << "I'm on node " << currentNode << " - LRTA Count=" << graphNodes[currentNode].nodeCount << endl;
+#endif
 
     int bestCount = std::numeric_limits<int>::max();
     std::vector<int> best_vec;
@@ -290,6 +298,10 @@ void LRTAstar::findNext(){
       if(graph[currentNode][j] == 1){
         int tentIndex = j;
         int tentCount = graphNodes.at(tentIndex).nodeCount;
+
+#ifdef DEBUG_PRINT
+        cout << "Count of " << tentIndex << " is " << tentCount << endl;
+#endif
 
         if( tentCount <= bestCount ){
 
@@ -312,6 +324,11 @@ void LRTAstar::findNext(){
     assert(best_vec.size() != 0);
     int randIndex = rand()%best_vec.size();
     nextNode = best_vec.at(randIndex);
+
+#ifdef DEBUG_PRINT
+    cout << "Chosen Node: " << nextNode << endl;
+#endif
+
     finalPath.push_back(nextNode);
   }
 
@@ -327,8 +344,8 @@ float LRTAstar::getCurrentCoord(char coordinate){
     case 'y':
       return graphNodes.at(currentNode).posy;
       break;
-    /// 'z' for now is omitted on purpose, since the height depends on the robot
-    /// (check quadcopterRosCtrl.cpp or quadLRTA.cpp for further details)
+      /// 'z' for now is omitted on purpose, since the height depends on the robot
+      /// (check quadcopterRosCtrl.cpp or quadLRTA.cpp for further details)
   }
 
 }
@@ -342,6 +359,7 @@ bool LRTAstar::getCurrType(){
     return 1;
 }
 
+
 bool LRTAstar::getNextType(){
 
   if(graphNodes.at(nextNode).nodeCount == 0)
@@ -350,10 +368,27 @@ bool LRTAstar::getNextType(){
     return 1;
 }
 
+
 bool LRTAstar::isCompleted(){
 
+  int count_reached = 0;
+  for(int i=0; i<graphNodes.size(); ++i){
+    //if(i%gridSizeY == 0) cout << endl;
+    //cout << graphNodes.at(i).nodeCount << " ";
+    if( graphNodes.at(i).nodeCount >= 5 ){
+      ++count_reached;
+    }
+  }
+  //cout << endl;
+  if(count_reached == graphNodes.size()){
+    return 1;
+  }else return 0;
+
+
+  /*
   if(unvisitedCount==0)
     return true;
   else
     return false;
+   */
 }

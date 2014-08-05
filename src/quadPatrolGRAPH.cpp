@@ -120,13 +120,23 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 */
-  /// Run withOut offline optimisation
-  //myPG.init_acc(access_matrix, startNode);
-  //myPG.init_graph_pos(access_matrix, pos_Vec, startNode);
+  bool optimized = true;
+  std::string type;
 
-  /// Run with offline optimisation
-  myPG.init_acc_ptm(access_matrix, PTM_matrix, startNode);
-  //myPG.init_graph_pos_ptm(access_matrix, pos_Vec, PTM_matrix, startNode);
+  if(optimized){
+    /// Run with offline optimisation
+
+    type = "PG_";
+    myPG.init_acc_ptm(access_matrix, PTM_matrix, startNode);
+    //myPG.init_graph_pos_ptm(access_matrix, pos_Vec, PTM_matrix, startNode);
+  }else{
+    /// Run withOut offline optimisation
+
+    type = "EC_";
+    myPG.init_acc(access_matrix, startNode);
+    //myPG.init_graph_pos(access_matrix, pos_Vec, startNode);
+  }
+
 
 
   std::string controlMode(argv[4]);
@@ -273,7 +283,7 @@ int main(int argc, char **argv)
       osInfo.numNodes = myPG.getNumFreeNodes();
       osInfo.path = myPG.getFinalPath();
       //filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
-      osInfo.fileName = "PG_" + filename;
+      osInfo.fileName = type + filename;
       completed_pub.publish(osInfo);
 
       ///Dump counts map on file
@@ -283,7 +293,7 @@ int main(int argc, char **argv)
 
       std::ostringstream process_id;
       process_id << (int)getpid();
-      std::string resultsName = folder_path + "/CountMaps/CountMap_" + process_id.str() + filename;
+      std::string resultsName = folder_path + "/CountMaps/" + type + "CountMap_" + process_id.str() + filename;
 
       std::ofstream nodeCountMap;
       nodeCountMap.open(resultsName.c_str());

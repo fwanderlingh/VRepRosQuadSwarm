@@ -172,7 +172,8 @@ void NodeCounting::loadGraphFile(std::ifstream &graph_mat){
         std::vector<int>( std::istream_iterator<int>(is),
                           std::istream_iterator<int>() ) );
   }
-  /*
+
+#ifdef DEBUG_PRINT
   cout << "\nGraph:\n";
   for(int i=0;i<graph.size();i++){
     for(int j=0; j<graph.at(1).size();j++){
@@ -180,7 +181,8 @@ void NodeCounting::loadGraphFile(std::ifstream &graph_mat){
     }
     cout << endl;
   }
-   */
+#endif
+
   numFreeNodes = static_cast<int>(graph.size());
 
   unvisited.resize(numFreeNodes, 1);
@@ -272,6 +274,16 @@ void NodeCounting::incrCount(int nodeIndex, bool isNodeVisited){
 /****    MAIN METHOD    ****/
 void NodeCounting::findNext(){
 
+#ifdef DEBUG_PRINT
+  cout << "\n---\n";
+  for(int i=0; i<graphNodes.size(); ++i){
+    if(i%gridSizeY == 0) cout << endl;
+    cout << graphNodes.at(i).nodeCount << " ";
+  }
+  cout << "\n\n";
+  cout << "I'm on node " << currentNode << " - Node Count=" << graphNodes[currentNode].nodeCount << endl;
+#endif
+
   if( !isCompleted() ){
 
     int bestCount = std::numeric_limits<int>::max();
@@ -281,6 +293,10 @@ void NodeCounting::findNext(){
       if(graph[currentNode][j] == 1){
         int tentIndex = j;
         int tentCount = graphNodes.at(tentIndex).nodeCount;
+
+#ifdef DEBUG_PRINT
+        cout << "Count of " << tentIndex << " is " << tentCount << endl;
+#endif
 
         if( tentCount <= bestCount ){
 
@@ -342,11 +358,17 @@ void NodeCounting::findNext(){
     } //End i_shift for-loop (x scan)
      */
 
+
     /// Now if there is more than one element in the vector choose one randomly.
     /// If size()==1 the modulus function always returns 0 (the first element)
     assert(best_vec.size() != 0);
     int randIndex = rand()%best_vec.size();
     currentNode = best_vec.at(randIndex);
+
+#ifdef DEBUG_PRINT
+    cout << "Chosen Node: " << currentNode << endl;
+#endif
+
     finalPath.push_back(currentNode);
 
   }
@@ -375,10 +397,26 @@ bool NodeCounting::getCurrentType(){
     return 1;
 }
 
+
 bool NodeCounting::isCompleted(){
 
+  int count_reached = 0;
+  for(int i=0; i<graphNodes.size(); ++i){
+    //if(i%gridSizeY == 0) cout << endl;
+    //cout << graphNodes.at(i).nodeCount << " ";
+    if( graphNodes.at(i).nodeCount >= 5 ){
+      ++count_reached;
+    }
+  }
+  //cout << endl;
+  if(count_reached == graphNodes.size()){
+    return 1;
+  }else return 0;
+
+  /*
   if(unvisitedCount == 0)
     return true;
   else
     return false;
+   */
 }

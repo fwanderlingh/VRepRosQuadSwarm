@@ -96,7 +96,7 @@ int main(int argc, char **argv)
     printf("%sAccess matrix not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-
+/*
   std::string posV_filename = "posV_" + filename;
   std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
   std::ifstream pos_Vec;
@@ -105,9 +105,10 @@ int main(int argc, char **argv)
     printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
+*/
 
-  myLRTA.init_graph_pos(access_matrix, pos_Vec, startNode);    //Constructor inputs is (graph, position of nodes in space)
-  //myLRTA.init_acc(access_matrix, startNode);
+  myLRTA.init_acc(access_matrix, startNode);
+  //myLRTA.init_graph_pos(access_matrix, pos_Vec, startNode);    //Constructor inputs is (graph, position of nodes in space)
 
   std::string controlMode(argv[4]);
   printf("%s[%s] Control Mode: %s%s\n", TC_YELLOW, argv[3], controlMode.c_str(), TC_NONE);
@@ -170,7 +171,7 @@ int main(int argc, char **argv)
 
       if(quadPosAcquired){
         quadPosAcquired = 0;
-        cout << "."; cout.flush();
+        //cout << "."; cout.flush();
         if(running == 0){
           printf("%s[%s] On my way Sir Captain!%s\n", TC_YELLOW, argv[1], TC_NONE);
           running = 1;
@@ -188,12 +189,12 @@ int main(int argc, char **argv)
 
         if(controlMode == "asctec"){
           if(dist < threshold){
-            printf("\n%s[%s] TARGET REACHED!%s\n", TC_GREEN, argv[1], TC_NONE);
+            //printf("\n%s[%s] TARGET REACHED!%s\n", TC_GREEN, argv[1], TC_NONE);
             //sleep(5);
             myLRTA.findNext();
             updateTarget(updateCount_pub);
             targetObjPos_pub.publish(targetPos);
-            printf("\n%s[%s] NEXT TARGET SENT!%s\n", TC_GREEN, argv[1], TC_NONE);
+            //printf("\n%s[%s] NEXT TARGET SENT!%s\n", TC_GREEN, argv[1], TC_NONE);
           }
         }else{
           if(inSubPath == 0){
