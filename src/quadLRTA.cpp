@@ -37,8 +37,10 @@ geometry_msgs::PoseStamped subTarget;
 
 LRTAstar myLRTA;
 
+double zHeight = 0;
+double MAP_SCALE, OFS_X, OFS_Y, WP_STEP, CRIT_DIST, threshold;
 int quadPosAcquired = 0;
-float zHeight = 0;
+
 
 ///FUNCTIONS
 std::string get_selfpath(void);
@@ -68,15 +70,21 @@ void updateCount(const quadcopter_ctrl::LRTAmsg::ConstPtr& LRTAinfo){
 int main(int argc, char **argv)
 {
   /// argv[1] contains the ID number of the robot to be controlled (0,1,2...)
-  if(argc<3){
+  if(argc<6){
     printf("%s** ERROR **\n"
-              "argv[1]: Quadcopter # to control\n"
-              "argv[2] Input file%s\n", TC_RED, TC_NONE);
+        "argv[1]: Quadcopter # to control\n"
+        "argv[2]: Input file\n"
+        "argv[3]: zHeight of flight\n"
+        "argv[4]: Control Mode ('sim' or 'asctec')\n"
+        "argv[5]: STARTNODE, index of first node%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
-  // In this way each robot flight at a slightly different height
-  zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
+  /// In this way each robot flies at a different height
+  zHeight = static_cast<double>(strtod(argv[3], NULL));
+  printf("%s[%s] My zHeight is: %f%s\n", TC_YELLOW, argv[1], zHeight, TC_NONE);
+
+  int startNode = strtol(argv[5], NULL, 0);
 
   std::string filename(argv[2]);
   std::string folder_path = get_selfpath();
@@ -98,9 +106,22 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  myLRTA.init_graph_pos(access_matrix, pos_Vec);    //Constructor inputs is (graph, position of nodes in space)
+  myLRTA.init_graph_pos(access_matrix, pos_Vec, startNode);    //Constructor inputs is (graph, position of nodes in space)
+  //myLRTA.init_acc(access_matrix, startNode);
 
+  std::string controlMode(argv[4]);
+  printf("%s[%s] Control Mode: %s%s\n", TC_YELLOW, argv[3], controlMode.c_str(), TC_NONE);
+  if(PathPlanningAlg::LoadParams(controlMode, MAP_SCALE, OFS_X, OFS_Y, WP_STEP, CRIT_DIST, threshold)){
+    printf("%s** INCORRECT CONTROL MODE **%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
+  }
 
+  double dist;
+  int running = 1;
+  int inSubPath = 0;
+  bool loaded = 0;
+
+  /// ROS NETWORK CONFIGURATION ///
   /* The following strings are used to concatenate the topic name to the argument passed to
    * the node (the argv[1]), so to name each node with a different name and send signals to
    *  different topics.
@@ -108,8 +129,8 @@ int main(int argc, char **argv)
    *  vrep/targetObjPos_0, etc...)
    */
   std::string nodeName = add_argv("quadLRTAstar", argv[1]);
-  std::string targetObjPosName = add_argv("vrep/targetObjPos", argv[1]);
-  std::string quadcopPosName = add_argv("vrep/quadcopPos", argv[1]);
+  std::string targetObjPosName = add_argv("targetObjPos", argv[1]);
+  std::string quadcopPosName = add_argv("quadcopPos", argv[1]);
 
   ros::init(argc, argv, nodeName);
   ros::NodeHandle n;
@@ -139,67 +160,75 @@ int main(int argc, char **argv)
   //                    float64 y
   //                    float64 z
   //                    float64 w
-  */
+   */
 
-  cout << "[" << argv[1] << "] Waiting for start....    " << endl;
 
-  int running = 1;
-  int inSubPath = 0;
-
-  double dist = 0;
-  double threshold = 0.3;   // How much the quadcopter has to be near
-                           // to the green sphere (target) before the target moves
-  int loaded = 0;
 
   while (ros::ok())
   {
-    // FIXME not running if the robot starts in a position lower than threshold
-    if(myLRTA.isCompleted() == false || inSubPath == 1){
-      //cout << "myLRTA.isCompleted() " << myLRTA.isCompleted() << endl;
+    if(myLRTA.isCompleted() == false){
+
       if(quadPosAcquired){
         quadPosAcquired = 0;
-        running = 1;
+        cout << "."; cout.flush();
+        if(running == 0){
+          printf("%s[%s] On my way Sir Captain!%s\n", TC_YELLOW, argv[1], TC_NONE);
+          running = 1;
+        }
 
         if (loaded == 0){
           loaded = 1;
           updateTarget(updateCount_pub);
+          if (controlMode == "asctec") targetObjPos_pub.publish(targetPos);
         }
 
         // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
         dist = fabs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
         //cout << "Distance to target = " << dist << " m" << endl;
 
-        if(inSubPath == 0){
-          if( dist > CRITICAL_DIST ){
-            inSubPath = 1;
-            publishSubTarget(targetObjPos_pub);
-            //std::cout << "First subTarget Published!" << std::endl;
-          }else if(dist < threshold){
-
-            //cout << "Finding next node:" << endl;
+        if(controlMode == "asctec"){
+          if(dist < threshold){
+            printf("\n%s[%s] TARGET REACHED!%s\n", TC_GREEN, argv[1], TC_NONE);
+            //sleep(5);
             myLRTA.findNext();
             updateTarget(updateCount_pub);
-
-            //In the following if, "dist" is calculated again since updateTarget changed targetPos
-            if( fabs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
-              targetObjPos_pub.publish(targetPos);
-              //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
-            }
-          }else{
-            //updateTarget(updateCount_pub);
-            inSubPath = 1;
+            targetObjPos_pub.publish(targetPos);
+            printf("\n%s[%s] NEXT TARGET SENT!%s\n", TC_GREEN, argv[1], TC_NONE);
           }
         }else{
-          double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
-          if(dist < threshold){
-            inSubPath = 0;
-            targetObjPos_pub.publish(targetPos);
-          }else if(sub_dist < threshold){
-            publishSubTarget(targetObjPos_pub);
-            //std::cout << "subTarget Published!" << std::endl;
+          if(inSubPath == 0){
+            if( dist > CRIT_DIST ){
+              inSubPath = 1;
+              publishSubTarget(targetObjPos_pub);
+              //std::cout << "First subTarget Published!" << std::endl;
+            }else if(dist < threshold){
+
+              //cout << "Finding next node:" << endl;
+              myLRTA.findNext();
+              updateTarget(updateCount_pub);
+
+              //In the following if, "dist" is calculated again since updateTarget changed targetPos
+              if( fabs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRIT_DIST ){
+                targetObjPos_pub.publish(targetPos);
+                //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
+              }
+            }else{
+              //updateTarget(updateCount_pub);
+              inSubPath = 1;
+            }
+          }else{
+            double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
+            if(dist < threshold){
+              inSubPath = 0;
+              targetObjPos_pub.publish(targetPos);
+            }else if(sub_dist < threshold){
+              publishSubTarget(targetObjPos_pub);
+              //std::cout << "subTarget Published!" << std::endl;
+            }
           }
         }
-      }else{              /// THIS PART IS EXECUTED IF VREP SIMULATION IS NOT RUNNING
+       /// THIS PART IS EXECUTED IF NO POSITION IS RECEIVED
+      }else{
 
         if (running == 1) {
           printf("%s[%s] ** No incoming vrep/quadcopPos! (waiting...) **%s\n", TC_YELLOW, argv[1], TC_NONE);
@@ -216,7 +245,7 @@ int main(int argc, char **argv)
       // FIXME there is an issue with the last execution of the LRTA class:
       // the result is that an additional waypoint is added to the path so
       // we have to remove it before sending the information to the listener
-      finalPath.pop_back();
+      //finalPath.pop_back();
       osInfo.path = finalPath;
       filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
       osInfo.fileName = "LRTA_" + filename;
@@ -235,17 +264,17 @@ int main(int argc, char **argv)
 
 
 std::string get_selfpath() {
-    char buff[2048];
-    ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
-    if (len != -1) {
-      buff[len] = '\0';
-      std::string path(buff);   ///Here the executable name is still in
-      std::string::size_type t = path.find_last_of("/");   // Here we find the last "/"
-      path = path.substr(0,t);                             // and remove the rest (exe name)
-      return path;
-    } else {
-     printf("Cannot determine file path!\n");
-    }
+  char buff[2048];
+  ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
+  if (len != -1) {
+    buff[len] = '\0';
+    std::string path(buff);   ///Here the executable name is still in
+    std::string::size_type t = path.find_last_of("/");   // Here we find the last "/"
+    path = path.substr(0,t);                             // and remove the rest (exe name)
+    return path;
+  } else {
+    printf("Cannot determine file path!\n");
+  }
 }
 
 
@@ -260,8 +289,8 @@ std::string add_argv(std::string str, char* argvalue){
 
 
 void updateTarget(ros::Publisher& countPub){
-  targetPos.pose.position.x = myLRTA.getCurrentCoord('x')*2 - VREP_X0;     /// The constant is added due to the
-  targetPos.pose.position.y = myLRTA.getCurrentCoord('y')*2 - VREP_Y0;     /// different origin of the GRF used in Vrep
+  targetPos.pose.position.x = myLRTA.getCurrentCoord('x')*MAP_SCALE - OFS_X;     /// The constant is added due to the
+  targetPos.pose.position.y = myLRTA.getCurrentCoord('y')*MAP_SCALE - OFS_Y;     /// different origin of the GRF used in Vrep
   targetPos.pose.position.z = zHeight;
 
   LRTAinfo.currNode = myLRTA.getCurrentIndex();
@@ -272,7 +301,7 @@ void updateTarget(ros::Publisher& countPub){
 
 
 void publishSubTarget(ros::Publisher& posPub){
-  double dSubWP[3];
+  double dSubWP[3] = {WP_STEP, WP_STEP, WP_STEP};
   PathPlanningAlg::InterpNewPoint(&quadPos, &targetPos, dSubWP);
   subTarget.pose.position.x = quadPos.pose.position.x + dSubWP[X];
   subTarget.pose.position.y = quadPos.pose.position.y + dSubWP[Y];

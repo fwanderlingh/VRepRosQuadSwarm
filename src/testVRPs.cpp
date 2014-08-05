@@ -74,7 +74,9 @@ int main(int argc, char **argv)
 
 
   filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
-  std::string save_path = folder_path + "/Results/VRP_FW_" + filename + "_Results";
+  std::ostringstream oss_n;
+  oss_n << num_robots;
+  std::string save_path = folder_path + "/Results/VRP_FW_" + filename + "_" + oss_n.str() + "_Results";
   performanceIndexes(myVrp, save_path, timeElapsed*1E3); /// We multiply the time to get it in milliseconds
 
 

@@ -39,8 +39,8 @@ public:
   NodeCounting();
   NodeCounting(std::ifstream & INFILE);
   virtual ~NodeCounting();
-  void init_acc(std::ifstream & INFILE);
-  void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec);
+  void init_acc(std::ifstream & INFILE, int startingNode);
+  void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int startingNode);
 
   void incrCount(int nodeIndex, bool nodeType);
   void findNext();

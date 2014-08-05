@@ -24,7 +24,7 @@
 #include <vector>
 #include <ctime>
 
-#define INTSTRSIZE ((CHAR_BIT * sizeof(int) - 1) / 3 + 2)
+//#define INTSTRSIZE ((CHAR_BIT * sizeof(int) - 1) / 3 + 2)
 
 using std::cout;
 using std::endl;
@@ -42,8 +42,9 @@ geometry_msgs::PoseStamped subTarget;
 
 PatrolGRAPH myPG;
 
-int quadPosAcquired = 0;
 double zHeight = 0;
+double MAP_SCALE, OFS_X, OFS_Y, WP_STEP, CRIT_DIST, threshold;
+int quadPosAcquired = 0;
 
 ///FUNCTIONS
 std::string get_selfpath(void);
@@ -72,15 +73,22 @@ int main(int argc, char **argv)
 
   std::time_t start = time(NULL);
   /// argv[1] contains the ID number of the robot to be controlled (0,1,2...)
-  if(argc<3){
+  if(argc<6){
     printf("%s** ERROR **\n"
-              "argv[1]: Quadcopter # to control\n"
-              "argv[2] Input file%s\n", TC_RED, TC_NONE);
+        "argv[1]: Quadcopter # to control\n"
+        "argv[2]: Input file\n"
+        "argv[3]: zHeight of flight\n"
+        "argv[4]: Control Mode ('sim' or 'asctec')\n"
+        "argv[5]: STARTNODE, index of first node%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
-  // In this way each robot flight at a slightly different height
-  zHeight =  (float)(strtol(argv[1], NULL, 0)) *0.6 + 5;
+  /// In this way each robot flies at a different height
+  zHeight = static_cast<double>(strtod(argv[3], NULL));
+  printf("%s[%s] My zHeight is: %f%s\n", TC_YELLOW, argv[1], zHeight, TC_NONE);
+
+  int startNode = strtol(argv[5], NULL, 0);
+
 
   std::string filename(argv[2]);
   std::string folder_path = get_selfpath();
@@ -102,7 +110,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-
+/*
   std::string posV_filename = "posV_" + filename;
   std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
   std::ifstream pos_Vec;
@@ -111,24 +119,38 @@ int main(int argc, char **argv)
     printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-
+*/
   /// Run withOut offline optimisation
-  //myPG.init_acc(access_matrix);
+  //myPG.init_acc(access_matrix, startNode);
+  //myPG.init_graph_pos(access_matrix, pos_Vec, startNode);
 
   /// Run with offline optimisation
-  //myPG.init_acc_ptm(access_matrix, PTM_matrix);
-  myPG.init_graph_pos_ptm(access_matrix, pos_Vec, PTM_matrix);
+  myPG.init_acc_ptm(access_matrix, PTM_matrix, startNode);
+  //myPG.init_graph_pos_ptm(access_matrix, pos_Vec, PTM_matrix, startNode);
 
 
-  /** The following strings are used to concatenate the topic name to the argument passed to
+  std::string controlMode(argv[4]);
+  printf("%s[%s] Control Mode: %s%s\n", TC_YELLOW, argv[3], controlMode.c_str(), TC_NONE);
+  if(PathPlanningAlg::LoadParams(controlMode, MAP_SCALE, OFS_X, OFS_Y, WP_STEP, CRIT_DIST, threshold)){
+    printf("%s** INCORRECT CONTROL MODE **%s\n", TC_RED, TC_NONE);
+    exit(EXIT_FAILURE);
+  }
+
+  double dist;
+  int running = 1;
+  int inSubPath = 0;
+  bool loaded = 0;
+
+  /// ROS NETWORK CONFIGURATION ///
+  /* The following strings are used to concatenate the topic name to the argument passed to
    * the node (the argv[1]), so to name each node with a different name and send signals to
    *  different topics.
    * (e.g. if argv[1] = 0 the node will be named quadcopterRosCtrl_0, publish to
    *  vrep/targetObjPos_0, etc...)
    */
   std::string nodeName = add_argv("quadPatrolGRAPH", argv[1]);
-  std::string targetObjPosName = add_argv("vrep/targetObjPos", argv[1]);
-  std::string quadcopPosName = add_argv("vrep/quadcopPos", argv[1]);
+  std::string targetObjPosName = add_argv("targetObjPos", argv[1]);
+  std::string quadcopPosName = add_argv("quadcopPos", argv[1]);
 
   ros::init(argc, argv, nodeName);
   ros::NodeHandle n;
@@ -160,74 +182,80 @@ int main(int argc, char **argv)
   //                    float64 w
    */
 
-  cout << "[" << argv[1] << "] Waiting for start....    " << endl;
-
-  int running = 1;
-  int inSubPath = 0;
-
-  double dist = 0;
-  /// How much the quadcopter has to be near to the
-  /// green sphere (target) before the target moves:
-  double treshold = 0.3;
-  int loaded = 0;
 
   // || ((time(NULL) - start) < (60 * #))  <-- # minutes
 
   while (ros::ok())
   {
-    if(myPG.isCompleted() == false ||  inSubPath == 1 ){
+    if(myPG.isCompleted() == false){
 
       if(quadPosAcquired){
         quadPosAcquired = 0;
-        running = 1;
+        //cout << "."; cout.flush();
+        if(running == 0){
+          printf("%s[%s] On my way Sir Captain!%s\n", TC_YELLOW, argv[1], TC_NONE);
+          running = 1;
+        }
 
         if (loaded == 0){
           loaded = 1;
-          updateTarget(updateCount_pub);
+          targetPos.pose.position.x = myPG.getCurrentCoord('x')*MAP_SCALE - OFS_X;     /// The constant VREP_** is added due to the
+          targetPos.pose.position.y = myPG.getCurrentCoord('y')*MAP_SCALE - OFS_Y;     /// different origin of the GRF used in Vrep
+          targetPos.pose.position.z = zHeight;
+          if (controlMode == "asctec") {
+            targetObjPos_pub.publish(targetPos);
+            printf("%s[%s] 1st TARGET PUBLISHED!%s\n", TC_YELLOW, argv[1], TC_NONE);
+          }
         }
 
         // Calculating current l^2-norm between target and quadcopter (Euclidean distance)
         dist = fabs( PathPlanningAlg::Distance(&quadPos, &targetPos) );
         //cout << "Distance to target = " << dist << " m" << endl;
 
-        if(inSubPath == 0){
-          if( dist > CRITICAL_DIST ){
-            inSubPath = 1;
-            publishSubTarget(targetObjPos_pub);
-            //std::cout << "First subTarget Published!" << std::endl;
-          }else if(dist < treshold){
-
-            /// Here we save the index of the node to which we arrived since after executing
-            /// the findNext algorithm the "currentNode" variable gets modified, containing
-            /// the index of the next vertex to be visited.
+        if(controlMode == "asctec"){
+          if(dist < threshold){
+            cout << "TARGET REACHED!" << endl;
+            //sleep(5);
             PGinfo.currNode = myPG.getCurrentNode();
             PGinfo.isCurrVisited = myPG.getCurrentType();
             myPG.findNext();
             PGinfo.chosenEdge = myPG.getChosenEdge();
             updateTarget(updateCount_pub);
-
-            //In the following if, "dist" is calculated again since updateTarget changed targetPos
-            if( fabs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRITICAL_DIST ){
-              targetObjPos_pub.publish(targetPos);
-              //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
-            }
+            targetObjPos_pub.publish(targetPos);
           }
         }else{
-          double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
-          if(dist < treshold){
-            inSubPath = 0;
-            targetObjPos_pub.publish(targetPos);
-          }else if(sub_dist < treshold){
-            publishSubTarget(targetObjPos_pub);
-            //std::cout << "subTarget Published!" << std::endl;
-          }
+          if(inSubPath == 0){
+            if( dist > CRIT_DIST ){
+              inSubPath = 1;
+              publishSubTarget(targetObjPos_pub);
+              //std::cout << "First subTarget Published!" << std::endl;
+            }else if(dist < threshold){
 
-          /*if(sub_dist < treshold && dist > treshold){
-            publishSubTarget(targetObjPos_pub);
-            //std::cout << "subTarget Published!" << std::endl;
-          }else if (dist < treshold){
-            inSubPath = 0;
-          }*/
+              /// Here we save the index of the node to which we arrived since after executing
+              /// the findNext algorithm the "currentNode" variable gets modified, containing
+              /// the index of the next vertex to be visited.
+              PGinfo.currNode = myPG.getCurrentNode();
+              PGinfo.isCurrVisited = myPG.getCurrentType();
+              myPG.findNext();
+              PGinfo.chosenEdge = myPG.getChosenEdge();
+              updateTarget(updateCount_pub);
+
+              //In the following if, "dist" is calculated again since updateTarget changed targetPos
+              if( fabs(PathPlanningAlg::Distance(&quadPos, &targetPos)) < CRIT_DIST ){
+                targetObjPos_pub.publish(targetPos);
+                //std::cout << "Target #" << wpIndex << " reached!" << std::endl;
+              }
+            }
+          }else{
+            double sub_dist = fabs( (PathPlanningAlg::Distance(&quadPos, &subTarget)) );
+            if(dist < threshold){
+              inSubPath = 0;
+              targetObjPos_pub.publish(targetPos);
+            }else if(sub_dist < threshold){
+              publishSubTarget(targetObjPos_pub);
+              //std::cout << "subTarget Published!" << std::endl;
+            }
+          }
         }
       }else{              /// THIS PART IS EXECUTED IF VREP SIMULATION IS NOT RUNNING
 
@@ -244,19 +272,18 @@ int main(int argc, char **argv)
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myPG.getNumFreeNodes();
       osInfo.path = myPG.getFinalPath();
-      filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
+      //filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
       osInfo.fileName = "PG_" + filename;
       completed_pub.publish(osInfo);
-/*
+
+      ///Dump counts map on file
       int gridSizeX = myPG.getGridSizeX();
       int gridSizeY = myPG.getGridSizeY();
       vector<graphNode> graphNodes = myPG.getGraphNodes();
 
-      ///Dump counts map on file
-      char process_id[INTSTRSIZE];
-      sprintf(process_id, "%d", (int)getpid() );
-      std::string resultsName(process_id);
-      resultsName = folder_path + "/CountMaps/CountMap_" + resultsName + filename;
+      std::ostringstream process_id;
+      process_id << (int)getpid();
+      std::string resultsName = folder_path + "/CountMaps/CountMap_" + process_id.str() + filename;
 
       std::ofstream nodeCountMap;
       nodeCountMap.open(resultsName.c_str());
@@ -270,7 +297,7 @@ int main(int argc, char **argv)
         nodeCountMap.close();
 
       }else{ cout << "Error writing counts on file" << endl; }
-*/
+
       ros::shutdown();
     }
 
@@ -310,8 +337,8 @@ std::string add_argv(std::string str, char* argvalue){
 void updateTarget(ros::Publisher& countPub){
 
   ///Position is multiplied by 2 since the access map is sub-sampled
-  targetPos.pose.position.x = myPG.getCurrentCoord('x')*2.0 - VREP_X0;     /// The constant VREP_** is added due to the
-  targetPos.pose.position.y = myPG.getCurrentCoord('y')*2.0 - VREP_Y0;     /// different origin of the GRF used in Vrep
+  targetPos.pose.position.x = myPG.getCurrentCoord('x')*MAP_SCALE - OFS_X;     /// The constant VREP_** is added due to the
+  targetPos.pose.position.y = myPG.getCurrentCoord('y')*MAP_SCALE - OFS_Y;     /// different origin of the GRF used in Vrep
   targetPos.pose.position.z = zHeight;
 
   /// Here we inform all the other quadcopters of our choice
@@ -320,7 +347,7 @@ void updateTarget(ros::Publisher& countPub){
 
 
 void publishSubTarget(ros::Publisher& posPub){
-  double dSubWP[3];
+  double dSubWP[3] = {WP_STEP, WP_STEP, WP_STEP};
   PathPlanningAlg::InterpNewPoint(&quadPos, &targetPos, dSubWP);
   subTarget.pose.position.x = quadPos.pose.position.x + dSubWP[X];
   subTarget.pose.position.y = quadPos.pose.position.y + dSubWP[Y];

@@ -140,7 +140,7 @@ void LRTAstar::createGraph(std::ifstream & INFILE){
   // Graph initialisation - to every node is assigned a position in a Row-Major order
   for(int i=0; i<gridSizeX; i++){
     for(int j=0; j<gridSizeY; j++){
-      graphNodes.at((i*gridSizeY) + j).setPos((float)i*2, (float)j*2);  ///Position is multiplied by 2 since the access map is sub-sampled
+      graphNodes.at((i*gridSizeY) + j).setPos((float)i, (float)j);  ///Position is multiplied by 2 since the access map is sub-sampled
       graphNodes.at((i*gridSizeY) + j).occupied = access_vec.at((i*gridSizeY) + j);
 
       if(access_vec.at((i*gridSizeY) + j) == 0)  unvisited.at((i*gridSizeY) + j) = 1;
@@ -149,32 +149,34 @@ void LRTAstar::createGraph(std::ifstream & INFILE){
     //cout << endl;
   }
   unvisitedCount = std::accumulate(unvisited.begin(),unvisited.end(), 0);
+  cout << "unvisitedCount: " << unvisitedCount << endl;
 
   numFreeNodes = unvisitedCount;
 
-  STARTNODE = gridSizeY/2;
-  nextNode = currentNode = STARTNODE;
-  //cout << STARTNODE << endl;
+  createEdgeMat();
+
 }
 
 
-void LRTAstar::init_acc(std::ifstream & access_mat){
+void LRTAstar::init_acc(std::ifstream & access_mat, int startingNode){
   /** If input argument of init is only 1 then we assume we have no
    * optimized Probability Transition Matrix and the input file is
    * the Occupancy Grid (access_mat).
    */
   createGraph(access_mat);
+  currentNode = nextNode = startingNode;
   finalPath.push_back(currentNode);
 }
 
 
-void LRTAstar::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec){
+void LRTAstar::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int startingNode){
   /** In this case we don't have an occupancy grid but already a matrix
    * representing the graph so we need to know the position of the vertices,
    * information contained in Pos_Vec. No optimised PTM.
    */
   loadGraphFile(graph_mat);
   loadPosVecFile(Pos_vec);
+  currentNode = nextNode =  startingNode;
   finalPath.push_back(currentNode);
 }
 
@@ -207,6 +209,62 @@ void LRTAstar::incrCount(int currIndex, int nextIndex, bool isNextVisited){
 */
 }
 
+void LRTAstar::createEdgeMat(){
+
+  const int n = gridSizeX*gridSizeY;
+
+  assert(n == access_vec.size());
+  /// Here we create a zero matrix of the size of the graph
+  vector< vector<int> > _graph(n, vector<int> (n, 0));
+  graph = _graph;
+
+  int row, col;    // Main indexes
+  int row_shift, col_shift; // To move around spatial adjacents
+  int nb_row, nb_col;       // Adjacent indexes
+
+#ifdef DEBUG_PRINT
+  printf("%sOccupancy Map:%s",TC_RED, TC_NONE);
+  for(int j=0; j<n; j++){
+    if(j%gridSizeY == 0) cout << endl;
+    if( access_vec[j] == 1 ){
+      printf("%s",TC_RED);
+      Utils::spaced_cout(j);
+      printf("%s", TC_NONE);
+    }
+    else Utils::spaced_cout(j);
+  }
+  cout << endl << endl;
+#endif
+
+  for(int i=0; i<n; i++){
+    if(access_vec[i] == 0){
+      row = i/gridSizeY;
+      col = i%gridSizeY;
+      for(row_shift=-1; row_shift<=1; row_shift++){
+        for(col_shift=-1; col_shift<=1; col_shift++){
+          nb_row = row + row_shift;
+          nb_col = col + col_shift;
+          if( (nb_row>=0) && (nb_row<gridSizeX) && (nb_col>=0) && (nb_col<gridSizeY) ///RANGE CHECK
+              && (row_shift!=0 || col_shift!=0)  ///<--- don't check same node of current
+              && (row_shift*col_shift == 0)  ///<--- don't allow diagonal movements
+          )
+            //&& ( (row_shift*row_shift xor col_shift*col_shift)==1 ) <--last 2 statements compressed in one condition
+          {
+            if(access_vec[nb_row*gridSizeY+nb_col] == 0){
+              /// Create the edge between "i" and its "free neighbour"
+              graph[i][nb_row*gridSizeY+nb_col] = 1;
+              graph[nb_row*gridSizeY+nb_col][i] = 1;
+              graphNodes.at(i).numEdges++;
+            }
+          }
+        }
+      }
+    }
+  }
+
+}
+
+
 /// *** MAIN METHOD *** ///
 void LRTAstar::findNext(){
 
@@ -227,6 +285,7 @@ void LRTAstar::findNext(){
     int bestCount = std::numeric_limits<int>::max();
     std::vector<int> best_vec;
 
+    //cout << "graph.size(): " << graph.size() << endl;
     for(int j=0; j < graph.size(); j++){
       if(graph[currentNode][j] == 1){
         int tentIndex = j;

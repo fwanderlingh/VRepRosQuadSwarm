@@ -98,11 +98,9 @@ void NodeCounting::createGraph(std::ifstream & INFILE){
     //cout << endl;
   }
   unvisitedCount = std::accumulate(unvisited.begin(),unvisited.end(), 0);
+  cout << "unvisitedCount: " << unvisitedCount << endl;
 
   numFreeNodes = unvisitedCount;
-
-  STARTNODE = 0;
-  currentNode = STARTNODE;
 
   createEdgeMat();
 }
@@ -224,16 +222,17 @@ void NodeCounting::loadPosVecFile(std::ifstream &Pos_vec){
 }
 
 
-void NodeCounting::init_acc(std::ifstream & access_mat){
+void NodeCounting::init_acc(std::ifstream & access_mat, int startingNode){
   /** If input argument of init is only 1 then the input file is
    * the Occupancy Grid (access_mat).
    */
   createGraph(access_mat);
+  currentNode = startingNode;
   finalPath.push_back(currentNode);
 }
 
 
-void NodeCounting::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec){
+void NodeCounting::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int startingNode){
   /** In this case we don't have an occupancy grid but already a matrix
    * representing the graph so we need to know the position of the vertices,
    * information contained in Pos_Vec.

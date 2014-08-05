@@ -37,7 +37,7 @@ void PathPlanningAlg::InterpNewPoint(geometry_msgs::PoseStamped* quadPos,
    * As a first step we compute the vector d = (quadPos -> targetPos),
    * then we compute its norm to get the unit vector and then we will
    * multiply the unit vector for a given proportionality constant to
-   * get the infinitesimal dSubWP movement.
+   * get the desired dSubWP movement.
    */
 
    double distVec[3] = { (targetPos->pose.position.x - quadPos->pose.position.x),
@@ -45,19 +45,42 @@ void PathPlanningAlg::InterpNewPoint(geometry_msgs::PoseStamped* quadPos,
                         (targetPos->pose.position.z - quadPos->pose.position.z) };
    double distVecNorm = Distance(quadPos, targetPos);
    //std::cout << "Distance = " <<  distVecNorm << " m" << std::endl;
-   dSubWP[X] = (distVec[X]/distVecNorm)*WP_STEP;
-   dSubWP[Y] = (distVec[Y]/distVecNorm)*WP_STEP;
-   dSubWP[Z] = (distVec[Z]/distVecNorm)*WP_STEP;
+   dSubWP[X] = (distVec[X]/distVecNorm)*dSubWP[X];
+   dSubWP[Y] = (distVec[Y]/distVecNorm)*dSubWP[Y];
+   dSubWP[Z] = (distVec[Z]/distVecNorm)*dSubWP[Z];
 
 }
 
 double PathPlanningAlg::Distance(geometry_msgs::PoseStamped* quadPos,
                                    geometry_msgs::PoseStamped* targetPos){
 
-  double dist = sqrt (pow(quadPos->pose.position.x - targetPos->pose.position.x, 2.0) +
-                      pow(quadPos->pose.position.y - targetPos->pose.position.y, 2.0) +
-                      pow(quadPos->pose.position.z - targetPos->pose.position.z, 2.0) );
+  double dist = sqrt (pow(quadPos->pose.position.x - targetPos->pose.position.x, 2.0)
+                      + pow(quadPos->pose.position.y - targetPos->pose.position.y, 2.0)
+                      + pow(quadPos->pose.position.z - targetPos->pose.position.z, 2.0)
+                      );
   return dist;
 }
 
+
+int PathPlanningAlg::LoadParams(std::string controlMode,
+                        double &scale, double &ofs_x, double &ofs_y,
+                        double &wpStep, double &critDist, double &threshold){
+
+  if(controlMode == "sim"){
+    scale = 1.0;
+    wpStep = 0.5;
+    ofs_x = 10.7;
+    ofs_y = 9.43;
+    critDist = 0.65;
+    threshold = 0.3;
+    return 0;
+  }else if(controlMode == "asctec"){
+    scale = 5.0;
+    wpStep = 5.0;
+    ofs_x = ofs_y = 0;
+    critDist = 100;
+    threshold = 1.0;
+    return 0;
+  }else return -1;
+}
 

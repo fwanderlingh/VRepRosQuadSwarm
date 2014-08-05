@@ -30,17 +30,19 @@ class LRTAstar
   int numFreeNodes;
   vector<int> finalPath;
 
+  void createEdgeMat();
   void loadMatrixFile(std::ifstream &access_mat);
   void createGraph(std::ifstream & INFILE);
   void loadGraphFile(std::ifstream &graph_mat);
   void loadPosVecFile(std::ifstream &Pos_vec);
 
+
 public:
   LRTAstar();
   LRTAstar(std::ifstream & INFILE);
   virtual ~LRTAstar();
-  void init_acc(std::ifstream & graph_mat);
-  void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec);
+  void init_acc(std::ifstream & graph_mat, int startingNode);
+  void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int startingNode);
 
   void incrCount(int currIndex, int nextIndex, bool nextType);
   void findNext();

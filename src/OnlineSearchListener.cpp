@@ -17,12 +17,14 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <ctime>
+#include <sstream>
 
 ///Used API Services
 #include "vrep_common/simRosStartSimulation.h"
 #include "vrep_common/simRosStopSimulation.h"
 
-#define DEF_LOOP_RATE 2      // Loop frequency of node in hertz
+#define DEF_LOOP_RATE 2     // Loop frequency of node in hertz
 
 using std::cout;
 using std::endl;
@@ -60,8 +62,9 @@ int main(int argc, char **argv)
   }
   const int num_robots = strtol(argv[1], NULL, 0);
 
-  std::string folder_path = get_selfpath();
+  std::time_t elapsed;
 
+  std::string folder_path = get_selfpath();
 
   ros::init(argc, argv, "OnlineSearchListener");
   ros::NodeHandle n;
@@ -83,9 +86,13 @@ int main(int argc, char **argv)
            n.serviceClient<vrep_common::simRosStartSimulation>("/vrep/simRosStartSimulation");
       vrep_common::simRosStartSimulation srv_startSimulation;
       client_startSimulation.call(srv_startSimulation);
+
+      elapsed = time(NULL);
     }
 
     if(numOfCollected == num_robots){
+
+      elapsed = time(NULL) - elapsed;
 
       /** STOP SIMULATION IN V-REP **/
       ros::ServiceClient client_stopSimulation =
@@ -104,15 +111,28 @@ int main(int argc, char **argv)
       printf("%sPaths length standard deviation: %f%s\n", TC_MAGENTA, st_dev, TC_NONE);
 
       /** SAVING RESULTS TO FILE **/
-      std::string resultsFileName = folder_path + "/Results/" + testName + "_Results";
+      std::ostringstream oss_n;
+      oss_n << num_robots;
+      std::string resultsFileName = folder_path + "/Results/" + testName + "_" + oss_n.str() + "_Results";
       std::ofstream results_file;
-
       cout << resultsFileName;
+
+
 
       results_file.open ( resultsFileName.c_str(), std::fstream::app );
       results_file << num_robots << "\t" << numFreeNodes
-          << "\t" << longest << "\t" << total << "\t" << st_dev << "\n";
-
+          << "\t" << longest << "\t" << total << "\t" << st_dev << "\t" << elapsed << endl;
+/*
+      results_file << "Quadcopters paths:" << endl;
+      for (int i=0; i<finalPaths.size(); ++i){
+        results_file << "#" << i << ": ";
+        for (int j=0; j<finalPaths.at(i).size(); ++j){
+          results_file << finalPaths[i][j] << ' ';
+        }
+        results_file << endl;
+      }
+      results_file << endl;
+*/
       results_file.close();
 
       ros::shutdown();

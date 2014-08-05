@@ -23,7 +23,7 @@
 #include "fstream"
 #include <sstream>
 
-//#define DEBUG_PRINT
+#define DEBUG_PRINT
 
 using std::cout;
 using std::endl;
@@ -59,6 +59,7 @@ void PatrolGRAPH::loadMatrixFile(std::ifstream &access_mat){
     gridSizeX = num_nl;
     gridSizeY = access_vec.size()/num_nl;
 
+
   }
   else{ cout << "Error reading file!" << endl; }
 }
@@ -84,6 +85,7 @@ void PatrolGRAPH::loadGraphFile(std::ifstream &graph_mat){
    */
   numFreeNodes = static_cast<int>(graph.size());
 
+  /// Here we create a zero matrix of the size of the graph
   vector< vector<int> > _graph(numFreeNodes, vector<int> (numFreeNodes, 0));
   edgeCountMat = _graph;
 
@@ -138,11 +140,11 @@ void PatrolGRAPH::loadPTMFile(std::ifstream &PTM_mat){
                              std::istream_iterator<double>() ) );
   }
 
-  //cout << PTM.size() << "  " << edgeCountMat.size() << endl;
+  cout << PTM.size() << "  " << edgeCountMat.size() << endl;
   assert(PTM.size() == edgeCountMat.size());
   assert(PTM.at(1).size() == edgeCountMat.at(1).size());
 
-  /*
+#ifdef DEBUG_PRINT
   cout << "\nOptimized PTM:\n";
   for(int i=0;i<PTM.size();i++){
     for(int j=0; j<PTM.at(1).size();j++){
@@ -151,11 +153,12 @@ void PatrolGRAPH::loadPTMFile(std::ifstream &PTM_mat){
     }
     cout << endl;
   }
-   */
+#endif
 }
 
 
-void PatrolGRAPH::init_acc(std::ifstream & access_mat){
+void PatrolGRAPH::init_acc(std::ifstream & access_mat,
+                           int startingNode){
   /** If input argument of init is only 1 then we assume we have no
    * optimized Probability Transition Matrix and the input file is
    * the Occupancy Grid (access_mat).
@@ -163,26 +166,32 @@ void PatrolGRAPH::init_acc(std::ifstream & access_mat){
   optimized = false;
   cout << "Optimized: false" << endl;
   createGraph(access_mat);
+  currentNode = startingNode;
   finalPath.push_back(currentNode);
   computeProbabilityMat();
 }
 
 
-void PatrolGRAPH::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec){
+void PatrolGRAPH::init_graph_pos(std::ifstream &graph_mat,
+                                 std::ifstream &Pos_vec,
+                                 int startingNode){
   /** In this case we don't have an occupancy grid but already a matrix
    * representing the graph so we need to know the position of the vertices,
    * information contained in Pos_Vec. No optimised PTM.
    */
   optimized = false;
-  cout << "Optimized: true" << endl;
+  cout << "Optimized: false" << endl;
   loadGraphFile(graph_mat);
   loadPosVecFile(Pos_vec);
   computeProbabilityMat();
+  currentNode = startingNode;
   finalPath.push_back(currentNode);
 }
 
 
-void PatrolGRAPH::init_acc_ptm(std::ifstream & access_mat, std::ifstream & PTM_mat){
+void PatrolGRAPH::init_acc_ptm(std::ifstream & access_mat,
+                               std::ifstream & PTM_mat,
+                               int startingNode){
   /** In this case we have an Occupancy Grid and an optimised
    *  Probability Transition Matrix.
    */
@@ -190,11 +199,15 @@ void PatrolGRAPH::init_acc_ptm(std::ifstream & access_mat, std::ifstream & PTM_m
   cout << "Optimized: true" << endl;
   createGraph(access_mat);
   loadPTMFile(PTM_mat);
+  currentNode = startingNode;
   finalPath.push_back(currentNode);
 }
 
 
-void PatrolGRAPH::init_graph_pos_ptm(std::ifstream &graph_mat, std::ifstream &Pos_vec, std::ifstream &PTM_mat){
+void PatrolGRAPH::init_graph_pos_ptm(std::ifstream &graph_mat,
+                                     std::ifstream &Pos_vec,
+                                     std::ifstream &PTM_mat,
+                                     int startingNode){
   /** In this case we don't have an occupancy grid but already a matrix
    * representing the graph so we need to know the position of the vertices,
    * information contained in Pos_Vec. We also load the optimised PTM.
@@ -204,6 +217,7 @@ void PatrolGRAPH::init_graph_pos_ptm(std::ifstream &graph_mat, std::ifstream &Po
   loadGraphFile(graph_mat);
   loadPosVecFile(Pos_vec);
   loadPTMFile(PTM_mat);
+  currentNode = startingNode;
   finalPath.push_back(currentNode);
 }
 
@@ -212,7 +226,7 @@ void PatrolGRAPH::createGraph(std::ifstream & INFILE){
 
   loadMatrixFile(INFILE);       /// Filling the "access_vec" and defining grid sizes
 
-  //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
+  cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
 
   graphNodes.resize(gridSizeX*gridSizeY);
   unvisited.resize(gridSizeX*gridSizeY, 0);
@@ -232,8 +246,6 @@ void PatrolGRAPH::createGraph(std::ifstream & INFILE){
 
   numFreeNodes = unvisitedCount;
 
-  STARTNODE = gridSizeY/2;
-  currentNode = STARTNODE;
 
   createEdgeMat();
 
@@ -244,7 +256,9 @@ void PatrolGRAPH::createEdgeMat(){
 
   const int n = gridSizeX*gridSizeY;
 
+  cout << "n=" << n << ", access_vec.size()=" << access_vec.size() << endl;
   assert(n == access_vec.size());
+
   /// Here we create a zero matrix of the size of the graph
   vector< vector<int> > _graph(n, vector<int> (n, 0));
   graph = _graph;
@@ -294,6 +308,15 @@ void PatrolGRAPH::createEdgeMat(){
     }
   }
 
+#ifdef DEBUG_PRINT
+  cout << "\nGraph:\n";
+  for(int i=0;i<graph.size();i++){
+    for(int j=0; j<graph.at(1).size();j++){
+      printf("%d  ",graph[i][j]);;
+    }
+    cout << endl;
+  }
+#endif
 
 }
 
@@ -322,7 +345,7 @@ void PatrolGRAPH::computeProbabilityMat(){
 
 
 #ifdef DEBUG_PRINT
-  cout << "\nPTM:\n";
+  cout << "\nStandard PTM:\n";
   for(int i=0;i<PTM.size();i++){
     for(int j=0; j<PTM.size();j++){
       if(PTM[i][j] == 0) printf("   0  ");
@@ -370,11 +393,17 @@ void PatrolGRAPH::incrCount(int currIndex, bool currType, boost::array<int, 2> c
 
 /// *** MAIN METHOD *** ///
 void PatrolGRAPH::findNext(){
+
 #ifdef DEBUG_PRINT
-  if(currentNode == 1){
-    cout << "---\nI'm on node 1 - Node Count=" << graphNodes[currentNode].nodeCount+1 << endl;
+  cout << "---\n";
+  for(int i=0; i<graphNodes.size(); ++i){
+    if(i%gridSizeY == 0) cout << endl;
+    cout << graphNodes.at(i).nodeCount << " ";
   }
+  cout << "\n\n";
+  cout << "I'm on node " << currentNode << " - Node Count=" << graphNodes[currentNode].nodeCount+1 << endl;
 #endif
+
   if( !isCompleted() ){
     /// Look for adjacent nodes and find the one with the smallest number of visits
     /// Before being able to do the adjacency check we have to recover the (i,j) index
@@ -388,20 +417,29 @@ void PatrolGRAPH::findNext(){
     chosenEdge.at(0) = currentNode;
     std::vector<int> best_vec;
 
+    double deltaP;
     double deltaP_best = std::numeric_limits<double>::max();
     int bestEdgeCount = std::numeric_limits<int>::max();
+    int tentIndex;
 
 
     for(int j=0; j < graph.size(); j++){
       if(graph[currentNode][j] == 1){
-        int tentIndex = j;
+        tentIndex = j;
+
+
 
         if(PTM[currentNode][tentIndex] == 0){
           printf("%sWARNING: 0-probability detected on (%d,%d)%s\n", TC_RED, currentNode, tentIndex, TC_NONE);
         }
 
-        double deltaP = ( (double)edgeCountMat[currentNode][tentIndex]/currentNodeCount )
-                                                                      - PTM[currentNode][tentIndex];
+        deltaP = ( (double)edgeCountMat[currentNode][tentIndex]/currentNodeCount )
+                                                                          - PTM[currentNode][tentIndex];
+#ifdef DEBUG_PRINT
+        cout << "Edge(" << currentNode << ", " << tentIndex << "), v_c=" << currentNodeCount << ", k_cj=" <<  edgeCountMat[currentNode][tentIndex] << endl;
+        cout << "p_cj(d)=" << PTM[currentNode][tentIndex] << ", p_cj(a)=" << (double)edgeCountMat[currentNode][tentIndex]/currentNodeCount << ", delta=" << deltaP << endl;
+        cout << endl;
+#endif
 
         if(deltaP <= deltaP_best){
           if(deltaP == deltaP_best){
@@ -415,11 +453,7 @@ void PatrolGRAPH::findNext(){
       }
     }
 
-#ifdef DEBUG_PRINT
-    if(currentNode == 1){
-      cout << "Edge(" << currentNode << ", " << tentIndex << ") delta=" << deltaP << endl;
-    }
-#endif
+
 
     /// Now if there is more than one element in the vector choose one randomly.
     /// If size()==1 the modulus function always returns 0 (the first element)
@@ -427,9 +461,7 @@ void PatrolGRAPH::findNext(){
     int randIndex = rand()%best_vec.size();
 
 #ifdef DEBUG_PRINT
-    if(currentNode == 1){
-      cout << "Chosen Edge: (" << currentNode << ", " << best_vec.at(randIndex) << ")" << endl;
-    }
+    cout << "Chosen Edge: (" << currentNode << ", " << best_vec.at(randIndex) << ")" << endl;
 #endif
 
     /// The "j" index of the chosen edge will be the one of the (best) target node,
@@ -477,8 +509,24 @@ float PatrolGRAPH::getCurrentCoord(char coordinate){
 
 bool PatrolGRAPH::isCompleted(){
 
+
+  int count_reached = 0;
+  for(int i=0; i<graphNodes.size(); ++i){
+    //if(i%gridSizeY == 0) cout << endl;
+    //cout << graphNodes.at(i).nodeCount << " ";
+    if( graphNodes.at(i).nodeCount >= 1 ){
+      ++count_reached;
+    }
+  }
+  //cout << endl;
+  if(count_reached == graphNodes.size()){
+    return 1;
+  }else return 0;
+
+  /*
   if(unvisitedCount == 0)
     return true;
   else
     return false;
+   */
 }

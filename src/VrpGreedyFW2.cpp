@@ -295,6 +295,7 @@ void VrpGreedy2::solve(){
 
 
 #ifdef DEBUG_PRINT
+  cout << "\nGraph: ";
   myFW.printMatrix(graph);
   cout << "\nDistances: ";
   myFW.printMatrix(distanceMat);

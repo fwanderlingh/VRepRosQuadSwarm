@@ -46,10 +46,10 @@ class PatrolGRAPH
 public:
   PatrolGRAPH();
   virtual ~PatrolGRAPH();
-  void init_acc(std::ifstream & graph_mat);
-  void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec);
-  void init_acc_ptm(std::ifstream & access_mat, std::ifstream & PTM_mat);
-  void init_graph_pos_ptm(std::ifstream &graph_mat, std::ifstream &Pos_vec, std::ifstream &PTM_mat);
+  void init_acc(std::ifstream & graph_mat, int startingNode);
+  void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int startingNode);
+  void init_acc_ptm(std::ifstream & access_mat, std::ifstream & PTM_mat, int startingNode);
+  void init_graph_pos_ptm(std::ifstream &graph_mat, std::ifstream &Pos_vec, std::ifstream &PTM_mat, int startingNode);
 
   void incrCount(int currIndex, bool currType, boost::array<int, 2> edge);
   void findNext();
