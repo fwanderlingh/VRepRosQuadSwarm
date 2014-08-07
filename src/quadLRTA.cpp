@@ -70,13 +70,14 @@ void updateCount(const quadcopter_ctrl::LRTAmsg::ConstPtr& LRTAinfo){
 int main(int argc, char **argv)
 {
   /// argv[1] contains the ID number of the robot to be controlled (0,1,2...)
-  if(argc<6){
+  if(argc<7){
     printf("%s** ERROR **\n"
         "argv[1]: Quadcopter # to control\n"
         "argv[2]: Input file\n"
         "argv[3]: zHeight of flight\n"
         "argv[4]: Control Mode ('sim' or 'asctec')\n"
-        "argv[5]: STARTNODE, index of first node%s\n", TC_RED, TC_NONE);
+        "argv[5]: STARTNODE, index of first node\n"
+        "argv[6]: Min #visits for each node (1=\"simple coverage\")%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
@@ -96,7 +97,7 @@ int main(int argc, char **argv)
     printf("%sAccess matrix not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-/*
+
   std::string posV_filename = "posV_" + filename;
   std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
   std::ifstream pos_Vec;
@@ -105,10 +106,12 @@ int main(int argc, char **argv)
     printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-*/
 
-  myLRTA.init_acc(access_matrix, startNode);
-  //myLRTA.init_graph_pos(access_matrix, pos_Vec, startNode);    //Constructor inputs is (graph, position of nodes in space)
+  int min_visit = strtol(argv[6], NULL, 0);
+  cout << "min_visit: " << min_visit << endl;
+
+  //myLRTA.init_acc(access_matrix, startNode, min_visit);
+  myLRTA.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);    //Constructor inputs is (graph, position of nodes in space)
 
   std::string controlMode(argv[4]);
   printf("%s[%s] Control Mode: %s%s\n", TC_YELLOW, argv[3], controlMode.c_str(), TC_NONE);

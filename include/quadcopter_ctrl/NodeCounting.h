@@ -25,6 +25,7 @@ class NodeCounting
   vector<int> access_vec;       //It could be "bool" but I left "int" for future map developments
   vector<int> unvisited;
   int unvisitedCount;
+  int minVisit;
 
   int numFreeNodes;
   vector<int> finalPath;
@@ -39,8 +40,8 @@ public:
   NodeCounting();
   NodeCounting(std::ifstream & INFILE);
   virtual ~NodeCounting();
-  void init_acc(std::ifstream & INFILE, int startingNode);
-  void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int startingNode);
+  void init_acc(std::ifstream & INFILE, int startingNode, int minVis);
+  void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int startingNode, int minVis);
 
   void incrCount(int nodeIndex, bool nodeType);
   void findNext();

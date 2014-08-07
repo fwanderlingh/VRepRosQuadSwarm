@@ -27,7 +27,7 @@
 using std::cout;
 using std::endl;
 
-#define DEBUG_PRINT
+//#define DEBUG_PRINT
 
 
 NodeCounting::NodeCounting() : STARTNODE(0),gridSizeX(0), gridSizeY(0),
@@ -224,21 +224,25 @@ void NodeCounting::loadPosVecFile(std::ifstream &Pos_vec){
 }
 
 
-void NodeCounting::init_acc(std::ifstream & access_mat, int startingNode){
+void NodeCounting::init_acc(std::ifstream & access_mat, int startingNode, int minVis){
   /** If input argument of init is only 1 then the input file is
    * the Occupancy Grid (access_mat).
    */
+  minVisit = minVis;
   createGraph(access_mat);
   currentNode = startingNode;
   finalPath.push_back(currentNode);
 }
 
 
-void NodeCounting::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int startingNode){
+void NodeCounting::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec,
+                                      int startingNode, int minVis){
   /** In this case we don't have an occupancy grid but already a matrix
    * representing the graph so we need to know the position of the vertices,
    * information contained in Pos_Vec.
    */
+
+  minVisit = minVis;
   loadGraphFile(graph_mat);
   loadPosVecFile(Pos_vec);
   finalPath.push_back(currentNode);
@@ -275,7 +279,7 @@ void NodeCounting::incrCount(int nodeIndex, bool isNodeVisited){
 void NodeCounting::findNext(){
 
 #ifdef DEBUG_PRINT
-  cout << "\n---\n";
+ cout << "\n---\n";
   for(int i=0; i<graphNodes.size(); ++i){
     if(i%gridSizeY == 0) cout << endl;
     cout << graphNodes.at(i).nodeCount << " ";
@@ -404,7 +408,7 @@ bool NodeCounting::isCompleted(){
   for(int i=0; i<graphNodes.size(); ++i){
     //if(i%gridSizeY == 0) cout << endl;
     //cout << graphNodes.at(i).nodeCount << " ";
-    if( graphNodes.at(i).nodeCount >= 5 ){
+    if( graphNodes.at(i).nodeCount >= minVisit ){
       ++count_reached;
     }
   }

@@ -21,10 +21,11 @@
 #include <iterator>
 #include <Utils.h>
 
-#define DEBUG_PRINT
+//#define DEBUG_PRINT
 
 using std::cout;
 using std::endl;
+using std::vector;
 
 
 LRTAstar::LRTAstar() :  STARTNODE(0), gridSizeX(0), gridSizeY(0), currentNode(STARTNODE),
@@ -78,7 +79,7 @@ void LRTAstar::loadGraphFile(std::ifstream &graph_mat){
   while ( getline( graph_mat, line ) ) {
     std::istringstream is( line );
     graph.push_back(
-        std::vector<int>( std::istream_iterator<int>(is),
+        vector<int>( std::istream_iterator<int>(is),
                           std::istream_iterator<int>() ) );
   }
   /*
@@ -92,6 +93,8 @@ void LRTAstar::loadGraphFile(std::ifstream &graph_mat){
    */
   numFreeNodes = static_cast<int>(graph.size());
 
+  AStarCount.resize(numFreeNodes, 0);
+
   unvisited.resize(numFreeNodes, 1);
   unvisitedCount = numFreeNodes;
 
@@ -102,12 +105,12 @@ void LRTAstar::loadGraphFile(std::ifstream &graph_mat){
 void LRTAstar::loadPosVecFile(std::ifstream &Pos_vec){
 
   std::string line;
-  std::vector< std::vector<int> > positionVec;
+  vector< vector<int> > positionVec;
 
   while ( getline( Pos_vec, line ) ) {
     std::istringstream is( line );
     positionVec.push_back(
-        std::vector<int>( std::istream_iterator<int>(is),
+        vector<int>( std::istream_iterator<int>(is),
                           std::istream_iterator<int>() ) );
   }
   /*
@@ -136,6 +139,8 @@ void LRTAstar::createGraph(std::ifstream & INFILE){
 
   //cout << "Matrix size is: " << gridSizeX << "x" << gridSizeY << endl;
 
+  AStarCount.resize(gridSizeX*gridSizeY, 0);
+
   graphNodes.resize(gridSizeX*gridSizeY);
   unvisited.resize(gridSizeX*gridSizeY, 0);
 
@@ -160,22 +165,24 @@ void LRTAstar::createGraph(std::ifstream & INFILE){
 }
 
 
-void LRTAstar::init_acc(std::ifstream & access_mat, int startingNode){
+void LRTAstar::init_acc(std::ifstream & access_mat, int startingNode, int minVis){
   /** If input argument of init is only 1 then we assume we have no
    * optimized Probability Transition Matrix and the input file is
    * the Occupancy Grid (access_mat).
    */
+  minVisit = minVis;
   createGraph(access_mat);
   currentNode = nextNode = startingNode;
   finalPath.push_back(currentNode);
 }
 
 
-void LRTAstar::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int startingNode){
+void LRTAstar::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int startingNode, int minVis){
   /** In this case we don't have an occupancy grid but already a matrix
    * representing the graph so we need to know the position of the vertices,
    * information contained in Pos_Vec. No optimised PTM.
    */
+  minVisit = minVis;
   loadGraphFile(graph_mat);
   loadPosVecFile(Pos_vec);
   currentNode = nextNode =  startingNode;
@@ -185,7 +192,9 @@ void LRTAstar::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, 
 
 void LRTAstar::incrCount(int currIndex, int nextIndex, bool isNextVisited){
 
-  graphNodes.at(currIndex).nodeCount = graphNodes.at(nextIndex).nodeCount + 1;
+  AStarCount.at(currIndex) = AStarCount.at(nextIndex) + 1;
+
+  graphNodes.at(nextIndex).nodeCount++;
   //graphNodes.at(currIndex).nodeCount++;
 
   if(isNextVisited == 0){
@@ -287,20 +296,20 @@ void LRTAstar::findNext(){
       cout << graphNodes.at(i).nodeCount << " ";
     }
     cout << "\n\n";
-    cout << "I'm on node " << currentNode << " - LRTA Count=" << graphNodes[currentNode].nodeCount << endl;
+    cout << "I'm on node " << currentNode << " - Node Count=" << graphNodes[currentNode].nodeCount << endl;
 #endif
 
     int bestCount = std::numeric_limits<int>::max();
-    std::vector<int> best_vec;
+    vector<int> best_vec;
 
     //cout << "graph.size(): " << graph.size() << endl;
     for(int j=0; j < graph.size(); j++){
       if(graph[currentNode][j] == 1){
         int tentIndex = j;
-        int tentCount = graphNodes.at(tentIndex).nodeCount;
+        int tentCount = AStarCount.at(tentIndex); // graphNodes.at(tentIndex).nodeCount;
 
 #ifdef DEBUG_PRINT
-        cout << "Count of " << tentIndex << " is " << tentCount << endl;
+        cout << "LRTA count of " << tentIndex << " is " << tentCount << endl;
 #endif
 
         if( tentCount <= bestCount ){
@@ -375,7 +384,7 @@ bool LRTAstar::isCompleted(){
   for(int i=0; i<graphNodes.size(); ++i){
     //if(i%gridSizeY == 0) cout << endl;
     //cout << graphNodes.at(i).nodeCount << " ";
-    if( graphNodes.at(i).nodeCount >= 5 ){
+    if( graphNodes.at(i).nodeCount >= minVisit ){
       ++count_reached;
     }
   }
@@ -383,7 +392,6 @@ bool LRTAstar::isCompleted(){
   if(count_reached == graphNodes.size()){
     return 1;
   }else return 0;
-
 
   /*
   if(unvisitedCount==0)

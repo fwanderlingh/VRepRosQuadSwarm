@@ -79,7 +79,9 @@ int main(int argc, char **argv)
         "argv[2]: Input file\n"
         "argv[3]: zHeight of flight\n"
         "argv[4]: Control Mode ('sim' or 'asctec')\n"
-        "argv[5]: STARTNODE, index of first node%s\n", TC_RED, TC_NONE);
+        "argv[5]: STARTNODE, index of first node%s\n"
+        "argv[6]: minVisit%s\n",
+        "argv[7]: optimized (0=false, 1=true) ", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
@@ -110,7 +112,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-/*
+
   std::string posV_filename = "posV_" + filename;
   std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
   std::ifstream pos_Vec;
@@ -119,25 +121,26 @@ int main(int argc, char **argv)
     printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-*/
-  bool optimized = true;
+
+  int min_visit = strtol(argv[6], NULL, 0);
+  bool optimized = static_cast<bool>(strtol(argv[7], NULL, 0));
   std::string type;
 
   if(optimized){
     /// Run with offline optimisation
 
     type = "PG_";
-    myPG.init_acc_ptm(access_matrix, PTM_matrix, startNode);
-    //myPG.init_graph_pos_ptm(access_matrix, pos_Vec, PTM_matrix, startNode);
+    //myPG.init_acc_ptm(access_matrix, PTM_matrix, startNode, min_visit);
+    myPG.init_graph_pos_ptm(access_matrix, pos_Vec, PTM_matrix, startNode, min_visit);
   }else{
     /// Run withOut offline optimisation
 
     type = "EC_";
-    myPG.init_acc(access_matrix, startNode);
-    //myPG.init_graph_pos(access_matrix, pos_Vec, startNode);
+    //myPG.init_acc(access_matrix, startNode, min_visit);
+    myPG.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);
   }
 
-
+  int minVisit = strtol(argv[6], NULL, 0);
 
   std::string controlMode(argv[4]);
   printf("%s[%s] Control Mode: %s%s\n", TC_YELLOW, argv[3], controlMode.c_str(), TC_NONE);

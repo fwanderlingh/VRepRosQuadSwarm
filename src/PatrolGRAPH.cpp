@@ -23,7 +23,7 @@
 #include "fstream"
 #include <sstream>
 
-#define DEBUG_PRINT
+//#define DEBUG_PRINT
 
 using std::cout;
 using std::endl;
@@ -158,12 +158,13 @@ void PatrolGRAPH::loadPTMFile(std::ifstream &PTM_mat){
 
 
 void PatrolGRAPH::init_acc(std::ifstream & access_mat,
-                           int startingNode){
+                           int startingNode, int minVis){
   /** If input argument of init is only 1 then we assume we have no
    * optimized Probability Transition Matrix and the input file is
    * the Occupancy Grid (access_mat).
    */
   optimized = false;
+  minVisit = minVis;
   cout << "Optimized: false" << endl;
   createGraph(access_mat);
   currentNode = startingNode;
@@ -174,13 +175,14 @@ void PatrolGRAPH::init_acc(std::ifstream & access_mat,
 
 void PatrolGRAPH::init_graph_pos(std::ifstream &graph_mat,
                                  std::ifstream &Pos_vec,
-                                 int startingNode){
+                                 int startingNode, int minVis){
   /** In this case we don't have an occupancy grid but already a matrix
    * representing the graph so we need to know the position of the vertices,
    * information contained in Pos_Vec. No optimised PTM.
    */
   optimized = false;
   cout << "Optimized: false" << endl;
+  minVisit = minVis;
   loadGraphFile(graph_mat);
   loadPosVecFile(Pos_vec);
   computeProbabilityMat();
@@ -191,12 +193,13 @@ void PatrolGRAPH::init_graph_pos(std::ifstream &graph_mat,
 
 void PatrolGRAPH::init_acc_ptm(std::ifstream & access_mat,
                                std::ifstream & PTM_mat,
-                               int startingNode){
+                               int startingNode, int minVis){
   /** In this case we have an Occupancy Grid and an optimised
    *  Probability Transition Matrix.
    */
   optimized = true;
   cout << "Optimized: true" << endl;
+  minVisit = minVis;
   createGraph(access_mat);
   loadPTMFile(PTM_mat);
   currentNode = startingNode;
@@ -207,13 +210,14 @@ void PatrolGRAPH::init_acc_ptm(std::ifstream & access_mat,
 void PatrolGRAPH::init_graph_pos_ptm(std::ifstream &graph_mat,
                                      std::ifstream &Pos_vec,
                                      std::ifstream &PTM_mat,
-                                     int startingNode){
+                                     int startingNode, int minVis){
   /** In this case we don't have an occupancy grid but already a matrix
    * representing the graph so we need to know the position of the vertices,
    * information contained in Pos_Vec. We also load the optimised PTM.
    */
   optimized = true;
   cout << "Optimized: true" << endl;
+  minVisit = minVis;
   loadGraphFile(graph_mat);
   loadPosVecFile(Pos_vec);
   loadPTMFile(PTM_mat);
@@ -513,7 +517,7 @@ bool PatrolGRAPH::isCompleted(){
   for(int i=0; i<graphNodes.size(); ++i){
     //if(i%gridSizeY == 0) cout << endl;
     //cout << graphNodes.at(i).nodeCount << " ";
-    if( graphNodes.at(i).nodeCount >= 1 ){
+    if( graphNodes.at(i).nodeCount >= minVisit ){
       ++count_reached;
     }
   }
