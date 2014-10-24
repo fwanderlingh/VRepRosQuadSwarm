@@ -24,7 +24,7 @@ How to run
 
 **3.** Create the necessary folders to create the following path:
 
-     *catkin_ws/devel/lib/quadcopter_ctrl/Input/Grids*
+*catkin_ws/devel/lib/quadcopter_ctrl/Input/Grids*
      
 Inside this folder create a file (for example "map_file.txt") containing a binary occupancy matrix, for example:
 ```
