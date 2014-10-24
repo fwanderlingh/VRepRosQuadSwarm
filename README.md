@@ -1,6 +1,7 @@
 VRepRosQuadControl
 ==================
 
+
 Summary
 -------
 
@@ -9,14 +10,34 @@ The terrain to be covered is given as input to the executables which start with 
 All the algorithms are publishing the positions to be followed on ROS topic that are read by the V-Rep simulator using the *.ttt scenes provided in the package.
 
 Compiling and running
----------------------
+=====================
 
-To build the following package you will need [ROS](http://wiki.ros.org/ROS) to be installed and clone this repository in the src of a new [catkin package](http://wiki.ros.org/ROS/Tutorials/catkin/CreatingPackage). (section in progress - further explanation will be added).
+To build the following package you will need [ROS](http://wiki.ros.org/ROS) to be installed and clone this repository in the src of a new [catkin package](http://wiki.ros.org/ROS/Tutorials/catkin/CreatingPackage).
+**Important**: it is reccomended to use use **ROS Hydro** because Indigo causes issues with V-REP.
 To use the scenarios (the *.ttt files) you have to install V-Rep, available from the [Coppelia Robotics](http://www.coppeliarobotics.com/) website.
 
+How to run
+----------
+1. Copy the folder "quadcopter\_ctrl" inside the catkin source folder (*catkin_ws/src*).
+2. Compile once with `catkin_make`.
+3. Create the necessary folders to create the following path:
+     *catkin_ws/devel/lib/quadcopter_ctrl/Input/Grids*
+4. Inside this folder create a file (for example "map_file.txt") containing a binary occupancy matrix, for example:
+    0 0 0 0 
+    0 0 1 1
+    0 0 1 1
+    0 0 0 0
+That represents a map with a square obstacle on the right.
+5. Now launch `roscore` in a terminal, and V-REP in another terminal.
+6. In V-REP open the scene *3Rob_freeEnvironm.ttt* (it's in the root of the repository).
+7. In a third terminal use one of the roslaunch file to run a coverage, using as input the file that you created before, for example:
+```bash
+$ roslaunch quadcopter_ctrl swarmNodeCount_3.launch input:=map_file.txt
+```
+8. Now the quadcopter should start performing the coverage in V-REP.
 
 Details
--------
+=======
 
 The are five algorithms developed, that can be divided in two areas: offline and online algorithms.
 
