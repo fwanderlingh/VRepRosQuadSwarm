@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     printf("%s** ERROR **\n"
         "argv[1]: Quadcopter # to control\n"
         "argv[2]: zHeight of flight\n"
-        "argv[3]: Control Mode ('sim' or 'asctec')", TC_RED, TC_NONE);
+        "argv[3]: Control Mode ('sim' or 'asctec')%s", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
@@ -328,4 +328,3 @@ void publishSubTarget(ros::Publisher& pub){
   subTarget.pose.position.z = quadPos.pose.position.z + dSubWP[Z];
   pub.publish(subTarget);            // PUBLISH NEW SUBTARGET POSITION
 }
-
