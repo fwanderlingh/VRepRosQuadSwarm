@@ -20,6 +20,7 @@
 #include <termColors.h>
 #include <iterator>
 #include <Utils.h>
+#include <unistd.h>
 
 //#define DEBUG_PRINT
 
