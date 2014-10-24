@@ -23,9 +23,10 @@ How to run
 **2.** Compile once with `catkin_make`.
 
 **3.** Create the necessary folders to create the following path:
+
      *catkin_ws/devel/lib/quadcopter_ctrl/Input/Grids*
      
-**4.** Inside this folder create a file (for example "map_file.txt") containing a binary occupancy matrix, for example:
+Inside this folder create a file (for example "map_file.txt") containing a binary occupancy matrix, for example:
 ```
     0 0 0 0 
     0 0 1 1
@@ -34,15 +35,15 @@ How to run
 ```
 That represents a map with a square obstacle on the right.
 
-**5.** Now launch `roscore` in a terminal, and V-REP in another terminal.
+**4.** Now launch `roscore` in a terminal, and V-REP in another terminal.
 
-**6.** In V-REP open the scene *3Rob_freeEnvironm.ttt* (it's in the root of the repository).
+**5.** In V-REP open the scene *3Rob_freeEnvironm.ttt* (it's in the root of the repository).
 
-**7.** In a third terminal use one of the roslaunch file to run a coverage, using as input the file that you created before, for example:
+**6.** In a third terminal use one of the roslaunch file to run a coverage, using as input the file that you created before, for example:
 ```
 $ roslaunch quadcopter_ctrl swarmNodeCount_3.launch input:=map_file.txt
 ```
-**8.** Now the quadcopter should start performing the coverage in V-REP.
+**7.** Now the quadcopter should start performing the coverage in V-REP.
 
 Details
 =======
