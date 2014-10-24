@@ -44,7 +44,6 @@ That represents a map with a square obstacle on the right.
 $ roslaunch quadcopter_ctrl swarmNodeCount_3.launch input:=map_file.txt
 ```
 
-**IMPORTANT**
 **7.** Now the quadcopter should start performing the coverage in V-REP.
 
 About the launch files
