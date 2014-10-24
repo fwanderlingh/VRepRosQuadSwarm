@@ -12,6 +12,7 @@
 
 #include "GraphAlgs.h"
 #include <vector>
+#include <unistd.h>
 
 using std::cout;
 using std::endl;
