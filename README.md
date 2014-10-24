@@ -60,7 +60,7 @@ argv[5]: STARTNODE, index of first node
 argv[6]: Min #visits for each node
 ```
 
-So when creating your own map keep an eye to STARTNODE for example, because if it is set to a node with an obstacle the code will not work (is like starting from inside the obstacle).
+So when creating your own map keep an eye on STARTNODE for example, because if it is set to a node with an obstacle the code will not work (is like starting from inside the obstacle).
 
 Details
 =======
