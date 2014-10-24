@@ -39,10 +39,12 @@ That represents a map with a square obstacle on the right.
 
 **5.** In V-REP open the scene *3Rob_freeEnvironm.ttt* (it's in the root of the repository).
 
-**6.** In a third terminal use one of the roslaunch file to run a coverage, using as input the file that you created before, for example:
+**6.** In a third terminal use one of the roslaunch files to run a coverage, using as input the file that you created before, for example:
 ```
 $ roslaunch quadcopter_ctrl swarmNodeCount_3.launch input:=map_file.txt
 ```
+
+**IMPORTANT**
 **7.** Now the quadcopter should start performing the coverage in V-REP.
 
 Details
