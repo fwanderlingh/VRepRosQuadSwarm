@@ -21,6 +21,7 @@
 #include <sstream>
 #include <iterator>
 #include <termColors.h>
+#include <unistd.h>
 #include <Utils.h>
 //#define STARTNODE 5
 
