@@ -47,6 +47,21 @@ $ roslaunch quadcopter_ctrl swarmNodeCount_3.launch input:=map_file.txt
 **IMPORTANT**
 **7.** Now the quadcopter should start performing the coverage in V-REP.
 
+About the launch files
+----------------------
+When using your own map file, adding quadcopter to the scene, or any other customization, pay attention to the parameters present in the roslaunch file. Inside the launch file there is a description of these input parameters. For the online algorithms for example the parameters are the following:
+
+```
+argv[1]: Quadcopter # to control
+argv[2]: Input file
+argv[3]: zHeight of flight
+argv[4]: Control Mode ('sim' or 'asctec')
+argv[5]: STARTNODE, index of first node
+argv[6]: Min #visits for each node
+```
+
+So when creating your own map keep an eye to STARTNODE for example, because if it is set to a node with an obstacle the code will not work (is like starting from inside the obstacle).
+
 Details
 =======
 
