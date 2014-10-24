@@ -23,7 +23,7 @@
 #include "fstream"
 #include <sstream>
 
-//#define DEBUG_PRINT
+#define DEBUG_PRINT
 
 using std::cout;
 using std::endl;

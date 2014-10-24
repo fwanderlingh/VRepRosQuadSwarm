@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     printf("%sAccess matrix not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-
+/*
   std::string posV_filename = "posV_" + filename;
   std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
   std::ifstream pos_Vec;
@@ -106,12 +106,12 @@ int main(int argc, char **argv)
     printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-
+*/
   int min_visit = strtol(argv[6], NULL, 0);
   cout << "min_visit: " << min_visit << endl;
 
-  //myLRTA.init_acc(access_matrix, startNode, min_visit);
-  myLRTA.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);    //Constructor inputs is (graph, position of nodes in space)
+  myLRTA.init_acc(access_matrix, startNode, min_visit);
+  //myLRTA.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);    //Constructor inputs is (graph, position of nodes in space)
 
   std::string controlMode(argv[4]);
   printf("%s[%s] Control Mode: %s%s\n", TC_YELLOW, argv[3], controlMode.c_str(), TC_NONE);
@@ -170,7 +170,7 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-    if(myLRTA.isCompleted() == false){
+    if(myLRTA.isCompleted() == false || inSubPath == 1){
 
       if(quadPosAcquired){
         quadPosAcquired = 0;
@@ -251,7 +251,7 @@ int main(int argc, char **argv)
       // we have to remove it before sending the information to the listener
       //finalPath.pop_back();
       osInfo.path = finalPath;
-      filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
+      //filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
       osInfo.fileName = "LRTA_" + filename;
       completed_pub.publish(osInfo);
 
