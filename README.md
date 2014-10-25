@@ -25,7 +25,7 @@ How to run
 
 **3.** Create the necessary folders to create the following path:
 
-*catkin_ws/devel/lib/quadcopter_ctrl/Input/Grids*
+*catkin_ws/devel/lib/quadcopter_ctrl/<b>Input/Grids/</b>*
      
 Inside this folder create a file (for example "map_file.txt") containing a binary occupancy matrix, for example:
 ```
@@ -73,7 +73,7 @@ Offline Algorithms
 
 Paths generated offline, before quad-copters start moving:
 
-1. VRP Greedy using Floyd-Warshall
+1. VRP Greedy using A*
 
 2. VRP Greedy using Floyd-Warshall
 
@@ -93,6 +93,6 @@ Paths generated online while robots are moving:
 3. PatrolGRAPH*
 
 
-In quadNodeCount.cpp the path is generated using the NodeCount class to find the nearest node with the smallest number of visits. Visit count maps are updated in a callback function using a topic common to all the quadcopter-controller-nodes running, named "updateNodeCount". The quadLRTA.cpp has a similar behaviour.
+In quadNodeCount.cpp the path is generated using the NodeCount class to find the nearest node with the smallest number of visits. Visit count maps are updated in a callback function using a topic common to all the quadcopter-controller nodes, named "/updateNodeCount". In this way a quadcopter sends a message that will be received by all the quadcopters including itself. This kind of behaviour was designed to make the code easily scalable. The quadLRTA.cpp has a similar behaviour.
 
 
