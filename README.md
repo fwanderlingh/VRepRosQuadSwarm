@@ -59,7 +59,7 @@ argv[5]: STARTNODE, index of first node
 argv[6]: Min #visits for each node
 ```
 
-So when creating your own map keep an eye on STARTNODE for example, because if it is set to a node with an obstacle the code will not work (is like starting from inside the obstacle).
+So when creating your own map keep an eye on STARTNODE for example, because if it is set to a node with an obstacle the code will not work (is like starting from inside the obstacle). The same applies if you set STARTNODE to a number that is greater than the number of nodes *n* in the map (in the map of the example *n*=16, so the starting node has to be less than 16).
 
 Details
 =======
