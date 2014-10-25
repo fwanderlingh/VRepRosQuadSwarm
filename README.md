@@ -13,8 +13,9 @@ Compiling and running
 =====================
 
 To build the following package you will need [ROS](http://wiki.ros.org/ROS) to be installed and clone this repository in the src of a new [catkin package](http://wiki.ros.org/ROS/Tutorials/catkin/CreatingPackage).
+To use the scenarios (the *.ttt files) you have to install V-REP simulator, available from the [Coppelia Robotics](http://www.coppeliarobotics.com/) website.
+
 **Important**: it is reccomended to use use **ROS Hydro** because Indigo causes issues with V-REP.
-To use the scenarios (the *.ttt files) you have to install V-Rep, available from the [Coppelia Robotics](http://www.coppeliarobotics.com/) website.
 
 How to run
 ----------
