@@ -5,9 +5,9 @@ VRepRosQuadControl
 Summary
 -------
 
-This is a framework to control a series of quad-copters simulated in V-Rep by using ROS publisher/subscribers, to completely cover a given terrain using different coverage algorithms. By using the roslaunch files you can configure how many robots you want to use for the coverage.
+This is a framework to control a series of quad-copters simulated in V-REP by using ROS publisher/subscribers, to completely cover a given terrain using different coverage algorithms. By using the roslaunch files you can configure how many robots you want to use for the coverage.
 The terrain to be covered is given as input to the executables which start with the "quad" prefix and is represented as a binary occupancy grid (e.g. zero for accessible point, 1 for not accessible point).
-All the algorithms are publishing the positions to be followed on ROS topic that are read by the V-Rep simulator using the *.ttt scenes provided in the package.
+All the algorithms are publishing the positions to be followed on ROS topics that are read by the V-REP simulator using the *.ttt scenes provided in the package.
 
 Compiling and running
 =====================
