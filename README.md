@@ -5,16 +5,17 @@ VRepRosQuadControl
 Summary
 -------
 
-This is a framework to control a series of quad-copters simulated in V-Rep by using ROS publisher/subscribers to completely cover a given terrain. By using the roslaunch files you can configure how many robots you want to use for the coverage.
+This is a framework to control a series of quad-copters simulated in V-REP by using ROS publisher/subscribers, to completely cover a given terrain using different coverage algorithms. By using the roslaunch files you can configure how many robots you want to use for the coverage.
 The terrain to be covered is given as input to the executables which start with the "quad" prefix and is represented as a binary occupancy grid (e.g. zero for accessible point, 1 for not accessible point).
-All the algorithms are publishing the positions to be followed on ROS topic that are read by the V-Rep simulator using the *.ttt scenes provided in the package.
+All the algorithms are publishing the positions to be followed on ROS topics that are read by the V-REP simulator using the *.ttt scenes provided in the package.
 
 Compiling and running
 =====================
 
 To build the following package you will need [ROS](http://wiki.ros.org/ROS) to be installed and clone this repository in the src of a new [catkin package](http://wiki.ros.org/ROS/Tutorials/catkin/CreatingPackage).
+To use the scenarios (the *.ttt files) you have to install V-REP simulator, available from the [Coppelia Robotics](http://www.coppeliarobotics.com/) website.
+
 **Important**: it is reccomended to use use **ROS Hydro** because Indigo causes issues with V-REP.
-To use the scenarios (the *.ttt files) you have to install V-Rep, available from the [Coppelia Robotics](http://www.coppeliarobotics.com/) website.
 
 How to run
 ----------
@@ -24,7 +25,7 @@ How to run
 
 **3.** Create the necessary folders to create the following path:
 
-*catkin_ws/devel/lib/quadcopter_ctrl/Input/Grids*
+*catkin_ws/devel/lib/quadcopter_ctrl/<b>Input/Grids/</b>*
      
 Inside this folder create a file (for example "map_file.txt") containing a binary occupancy matrix, for example:
 ```
@@ -59,7 +60,7 @@ argv[5]: STARTNODE, index of first node
 argv[6]: Min #visits for each node
 ```
 
-So when creating your own map keep an eye on STARTNODE for example, because if it is set to a node with an obstacle the code will not work (is like starting from inside the obstacle).
+So when creating your own map keep an eye on STARTNODE for example, because if it is set to a node with an obstacle the code will not work (is like starting from inside the obstacle). The same applies if you set STARTNODE to a number that is greater than the number of nodes *n* in the map (in the map of the example *n*=16, so the starting node has to be less than 16).
 
 Details
 =======
@@ -72,7 +73,7 @@ Offline Algorithms
 
 Paths generated offline, before quad-copters start moving:
 
-1. VRP Greedy using Floyd-Warshall
+1. VRP Greedy using A*
 
 2. VRP Greedy using Floyd-Warshall
 
@@ -92,6 +93,6 @@ Paths generated online while robots are moving:
 3. PatrolGRAPH*
 
 
-In quadNodeCount.cpp the path is generated using the NodeCount class to find the nearest node with the smallest number of visits. Visit count maps are updated in a callback function using a topic common to all the quadcopter-controller-nodes running, named "updateNodeCount". The quadLRTA.cpp has a similar behaviour.
+In quadNodeCount.cpp the path is generated using the NodeCount class to find the nearest node with the smallest number of visits. Visit count maps are updated in a callback function using a topic common to all the quadcopter-controller nodes, named "/updateNodeCount". In this way a quadcopter sends a message that will be received by all the quadcopters including itself. This kind of behaviour was designed to make the code easily scalable. The quadLRTA.cpp has a similar behaviour.
 
 
