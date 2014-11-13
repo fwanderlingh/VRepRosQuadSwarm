@@ -1,5 +1,5 @@
-VRepRosQuadControl
-==================
+VRep-Ros Quadcopter Swarm
+=========================
 
 
 Summary
@@ -35,7 +35,7 @@ Thanks to [this V-REP forum post](www.forum.coppeliarobotics.com/viewtopic.php?f
 
 How to run
 ----------
-**1.** Be sure you have clone the repo in the **catkin_ws/src** folder.
+**1.** Be sure you have clone the repo in the **catkin_ws/src** folder. Rename the cloned folder to quadcopter_ctrl (since it's the actual name of the package).
 
 **2.** Compile once with `catkin_make` (to be invoked in catkin_ws/).
 
