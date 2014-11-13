@@ -26,7 +26,7 @@ link_directories("/opt/ros/indigo/lib")
 **4.** Copy the builded plugin from */devel/lib/libv_repExtRos.so* to the V-REP directory
 
 <del>Important: it is reccomended to use use because Indigo causes issues with V-REP.</del>
-Thanks to [this V-REP forum post](www.forum.coppeliarobotics.com/viewtopic.php?f=5&t=1693) I managed to solve the force close issue affecting the V-REP simulation using ROS Indigo, as shown above.
+Thanks to [this V-REP forum post](www.forum.coppeliarobotics.com/viewtopic.php?f=5&t=1693) I managed to solve the force close issue affecting the V-REP simulation using ROS Indigo.
 
 How to run
 ----------
