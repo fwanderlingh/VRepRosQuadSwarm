@@ -17,15 +17,20 @@ To use the scenarios (the *.ttt files) you have to install (preferrably the late
 Once you've downloaded it follow this steps to compile the V-REP ROS Plugin:
 
 **1.** Copy the **vrep_common** and **vrep_plugin** folder from *vrep-folder/programming/ros_packages* to *catkin_ws/src*
+
 **2.** Depending on the ROS version you are using, change CMakeLists.txt of vrep_plugin to point to the correct libraries adding:
 ```
 link_directories("/opt/ros/hydro/lib")
 link_directories("/opt/ros/indigo/lib")
 ```
+
 **3.** Compile the plugin with `catkin_make`
+
 **4.** Copy the builded plugin from */devel/lib/libv_repExtRos.so* to the V-REP directory
 
-<del>Important: it is reccomended to use use because Indigo causes issues with V-REP.</del>
+**5.** Done! :)
+
+<del>Important: it is reccomended to use ROS Hydro because Indigo causes issues with V-REP.</del>
 Thanks to [this V-REP forum post](www.forum.coppeliarobotics.com/viewtopic.php?f=5&t=1693) I managed to solve the force close issue affecting the V-REP simulation using ROS Indigo.
 
 How to run
