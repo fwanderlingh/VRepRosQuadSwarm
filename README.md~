@@ -28,16 +28,16 @@ link_directories("/opt/ros/indigo/lib")
 
 **4.** Copy the builded plugin from */devel/lib/libv_repExtRos.so* to the V-REP directory
 
-**5.** Done! :)
+**5.** Done! :smile:
 
 <del>Important: it is reccomended to use ROS Hydro because Indigo causes issues with V-REP.</del>
 Thanks to [this V-REP forum post](www.forum.coppeliarobotics.com/viewtopic.php?f=5&t=1693) I managed to solve the force close issue affecting the V-REP simulation using ROS Indigo.
 
 How to run
 ----------
-**1.** Copy the folder "quadcopter\_ctrl" inside the catkin source folder (*catkin_ws/src*).
+**1.** Be sure you have clone the repo in the **catkin_ws/src** folder.
 
-**2.** Compile once with `catkin_make`.
+**2.** Compile once with `catkin_make` (to be invoked in catkin_ws/).
 
 **3.** Create the necessary folders to create the following path:
 

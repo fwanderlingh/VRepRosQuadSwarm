@@ -35,13 +35,13 @@ Thanks to [this V-REP forum post](www.forum.coppeliarobotics.com/viewtopic.php?f
 
 How to run
 ----------
-**1.** Copy the folder "quadcopter\_ctrl" inside the catkin source folder (*catkin_ws/src*).
+**1.** Be sure you have clone the repo in the **catkin_ws/src** folder.
 
-**2.** Compile once with `catkin_make`.
+**2.** Compile once with `catkin_make` (to be invoked in catkin_ws/).
 
 **3.** Create the necessary folders to create the following path:
 
-*catkin_ws/devel/lib/quadcopter_ctrl/<b>Input/Grids/</b>*
+*catkin_ws/devel/lib/VRepRosQuadSwarm/<b>Input/Grids/</b>*
      
 Inside this folder create a file (for example "map_file.txt") containing a binary occupancy matrix, for example:
 ```
