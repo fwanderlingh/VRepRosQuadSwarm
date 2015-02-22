@@ -43,7 +43,6 @@ int quadPosAcquired = 0;
 
 ///FUNCTIONS
 std::string get_selfpath(void);
-std::string add_argv(std::string str, char* argvalue);
 void updateTarget(ros::Publisher& countPub);
 void publishSubTarget(ros::Publisher& posPub);
 
@@ -75,11 +74,14 @@ int main(int argc, char **argv)
         "argv[3]: zHeight of flight\n"
         "argv[4]: Control Mode ('sim' or 'asctec')\n"
         "argv[5]: STARTNODE, index of first node\n"
-        "argv[6]: Min #visits for each node (1=\"simple coverage\")%s\n", TC_RED, TC_NONE);
+        "argv[6]: Min #visits for each node (1=\"simple coverage\")%s\n"
+        "argv[7]: Input Map Type ('occGrid' or 'graph')%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
   std::string type = "NC_";
+
+  //std::string inputMapType(argv[7]);
 
 
   /// In this way each robot flies at a different height
@@ -98,21 +100,25 @@ int main(int argc, char **argv)
     printf("%sAccess matrix not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-/*
+
   std::string posV_filename = "posV_" + filename;
   std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
   std::ifstream pos_Vec;
-  pos_Vec.open( posV_file_path.c_str() );
-  if( !pos_Vec.is_open() ){
-    printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
-    exit(EXIT_FAILURE);
-  }
-*/
+
+//  if(inputMapType == "graph"){
+    pos_Vec.open( posV_file_path.c_str() );
+    if( !pos_Vec.is_open() ){
+      printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
+      exit(EXIT_FAILURE);
+    }
+//  }
+
+
   int min_visit = strtol(argv[6], NULL, 0);
   cout << "min_visit: " << min_visit << endl;
 
-  myNodeCount.init_acc(access_matrix, startNode, min_visit);    //Constructor inputs is (mapToExplore)
-  //myNodeCount.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);
+  //myNodeCount.init_acc(access_matrix, startNode, min_visit);    //Constructor inputs is (mapToExplore)
+  myNodeCount.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);
 
 
 
@@ -251,7 +257,7 @@ int main(int argc, char **argv)
       filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
       osInfo.fileName = type + filename;
       completed_pub.publish(osInfo);
-
+/*
       ///Dump counts map on file
       int gridSizeX = myNodeCount.getGridSizeX();
       int gridSizeY = myNodeCount.getGridSizeY();
@@ -274,7 +280,7 @@ int main(int argc, char **argv)
         nodeCountMap.close();
 
       }else{ cout << "Error writing Count Map on file" << endl; }
-
+*/
       ros::shutdown();
     }
 

@@ -67,7 +67,8 @@ int PathPlanningAlg::LoadParams(std::string controlMode,
                         double &wpStep, double &critDist, double &threshold){
 
   if(controlMode == "sim"){
-    scale = 2.0;
+    //scale = 2.0;
+    scale = 1.0;
     wpStep = 0.5;
     //ofs_x = 9.7;
     //ofs_y = 8.43;

@@ -30,7 +30,7 @@ using std::endl;
 
 
 PatrolGRAPH::PatrolGRAPH() : STARTNODE(0), gridSizeX(0), gridSizeY(0),
-    currentNode(STARTNODE), optimized(false),
+    currentNode(STARTNODE), optimized(false), minVisit(1), numFreeNodes(0),
     unvisitedCount(std::numeric_limits<int>::max())
 {
   srand(time(NULL) xor getpid()<<16); // xor getpid()<<16);

@@ -31,7 +31,7 @@ using std::endl;
 //#define DEBUG_PRINT
 
 
-NodeCounting::NodeCounting() : STARTNODE(0),gridSizeX(0), gridSizeY(0),
+NodeCounting::NodeCounting() : STARTNODE(0),gridSizeX(0), gridSizeY(0), numFreeNodes(0), minVisit(1),
     currentNode(STARTNODE), unvisitedCount(std::numeric_limits<int>::max())
 {
   srand(time(NULL) xor getpid()<<16); // xor getpid()<<16);

@@ -49,7 +49,6 @@ int quadPosAcquired = 0;
 
 ///FUNCTIONS
 std::string get_selfpath(void);
-std::string add_argv(std::string str, char* argvalue);
 void updateTarget(ros::Publisher& countPub);
 void publishSubTarget(ros::Publisher& posPub);
 
@@ -113,7 +112,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-/*
+
   std::string posV_filename = "posV_" + filename;
   std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
   std::ifstream pos_Vec;
@@ -122,7 +121,7 @@ int main(int argc, char **argv)
     printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-*/
+
   int min_visit = strtol(argv[6], NULL, 0);
   bool optimized = static_cast<bool>(strtol(argv[7], NULL, 0));
   std::string type;
@@ -131,14 +130,14 @@ int main(int argc, char **argv)
     /// Run with offline optimisation
 
     type = "PG_";
-    myPG.init_acc_ptm(access_matrix, PTM_matrix, startNode, min_visit);
-    //myPG.init_graph_pos_ptm(access_matrix, pos_Vec, PTM_matrix, startNode, min_visit);
+    //myPG.init_acc_ptm(access_matrix, PTM_matrix, startNode, min_visit);
+    myPG.init_graph_pos_ptm(access_matrix, pos_Vec, PTM_matrix, startNode, min_visit);
   }else{
     /// Run withOut offline optimisation
 
     type = "EC_";
-    myPG.init_acc(access_matrix, startNode, min_visit);
-    //myPG.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);
+    //myPG.init_acc(access_matrix, startNode, min_visit);
+    myPG.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);
   }
 
   int minVisit = strtol(argv[6], NULL, 0);
@@ -290,7 +289,7 @@ int main(int argc, char **argv)
       osInfo.fileName = type + filename;
       completed_pub.publish(osInfo);
 
-
+/*
       ///Dump counts map on file
       int gridSizeX = myPG.getGridSizeX();
       int gridSizeY = myPG.getGridSizeY();
@@ -312,8 +311,8 @@ int main(int argc, char **argv)
         }
         nodeCountMap.close();
 
-      }else{ cout << "Error writing counts on file" << endl; }
-
+      }else{ cout << "Error writing Count Map on file" << endl; }
+*/
       ros::shutdown();
     }
 
