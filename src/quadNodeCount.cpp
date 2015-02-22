@@ -74,8 +74,7 @@ int main(int argc, char **argv)
         "argv[3]: zHeight of flight\n"
         "argv[4]: Control Mode ('sim' or 'asctec')\n"
         "argv[5]: STARTNODE, index of first node\n"
-        "argv[6]: Min #visits for each node (1=\"simple coverage\")%s\n"
-        "argv[7]: Input Map Type ('occGrid' or 'graph')%s\n", TC_RED, TC_NONE);
+        "argv[6]: Min #visits for each node (1=\"simple coverage\")%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
 
