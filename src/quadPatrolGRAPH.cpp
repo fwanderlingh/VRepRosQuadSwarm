@@ -15,7 +15,7 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "quadcopter_ctrl/PGmsg.h"
 #include "quadcopter_ctrl/OSmsg.h"
-#include <cstring>
+#include <string>
 #include <sstream>
 #include "termColors.h"
 #include "PathPlanningAlg.h"
@@ -23,6 +23,7 @@
 #include <fstream>
 #include <vector>
 #include <ctime>
+#include "Utils.h"
 
 //#define INTSTRSIZE ((CHAR_BIT * sizeof(int) - 1) / 3 + 2)
 
@@ -143,7 +144,7 @@ int main(int argc, char **argv)
   int minVisit = strtol(argv[6], NULL, 0);
 
   std::string controlMode(argv[4]);
-  printf("%s[%s] Control Mode: %s%s\n", TC_YELLOW, argv[3], controlMode.c_str(), TC_NONE);
+  printf("%s[%s] Control Mode: %s%s\n", TC_YELLOW, argv[1], controlMode.c_str(), TC_NONE);
   if(PathPlanningAlg::LoadParams(controlMode, MAP_SCALE, OFS_X, OFS_Y, WP_STEP, CRIT_DIST, threshold)){
     printf("%s** INCORRECT CONTROL MODE **%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
@@ -161,9 +162,9 @@ int main(int argc, char **argv)
    * (e.g. if argv[1] = 0 the node will be named quadcopterRosCtrl_0, publish to
    *  vrep/targetObjPos_0, etc...)
    */
-  std::string nodeName = add_argv("quadPatrolGRAPH", argv[1]);
-  std::string targetObjPosName = add_argv("targetObjPos", argv[1]);
-  std::string quadcopPosName = add_argv("quadcopPos", argv[1]);
+  std::string nodeName = Utils::add_argv("quadPatrolGRAPH", argv[1]);
+  std::string targetObjPosName = Utils::add_argv("targetObjPos", argv[1]);
+  std::string quadcopPosName = Utils::add_argv("quadcopPos", argv[1]);
 
   ros::init(argc, argv, nodeName);
   ros::NodeHandle n;
@@ -289,14 +290,16 @@ int main(int argc, char **argv)
       osInfo.fileName = type + filename;
       completed_pub.publish(osInfo);
 
+
       ///Dump counts map on file
       int gridSizeX = myPG.getGridSizeX();
       int gridSizeY = myPG.getGridSizeY();
       vector<graphNode> graphNodes = myPG.getGraphNodes();
 
-      std::ostringstream process_id;
-      process_id << (int)getpid();
-      std::string resultsName = folder_path + "/CountMaps/" + type + "CountMap_" + process_id.str() + filename;
+      //std::ostringstream process_id;
+      //process_id << (int)getpid();
+      std::string resultsName = folder_path + "/CountMaps/" + type + Utils::add_argv("CountMap", argv[1]) +
+          "_" + filename + "_" + Utils::GetCurrentDateFormatted();
 
       std::ofstream nodeCountMap;
       nodeCountMap.open(resultsName.c_str());
@@ -337,15 +340,6 @@ std::string get_selfpath() {
 }
 
 
-std::string add_argv(std::string str, char* argvalue){
-
-  std::string suffix(argvalue);
-  str = str + "_" + suffix;
-
-  return str;
-
-}
-
 
 void updateTarget(ros::Publisher& countPub){
 
@@ -367,4 +361,6 @@ void publishSubTarget(ros::Publisher& posPub){
   subTarget.pose.position.z = quadPos.pose.position.z + dSubWP[Z];
   posPub.publish(subTarget);
 }
+
+
 

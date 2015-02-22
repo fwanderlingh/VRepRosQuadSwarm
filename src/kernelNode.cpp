@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <ctime>
 
-///Used API Services
+/// Used API Services
 #include "vrep_common/simRosStartSimulation.h"
 #include "vrep_common/simRosStopSimulation.h"
 

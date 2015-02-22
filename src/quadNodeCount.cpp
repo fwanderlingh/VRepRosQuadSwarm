@@ -15,13 +15,14 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "quadcopter_ctrl/NCmsg.h"
 #include "quadcopter_ctrl/OSmsg.h"
-#include <cstring>
+#include <string>
 #include <sstream>
 #include "termColors.h"
 #include "PathPlanningAlg.h"
 #include "NodeCounting.h"
 #include <fstream>
 #include <vector>
+#include "Utils.h"
 
 
 using std::cout;
@@ -78,6 +79,8 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
+  std::string type = "NC_";
+
 
   /// In this way each robot flies at a different height
   zHeight = static_cast<double>(strtod(argv[3], NULL));
@@ -132,9 +135,9 @@ int main(int argc, char **argv)
    * (e.g. if argv[1] = 0 the node will be named quadcopterRosCtrl_0, publish to
    *  vrep/targetObjPos_0, etc...)
    */
-  std::string nodeName = add_argv("quadNodeCount", argv[1]);
-  std::string targetObjPosName = add_argv("targetObjPos", argv[1]);
-  std::string quadcopPosName = add_argv("quadcopPos", argv[1]);
+  std::string nodeName = Utils::add_argv("quadNodeCount", argv[1]);
+  std::string targetObjPosName = Utils::add_argv("targetObjPos", argv[1]);
+  std::string quadcopPosName = Utils::add_argv("quadcopPos", argv[1]);
 
 
   ros::init(argc, argv, nodeName);
@@ -246,8 +249,31 @@ int main(int argc, char **argv)
       osInfo.numNodes = myNodeCount.getNumFreeNodes();
       osInfo.path = myNodeCount.getFinalPath();
       filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
-      osInfo.fileName = "NC_" + filename;
+      osInfo.fileName = type + filename;
       completed_pub.publish(osInfo);
+
+      ///Dump counts map on file
+      int gridSizeX = myNodeCount.getGridSizeX();
+      int gridSizeY = myNodeCount.getGridSizeY();
+      vector<graphNode> graphNodes = myNodeCount.getGraphNodes();
+
+      //std::ostringstream process_id;
+      //process_id << (int)getpid();
+      std::string resultsName = folder_path + "/CountMaps/" + type + Utils::add_argv("CountMap", argv[1]) +
+          "_" + filename + "_" + Utils::GetCurrentDateFormatted();
+
+      std::ofstream nodeCountMap;
+      nodeCountMap.open(resultsName.c_str());
+      if(nodeCountMap.is_open() ){
+        for(int i=0; i<gridSizeX; i++){
+          for(int j=0; j<gridSizeY; j++){
+            nodeCountMap << (int)graphNodes.at((i*gridSizeY) + j).nodeCount << " ";
+          }
+        nodeCountMap << endl;
+        }
+        nodeCountMap.close();
+
+      }else{ cout << "Error writing Count Map on file" << endl; }
 
       ros::shutdown();
     }
@@ -275,15 +301,6 @@ std::string get_selfpath() {
   }
 }
 
-
-std::string add_argv(std::string str, char* argvalue){
-
-  std::string suffix(argvalue);
-  str = str + "_" + suffix;
-
-  return str;
-
-}
 
 
 void updateTarget(ros::Publisher& countPub){

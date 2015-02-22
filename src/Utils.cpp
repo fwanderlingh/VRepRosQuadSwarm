@@ -11,8 +11,8 @@
 
 #include "Utils.h"
 #include <iostream>
-#include <stdio.h>
-
+#include <cstdio>
+#include <ctime>
 
 
 Utils::Utils()
@@ -40,4 +40,23 @@ void Utils::spaced_cout(double value){
   if(value == 0) printf("    0");
   else if(value < 10)  printf("  %2.1f", value);
   else printf(" %2.1f", value);
+}
+
+std::string Utils::add_argv(std::string str, char* argvalue)
+{
+  std::string suffix(argvalue);
+  str = str + "_" + suffix;
+
+  return str;
+
+}
+
+std::string Utils::GetCurrentDateFormatted(){
+
+	std::time_t t = std::time(NULL);
+	char mbstr[20];
+	std::strftime(mbstr, sizeof(mbstr), "%Y-%m-%d_%H.%M.%S", std::localtime(&t));
+    std::string currentDate(mbstr);
+
+	return currentDate;
 }
