@@ -376,6 +376,9 @@ void NodeCountingLoss::findNext(){
 
     finalPath.push_back(currentNode);
 
+
+    incrCount(getCurrentIndex(), getCurrentType());
+
   }
 }
 

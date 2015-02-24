@@ -18,7 +18,7 @@
 #include <sstream>
 #include "termColors.h"
 #include "PathPlanningAlg.h"
-#include "NodeCounting.h"
+#include "NodeCountingLoss.h"
 #include <fstream>
 #include <vector>
 #include "Utils.h"
@@ -27,6 +27,8 @@
 using std::cout;
 using std::endl;
 using std::vector;
+
+int quadID(0);
 
 quadcopter_ctrl::NCmsg ncInfo;
 quadcopter_ctrl::OSmsg osInfo;
@@ -57,7 +59,10 @@ void quadPosFromVrep(const geometry_msgs::PoseStamped::ConstPtr& pubQuadPose)
 
 void updateCount(const quadcopter_ctrl::NCmsg::ConstPtr& nodeCountInfo){
 
-  myNodeCount.incrCount(nodeCountInfo->node, nodeCountInfo->isVisited);
+  /** We update our count only if we weren't the one publishing the message **/
+  if(nodeCountInfo->robotId != quadID){
+    myNodeCount.incrCount(nodeCountInfo->node, nodeCountInfo->isVisited);
+  }
 
 }
 
@@ -66,6 +71,9 @@ void updateCount(const quadcopter_ctrl::NCmsg::ConstPtr& nodeCountInfo){
 int main(int argc, char **argv)
 {
   /// argv[1] contains the ID number of the robot to be controlled (0,1,2...)
+  quadID = strtol(argv[1], NULL, 0);
+  ncInfo.robotId = quadID;
+
   if(argc<7){
     printf("%s** ERROR **\n"
         "argv[1]: Quadcopter # to control\n"
