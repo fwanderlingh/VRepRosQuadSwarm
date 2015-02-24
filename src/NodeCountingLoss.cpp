@@ -3,13 +3,13 @@
 //	License: BSD (http://opensource.org/licenses/BSD-3-Clause)	//
 
 /*
- * NodeCounting.cpp
+ * NodeCountingLoss.cpp
  *
  *  Created on: May 9, 2014
  *      Author: francescow
  */
 
-#include "NodeCounting.h"
+#include "NodeCountingLoss.h"
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -31,7 +31,7 @@ using std::endl;
 //#define DEBUG_PRINT
 
 
-NodeCounting::NodeCounting() : STARTNODE(0),gridSizeX(0), gridSizeY(0), numFreeNodes(0), minVisit(1),
+NodeCountingLoss::NodeCountingLoss() : STARTNODE(0),gridSizeX(0), gridSizeY(0), numFreeNodes(0), minVisit(1),
     currentNode(STARTNODE), unvisitedCount(std::numeric_limits<int>::max())
 {
   srand(time(NULL) xor getpid()<<16); // xor getpid()<<16);
@@ -42,13 +42,13 @@ NodeCounting::NodeCounting() : STARTNODE(0),gridSizeX(0), gridSizeY(0), numFreeN
 }
 
 
-NodeCounting::NodeCounting(std::ifstream & INFILE) : unvisitedCount(std::numeric_limits<int>::max())
+NodeCountingLoss::NodeCountingLoss(std::ifstream & INFILE) : unvisitedCount(std::numeric_limits<int>::max())
 {
   srand(time(NULL) xor getpid()<<16); // xor getpid()<<16);
   createGraph(INFILE);
 }
 
-NodeCounting::~NodeCounting()
+NodeCountingLoss::~NodeCountingLoss()
 {
 
   // TODO Auto-generated destructor stub
@@ -56,7 +56,7 @@ NodeCounting::~NodeCounting()
 
 
 
-void NodeCounting::loadMatrixFile(std::ifstream &access_mat){
+void NodeCountingLoss::loadMatrixFile(std::ifstream &access_mat){
   /// Loading the access_vec and defining grid sizes
 
   if( access_mat.is_open() ) {
@@ -78,7 +78,7 @@ void NodeCounting::loadMatrixFile(std::ifstream &access_mat){
 }
 
 
-void NodeCounting::createGraph(std::ifstream & INFILE){
+void NodeCountingLoss::createGraph(std::ifstream & INFILE){
 
   loadMatrixFile(INFILE);       /// THe access_vec and defining grid sizes
 
@@ -107,7 +107,7 @@ void NodeCounting::createGraph(std::ifstream & INFILE){
 }
 
 
-void NodeCounting::createEdgeMat(){
+void NodeCountingLoss::createEdgeMat(){
 
   const int n = gridSizeX*gridSizeY;
 
@@ -164,7 +164,7 @@ void NodeCounting::createEdgeMat(){
 
 
 
-void NodeCounting::loadGraphFile(std::ifstream &graph_mat){
+void NodeCountingLoss::loadGraphFile(std::ifstream &graph_mat){
 
   std::string line;
   while ( getline( graph_mat, line ) ) {
@@ -194,7 +194,7 @@ void NodeCounting::loadGraphFile(std::ifstream &graph_mat){
 
 
 
-void NodeCounting::loadPosVecFile(std::ifstream &Pos_vec){
+void NodeCountingLoss::loadPosVecFile(std::ifstream &Pos_vec){
 
   std::string line;
   std::vector< std::vector<int> > positionVec;
@@ -225,7 +225,7 @@ void NodeCounting::loadPosVecFile(std::ifstream &Pos_vec){
 }
 
 
-void NodeCounting::init_acc(std::ifstream & access_mat, int startingNode, int minVis){
+void NodeCountingLoss::init_acc(std::ifstream & access_mat, int startingNode, int minVis){
   /** If input argument of init is only 1 then the input file is
    * the Occupancy Grid (access_mat).
    */
@@ -236,7 +236,7 @@ void NodeCounting::init_acc(std::ifstream & access_mat, int startingNode, int mi
 }
 
 
-void NodeCounting::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec,
+void NodeCountingLoss::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec,
                                       int startingNode, int minVis){
   /** In this case we don't have an occupancy grid but already a matrix
    * representing the graph so we need to know the position of the vertices,
@@ -251,7 +251,7 @@ void NodeCounting::init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_v
 
 
 
-void NodeCounting::incrCount(int nodeIndex, bool isNodeVisited){
+void NodeCountingLoss::incrCount(int nodeIndex, bool isNodeVisited){
 
   graphNodes.at(nodeIndex).nodeCount++;
 
@@ -277,7 +277,7 @@ void NodeCounting::incrCount(int nodeIndex, bool isNodeVisited){
 
 
 /****    MAIN METHOD    ****/
-void NodeCounting::findNext(){
+void NodeCountingLoss::findNext(){
 
 #ifdef DEBUG_PRINT
  cout << "\n---\n";
@@ -380,7 +380,7 @@ void NodeCounting::findNext(){
 }
 
 
-float NodeCounting::getCurrentCoord(char coordinate){
+float NodeCountingLoss::getCurrentCoord(char coordinate){
   switch(coordinate){
     case 'x':
       return graphNodes.at(currentNode).posx;
@@ -394,7 +394,7 @@ float NodeCounting::getCurrentCoord(char coordinate){
 }
 
 
-bool NodeCounting::getCurrentType(){
+bool NodeCountingLoss::getCurrentType(){
 
   if(graphNodes.at(currentNode).nodeCount == 0)
     return 0;
@@ -403,7 +403,7 @@ bool NodeCounting::getCurrentType(){
 }
 
 
-bool NodeCounting::isCompleted(){
+bool NodeCountingLoss::isCompleted(){
 
   int count_reached = 0;
   for(int i=0; i<graphNodes.size(); ++i){

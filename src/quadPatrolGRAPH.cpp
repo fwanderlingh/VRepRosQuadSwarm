@@ -285,7 +285,7 @@ int main(int argc, char **argv)
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myPG.getNumFreeNodes();
       osInfo.path = myPG.getFinalPath();
-      //filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
+      filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
       osInfo.fileName = type + filename;
       completed_pub.publish(osInfo);
 

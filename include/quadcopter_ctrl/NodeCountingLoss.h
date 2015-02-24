@@ -1,12 +1,12 @@
 /*
- * NodeCounting.h
+ * NodeCountingLoss.h
  *
  *  Created on: May 9, 2014
  *      Author: francescow
  */
 
-#ifndef NODECOUNTING_H_
-#define NODECOUNTING_H_
+#ifndef NODECOUNTINGLOSS_H_
+#define NODECOUNTINGLOSS_H_
 
 #include <vector>
 #include <fstream>
@@ -14,7 +14,7 @@
 
 using std::vector;
 
-class NodeCounting
+class NodeCountingLoss
 {
   int STARTNODE;
   int gridSizeX;
@@ -37,9 +37,9 @@ class NodeCounting
   void loadPosVecFile(std::ifstream &Pos_vec);
 
 public:
-  NodeCounting();
-  NodeCounting(std::ifstream & INFILE);
-  virtual ~NodeCounting();
+  NodeCountingLoss();
+  NodeCountingLoss(std::ifstream & INFILE);
+  virtual ~NodeCountingLoss();
   void init_acc(std::ifstream & INFILE, int startingNode, int minVis);
   void init_graph_pos(std::ifstream &graph_mat, std::ifstream &Pos_vec, int startingNode, int minVis);
 
@@ -81,4 +81,4 @@ public:
   }
 };
 
-#endif /* NODECOUNTING_H_ */
+#endif /* NODECOUNTINGLOSS_H_ */

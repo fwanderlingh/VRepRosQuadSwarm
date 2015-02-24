@@ -1,11 +1,10 @@
-//	Copyright (c) 2014, Francesco Wanderlingh. 					//
-//	All rights reserved.										//
+//	Copyright (c) 2015, Francesco Wanderlingh.                 	//
 //	License: BSD (http://opensource.org/licenses/BSD-3-Clause)	//
 
 /*
- * quadNodeCount.cpp
+ * quadNodeCountLoss.cpp
  *
- *  Created on: May 6, 2014
+ *  Created on: Feb 22, 2015
  *      Author: francescow
  */
 
@@ -35,7 +34,7 @@ geometry_msgs::PoseStamped quadPos;
 geometry_msgs::PoseStamped targetPos;
 geometry_msgs::PoseStamped subTarget;
 
-NodeCounting myNodeCount;
+NodeCountingLoss myNodeCount;
 
 double zHeight = 0;
 double MAP_SCALE, OFS_X, OFS_Y, WP_STEP, CRIT_DIST, threshold;
@@ -158,23 +157,6 @@ int main(int argc, char **argv)
 
   ros::Rate loop_rate(DEF_LOOP_RATE); //Loop at DEF_LOOP_RATE
 
-  /*            *** PoseStamped structure: ***
-  //            std_msgs/Header header
-  //              uint32 seq
-  //              time stamp
-  //              string frame_id
-  //            geometry_msgs/Pose pose
-  //              geometry_msgs/Point position
-  //                    float64 x
-  //                    float64 y
-  //                    float64 z
-  //              geometry_msgs/Quaternion orientation
-  //                    float64 x
-  //                    float64 y
-  //                    float64 z
-  //                    float64 w
-   */
-
 
   while (ros::ok())
   {
@@ -257,7 +239,7 @@ int main(int argc, char **argv)
       osInfo.fileName = type + filename;
       completed_pub.publish(osInfo);
 /*
-      ///Dump counts map on file
+      ///Dump counts map on file (for now only valid for occGrid)
       int gridSizeX = myNodeCount.getGridSizeX();
       int gridSizeY = myNodeCount.getGridSizeY();
       vector<graphNode> graphNodes = myNodeCount.getGraphNodes();
@@ -297,7 +279,7 @@ std::string get_selfpath() {
   ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
   if (len != -1) {
     buff[len] = '\0';
-    std::string path(buff);   ///Here the executable name is still in
+    std::string path(buff);                              // Here the executable name is still in buff
     std::string::size_type t = path.find_last_of("/");   // Here we find the last "/"
     path = path.substr(0,t);                             // and remove the rest (exe name)
     return path;
