@@ -14,6 +14,9 @@ Compiling and running
 
 To build the following package you will need [ROS](http://wiki.ros.org/ROS) to be installed and clone this repository in the src of a new [catkin package](http://wiki.ros.org/ROS/Tutorials/catkin/CreatingPackage).
 To use the scenarios (the *.ttt files) you have to install (preferrably the latest version of) the V-REP simulator, available from the [Coppelia Robotics](http://www.coppeliarobotics.com/) website.
+
+Compile V-REP Ros Library
+-------------------------
 Once you've downloaded it follow this steps to compile the V-REP ROS Plugin:
 
 **1.** Copy the **vrep_common** and **vrep_plugin** folder from *vrep-folder/programming/ros_packages* to *catkin_ws/src*
@@ -30,14 +33,14 @@ link_directories("/opt/ros/indigo/lib")
 
 **5.** Done! :smile:
 
-<del>Important: it is reccomended to use ROS Hydro because Indigo causes issues with V-REP.</del>
-Thanks to [this V-REP forum post](www.forum.coppeliarobotics.com/viewtopic.php?f=5&t=1693) I managed to solve the force close issue affecting the V-REP simulation using ROS Indigo.
+Compile the catkin package
+--------------------------
+**1.** Be sure you have cloned the repo in the "catkin_ws/src" folder. **Rename** the cloned folder (VRepRosQuadSwarm) to **quadcopter_ctrl** (since it's the actual name of the catkin package).
+
+**2.** Compile once with `catkin_make` (to be invoked in catkin_ws/).
 
 How to run
 ----------
-**1.** Be sure you have clone the repo in the **catkin_ws/src** folder. Rename the cloned folder (VRepRosQuadSwarm) to **quadcopter_ctrl** (since it's the actual name of the catkin package).
-
-**2.** Compile once with `catkin_make` (to be invoked in catkin_ws/).
 
 **3.** Create the necessary folders to create the following path:
 
