@@ -97,7 +97,6 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-
 ###########
 ## Build ##
 ###########
@@ -144,43 +143,35 @@ add_library(GraphAlgs src/GraphAlgs.cpp)
 
 
 add_executable(quadcopterRosCtrl src/quadcopterRosCtrl.cpp)
-add_dependencies(quadcopterRosCtrl ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(quadcopterRosCtrl ${catkin_EXPORTED_TARGETS})
 target_link_libraries(quadcopterRosCtrl ${catkin_LIBRARIES})
-#add_dependencies(quadcopterRosCtrl quadcopter_ctrl_generate_messages_cpp)
+add_dependencies(quadcopterRosCtrl quadcopter_ctrl_generate_messages_cpp)
 
 add_executable(kernelNode src/kernelNode.cpp)
-add_dependencies(kernelNode ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(kernelNode ${catkin_EXPORTED_TARGETS})
 target_link_libraries(kernelNode ${catkin_LIBRARIES})
 
 add_executable(testVRPs src/testVRPs.cpp)
-add_dependencies(testVRPs ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(testVRPs ${catkin_EXPORTED_TARGETS})
 target_link_libraries(testVRPs ${catkin_LIBRARIES})
 
 add_executable(quadNodeCount src/quadNodeCount.cpp)
-add_dependencies(quadNodeCount ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(quadNodeCount ${catkin_EXPORTED_TARGETS})
 target_link_libraries(quadNodeCount ${catkin_LIBRARIES})
 
 add_executable(quadLRTA src/quadLRTA.cpp)
-add_dependencies(quadLRTA ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(quadLRTA ${catkin_EXPORTED_TARGETS})
 target_link_libraries(quadLRTA ${catkin_LIBRARIES})
 
 add_executable(OnlineSearchListener src/OnlineSearchListener.cpp)
-add_dependencies(OnlineSearchListener ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(OnlineSearchListener ${catkin_EXPORTED_TARGETS})
 target_link_libraries(OnlineSearchListener ${catkin_LIBRARIES})
 
 add_executable(quadPatrolGRAPH src/quadPatrolGRAPH.cpp)
-add_dependencies(quadPatrolGRAPH ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(quadPatrolGRAPH ${catkin_EXPORTED_TARGETS})
 target_link_libraries(quadPatrolGRAPH ${catkin_LIBRARIES})
 
 add_executable(graphAlgsTest src/graphAlgsTest.cpp)
-add_dependencies(graphAlgsTest ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(graphAlgsTest ${catkin_EXPORTED_TARGETS})
 target_link_libraries(graphAlgsTest ${catkin_LIBRARIES})
 
