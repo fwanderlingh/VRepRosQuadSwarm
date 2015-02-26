@@ -42,7 +42,7 @@ Compile the catkin package
 How to run
 ----------
 
-**3.** Create the necessary folders to create the following path:
+**1.** Create the necessary folders to create the following path:
 
 *catkin_ws/devel/lib/quadcopter_ctrl/<b>Input/Grids/</b>*
      
@@ -55,16 +55,16 @@ Inside this folder create a file (for example "map_file.txt") containing a binar
 ```
 That represents a map with a square obstacle on the right.
 
-**4.** Now launch `roscore` in a terminal, and V-REP in another terminal.
+**2.** Now launch `roscore` in a terminal, and V-REP in another terminal.
 
-**5.** In V-REP open the scene *3Rob_freeEnvironm.ttt* (it's in the root of the repository).
+**3.** In V-REP open the scene *3Rob_freeEnvironm.ttt* (it's in the root of the repository).
 
-**6.** In a third terminal use one of the roslaunch files to run a coverage, using as input the file that you created before, for example:
+**4.** In a third terminal use one of the roslaunch files to run a coverage, using as input the file that you created before, for example:
 ```
 $ roslaunch quadcopter_ctrl swarmNodeCount_3.launch input:=map_file.txt
 ```
 
-**7.** Now the quadcopter should start performing the coverage in V-REP.
+**5.** Now the quadcopter should start performing the coverage in V-REP.
 
 About the launch files
 ----------------------
