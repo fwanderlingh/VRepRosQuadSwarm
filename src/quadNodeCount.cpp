@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     printf("%sAccess matrix not found! (sure is the executable folder?)%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
   }
-
+/*
   std::string posV_filename = "posV_" + filename;
   std::string posV_file_path = folder_path + "/Input/PosV/" + posV_filename;
   std::ifstream pos_Vec;
@@ -112,12 +112,12 @@ int main(int argc, char **argv)
     }
 //  }
 
-
+*/
   int min_visit = strtol(argv[6], NULL, 0);
   cout << "min_visit: " << min_visit << endl;
 
-  //myNodeCount.init_acc(access_matrix, startNode, min_visit);    //Constructor inputs is (mapToExplore)
-  myNodeCount.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);
+  myNodeCount.init_acc(access_matrix, startNode, min_visit);    //Constructor inputs is (mapToExplore)
+  //myNodeCount.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);
 
 
 
@@ -253,7 +253,7 @@ int main(int argc, char **argv)
       osInfo.ID = strtol(argv[1], NULL, 0);
       osInfo.numNodes = myNodeCount.getNumFreeNodes();
       osInfo.path = myNodeCount.getFinalPath();
-      filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
+      //filename.resize(filename.size()-2); /// XXX REMEBER TO DELETE THIS LINE FIXME
       osInfo.fileName = type + filename;
       completed_pub.publish(osInfo);
 /*
