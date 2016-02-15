@@ -9,6 +9,12 @@ This is a framework to control a series of quad-copters simulated in V-REP by us
 The terrain to be covered is given as input to the executables which start with the "quad" prefix and is represented as a binary occupancy grid (e.g. zero for accessible point, 1 for not accessible point).
 All the algorithms are publishing the positions to be followed on ROS topics that are read by the V-REP simulator using the *.ttt scenes provided in the package.
 
+**Videos**:
+
+https://www.youtube.com/watch?v=cW3FLxkx9K4
+
+https://www.youtube.com/watch?v=5RocmrFCXQg
+
 Compiling and running
 =====================
 
