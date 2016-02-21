@@ -105,19 +105,19 @@ int main(int argc, char **argv)
   std::ifstream pos_Vec;
 
 //  if(inputMapType == "graph"){
-    pos_Vec.open( posV_file_path.c_str() );
-    if( !pos_Vec.is_open() ){
-      printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
-      exit(EXIT_FAILURE);
-    }
+//    pos_Vec.open( posV_file_path.c_str() );
+//    if( !pos_Vec.is_open() ){
+//      printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
+//      exit(EXIT_FAILURE);
+//    }
 //  }
 
 
   int min_visit = strtol(argv[6], NULL, 0);
   cout << "min_visit: " << min_visit << endl;
 
-  //myNodeCount.init_acc(access_matrix, startNode, min_visit);    //Constructor inputs is (mapToExplore)
-  myNodeCount.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);
+  myNodeCount.init_acc(access_matrix, startNode, min_visit);    //Constructor inputs is (mapToExplore)
+  //myNodeCount.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);
 
 
 
