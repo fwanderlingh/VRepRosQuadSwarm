@@ -121,6 +121,7 @@ int main(int argc, char **argv)
 
 
 
+
   std::string controlMode(argv[4]);
   printf("%s[%s] Control Mode: %s%s\n", TC_YELLOW, argv[1], controlMode.c_str(), TC_NONE);
   if(PathPlanningAlg::LoadParams(controlMode, MAP_SCALE, OFS_X, OFS_Y, WP_STEP, CRIT_DIST, threshold)){
