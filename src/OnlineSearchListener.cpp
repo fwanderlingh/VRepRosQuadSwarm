@@ -19,6 +19,8 @@
 #include <vector>
 #include <ctime>
 #include <sstream>
+#include <stdlib.h>     /* system, NULL, EXIT_FAILURE */
+
 
 ///Used API Services
 #include "vrep_common/simRosStartSimulation.h"
@@ -115,25 +117,43 @@ int main(int argc, char **argv)
       oss_n << num_robots;
       std::string resultsFileName = folder_path + "/Results/" + testName + "_" + oss_n.str() + "_Results";
       std::ofstream results_file;
-      cout << resultsFileName;
-
+      
+      cout << "Saving Results to: " << resultsFileName << endl;
 
 
       results_file.open ( resultsFileName.c_str(), std::fstream::app );
-      results_file << num_robots << "\t" << numFreeNodes
-          << "\t" << longest << "\t" << total << "\t" << st_dev << "\t" << elapsed << endl;
-/*
-      results_file << "Quadcopters paths:" << endl;
-      for (int i=0; i<finalPaths.size(); ++i){
-        results_file << "#" << i << ": ";
-        for (int j=0; j<finalPaths.at(i).size(); ++j){
-          results_file << finalPaths[i][j] << ' ';
+      
+      // Checking if the file was correctly opened, this operation fails if the containg folder
+      // doesn't exist. In that case we then create the folder.
+      if( !results_file.is_open() ) {
+        std::string createFolderCommand = "mkdir " + folder_path + "/Results/";
+        cout << "Command: " << createFolderCommand << endl;
+        system(createFolderCommand.c_str());
+      
+      }
+      
+      // Now we should be sure the folder exists, but we check it anyway to be safe
+      results_file.open ( resultsFileName.c_str(), std::fstream::app );
+      
+      if( results_file.is_open() ) {
+        results_file << num_robots << "\t" << numFreeNodes
+            << "\t" << longest << "\t" << total << "\t" << st_dev << "\t" << elapsed << endl;
+  /*
+        results_file << "Quadcopters paths:" << endl;
+        for (int i=0; i<finalPaths.size(); ++i){
+          results_file << "#" << i << ": ";
+          for (int j=0; j<finalPaths.at(i).size(); ++j){
+            results_file << finalPaths[i][j] << ' ';
+          }
+          results_file << endl;
         }
         results_file << endl;
-      }
-      results_file << endl;
-*/
+  */
       results_file.close();
+      
+      }else{ 
+        cout << "Error writing results file!" << endl; 
+      }
 
       ros::shutdown();
 

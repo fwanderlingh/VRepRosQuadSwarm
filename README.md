@@ -9,11 +9,20 @@ This is a framework to control a series of quad-copters simulated in V-REP by us
 The terrain to be covered is given as input to the executables which start with the "quad" prefix and is represented as a binary occupancy grid (e.g. zero for accessible point, 1 for not accessible point).
 All the algorithms are publishing the positions to be followed on ROS topics that are read by the V-REP simulator using the *.ttt scenes provided in the package.
 
+**Videos**:
+
+https://www.youtube.com/watch?v=cW3FLxkx9K4
+
+https://www.youtube.com/watch?v=5RocmrFCXQg
+
 Compiling and running
 =====================
 
 To build the following package you will need [ROS](http://wiki.ros.org/ROS) to be installed and clone this repository in the src of a new [catkin package](http://wiki.ros.org/ROS/Tutorials/catkin/CreatingPackage).
 To use the scenarios (the *.ttt files) you have to install (preferrably the latest version of) the V-REP simulator, available from the [Coppelia Robotics](http://www.coppeliarobotics.com/) website.
+
+Compile V-REP Ros Library
+-------------------------
 Once you've downloaded it follow this steps to compile the V-REP ROS Plugin:
 
 **1.** Copy the **vrep_common** and **vrep_plugin** folder from *vrep-folder/programming/ros_packages* to *catkin_ws/src*
@@ -30,16 +39,16 @@ link_directories("/opt/ros/indigo/lib")
 
 **5.** Done! :smile:
 
-<del>Important: it is reccomended to use ROS Hydro because Indigo causes issues with V-REP.</del>
-Thanks to [this V-REP forum post](www.forum.coppeliarobotics.com/viewtopic.php?f=5&t=1693) I managed to solve the force close issue affecting the V-REP simulation using ROS Indigo.
-
-How to run
-----------
-**1.** Be sure you have clone the repo in the **catkin_ws/src** folder. Rename the cloned folder (VRepRosQuadSwarm) to **quadcopter_ctrl** (since it's the actual name of the catkin package).
+Compile the catkin package
+--------------------------
+**1.** Be sure you have cloned the repo in the "catkin_ws/src" folder. **Rename** the cloned folder (VRepRosQuadSwarm) to **quadcopter_ctrl** (since it's the actual name of the catkin package).
 
 **2.** Compile once with `catkin_make` (to be invoked in catkin_ws/).
 
-**3.** Create the necessary folders to create the following path:
+How to run
+----------
+
+**1.** Create the necessary folders to create the following path:
 
 *catkin_ws/devel/lib/quadcopter_ctrl/<b>Input/Grids/</b>*
      
@@ -52,16 +61,16 @@ Inside this folder create a file (for example "map_file.txt") containing a binar
 ```
 That represents a map with a square obstacle on the right.
 
-**4.** Now launch `roscore` in a terminal, and V-REP in another terminal.
+**2.** Now launch `roscore` in a terminal, and V-REP in another terminal.
 
-**5.** In V-REP open the scene *3Rob_freeEnvironm.ttt* (it's in the root of the repository).
+**3.** In V-REP open the scene *3Rob_freeEnvironm.ttt* (it's in the root of the repository).
 
-**6.** In a third terminal use one of the roslaunch files to run a coverage, using as input the file that you created before, for example:
+**4.** In a third terminal use one of the roslaunch files to run a coverage, using as input the file that you created before, for example:
 ```
 $ roslaunch quadcopter_ctrl swarmNodeCount_3.launch input:=map_file.txt
 ```
 
-**7.** Now the quadcopter should start performing the coverage in V-REP.
+**5.** Now the quadcopter should start performing the coverage in V-REP.
 
 About the launch files
 ----------------------

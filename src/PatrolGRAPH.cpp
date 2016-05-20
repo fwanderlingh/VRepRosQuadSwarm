@@ -23,7 +23,7 @@
 #include "fstream"
 #include <sstream>
 
-//#define DEBUG_PRINT
+#define DEBUG_PRINT
 
 using std::cout;
 using std::endl;
@@ -522,7 +522,7 @@ bool PatrolGRAPH::isCompleted(){
     }
   }
   //cout << endl;
-  if(count_reached == graphNodes.size()){
+  if(count_reached == numFreeNodes){
     return 1;
   }else return 0;
 

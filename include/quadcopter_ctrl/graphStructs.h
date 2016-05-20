@@ -15,11 +15,12 @@ struct graphNode{
   int occupied;  //1 = not accessible, 0 = accessible (further expansion could be to keep
   //int access; //1 = not accessible, 0 = accessible
   int nodeCount;
+  int nodeCounttest;
   int numEdges;
 
   /// TO BE EXTEND WITH POINTER TO OTHER NODES (Neighbours)
 
-  graphNode() : posx(0.f), posy(0.f), posz(4.0f), occupied(1), nodeCount(0), numEdges(0) {}   //Default access is 1
+  graphNode() : posx(0.f), posy(0.f), posz(4.0f), occupied(1), nodeCount(0), nodeCounttest(0), numEdges(0) {}   //Default access is 1
 
   graphNode(double x, double y, double z, int occ) :      //Struct filler constructor
     posx(x), posy(y), posz(z), occupied(occ), nodeCount(0) {}

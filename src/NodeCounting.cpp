@@ -28,7 +28,7 @@
 using std::cout;
 using std::endl;
 
-//#define DEBUG_PRINT
+#define DEBUG_PRINT
 
 
 NodeCounting::NodeCounting() : STARTNODE(0),gridSizeX(0), gridSizeY(0), numFreeNodes(0), minVisit(1),
@@ -185,7 +185,6 @@ void NodeCounting::loadGraphFile(std::ifstream &graph_mat){
 #endif
 
   numFreeNodes = static_cast<int>(graph.size());
-
   unvisited.resize(numFreeNodes, 1);
   unvisitedCount = numFreeNodes;
 
@@ -404,7 +403,8 @@ bool NodeCounting::getCurrentType(){
 
 
 bool NodeCounting::isCompleted(){
-
+  //std::cout << "size?" << graphNodes.size() << std::endl;
+  //std::cout << "unvisitedcount?" << unvisitedCount << std::endl;
   int count_reached = 0;
   for(int i=0; i<graphNodes.size(); ++i){
     //if(i%gridSizeY == 0) cout << endl;
@@ -414,14 +414,14 @@ bool NodeCounting::isCompleted(){
     }
   }
   //cout << endl;
-  if(count_reached == graphNodes.size()){
+  if(count_reached == numFreeNodes){
     return 1;
   }else return 0;
-
-  /*
-  if(unvisitedCount == 0)
-    return true;
-  else
-    return false;
-   */
+  
+  
+ // if(unvisitedCount == 0)
+ //   return true;
+ // else
+ //   return false;
+   
 }

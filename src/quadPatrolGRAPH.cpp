@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  std::ifstream PTM_matrix;
+ /* std::ifstream PTM_matrix;
   std::string PTM_filename = "PTM_" + filename + ".txt";
   std::string PTM_file_path = folder_path + "/Input/PTMs/" + PTM_filename;
   PTM_matrix.open( PTM_file_path.c_str() );
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
   if( !pos_Vec.is_open() ){
     printf("%sPos_Vec matrix not found!%s\n", TC_RED, TC_NONE);
     exit(EXIT_FAILURE);
-  }
+  }*/
 
   int min_visit = strtol(argv[6], NULL, 0);
   bool optimized = static_cast<bool>(strtol(argv[7], NULL, 0));
@@ -131,13 +131,13 @@ int main(int argc, char **argv)
 
     type = "PG_";
     //myPG.init_acc_ptm(access_matrix, PTM_matrix, startNode, min_visit);
-    myPG.init_graph_pos_ptm(access_matrix, pos_Vec, PTM_matrix, startNode, min_visit);
+    //myPG.init_graph_pos_ptm(access_matrix, pos_Vec, PTM_matrix, startNode, min_visit);
   }else{
     /// Run withOut offline optimisation
 
     type = "EC_";
-    //myPG.init_acc(access_matrix, startNode, min_visit);
-    myPG.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);
+    myPG.init_acc(access_matrix, startNode, min_visit);
+    //myPG.init_graph_pos(access_matrix, pos_Vec, startNode, min_visit);
   }
 
   int minVisit = strtol(argv[6], NULL, 0);
@@ -360,6 +360,3 @@ void publishSubTarget(ros::Publisher& posPub){
   subTarget.pose.position.z = quadPos.pose.position.z + dSubWP[Z];
   posPub.publish(subTarget);
 }
-
-
-

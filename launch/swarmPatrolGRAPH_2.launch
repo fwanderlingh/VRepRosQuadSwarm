@@ -1,7 +1,7 @@
   <launch>
   <node name="OSListener" pkg="quadcopter_ctrl" type="OnlineSearchListener" args="2" output="screen"/>
-  <node name="quadPatrolGRAPH_0" pkg="quadcopter_ctrl" type="quadPatrolGRAPH" args="0 $(arg input) 5.0 sim 0" output="screen"/>
-  <node name="quadPatrolGRAPH_1" pkg="quadcopter_ctrl" type="quadPatrolGRAPH" args="1 $(arg input) 5.75 sim 0" output="screen"/>
+  <node name="quadPatrolGRAPH_0" pkg="quadcopter_ctrl" type="quadPatrolGRAPH" args="0 $(arg input) 5.0 sim 0 1 0" output="screen"/>
+  <node name="quadPatrolGRAPH_1" pkg="quadcopter_ctrl" type="quadPatrolGRAPH" args="1 $(arg input) 5.75 sim 0 1 0" output="screen"/>
 <!--  <node name="quadPatrolGRAPH_2" pkg="quadcopter_ctrl" type="quadPatrolGRAPH" args="2 $(arg input) 6.5 sim 0" output="screen"/>
   <node name="quadPatrolGRAPH_3" pkg="quadcopter_ctrl" type="quadPatrolGRAPH" args="3 $(arg input)" output="screen"/>
   <node name="quadPatrolGRAPH_4" pkg="quadcopter_ctrl" type="quadPatrolGRAPH" args="4 $(arg input)" output="screen"/>

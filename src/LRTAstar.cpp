@@ -22,7 +22,7 @@
 #include <Utils.h>
 #include <unistd.h>
 
-//#define DEBUG_PRINT
+#define DEBUG_PRINT
 
 using std::cout;
 using std::endl;
@@ -199,7 +199,7 @@ void LRTAstar::incrCount(int currIndex, int nextIndex, bool isNextVisited)
 {
 
 	AStarCount.at(currIndex) = AStarCount.at(nextIndex) + 1;
-
+        graphNodes.at(currIndex).nodeCounttest++;
 	graphNodes.at(nextIndex).nodeCount++;
 	//graphNodes.at(currIndex).nodeCount++;
 
@@ -406,23 +406,23 @@ bool LRTAstar::isCompleted()
 	{
 		//if(i%gridSizeY == 0) cout << endl;
 		//cout << graphNodes.at(i).nodeCount << " ";
-		if (graphNodes.at(i).nodeCount >= minVisit)
+		if (graphNodes.at(i).nodeCounttest >= minVisit)
 		{
 			++count_reached;
 		}
 	}
-	//cout << endl;
-	if (count_reached == graphNodes.size())
+	//cout << "count? " << count_reached << endl;
+	if (count_reached == numFreeNodes)
 	{
 		return 1;
 	}
 	else
 		return 0;
 
-	/*
-	 if(unvisitedCount==0)
+	
+	/* if(unvisitedCount==0)
 	 return true;
 	 else
-	 return false;
-	 */
+	 return false;*/
+	 
 }

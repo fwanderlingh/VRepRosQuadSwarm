@@ -1,9 +1,9 @@
 <launch>
   <node name="OSListener" pkg="quadcopter_ctrl" type="OnlineSearchListener" args="4" output="screen"/>
-  <node name="quadLRTAstar_0" pkg="quadcopter_ctrl" type="quadLRTA" args="0 $(arg input) 5.0 sim 0" output="screen"/>
-  <node name="quadLRTAstar_1" pkg="quadcopter_ctrl" type="quadLRTA" args="1 $(arg input) 5.75 sim 0" output="screen"/>
-  <node name="quadLRTAstar_2" pkg="quadcopter_ctrl" type="quadLRTA" args="2 $(arg input) 6.5 sim 0" output="screen"/>
-  <node name="quadLRTAstar_3" pkg="quadcopter_ctrl" type="quadLRTA" args="3 $(arg input) 7.25 sim 0" output="screen"/>
+  <node name="quadLRTAstar_0" pkg="quadcopter_ctrl" type="quadLRTA" args="0 $(arg input) 5.0 sim 0 1" output="screen"/>
+  <node name="quadLRTAstar_1" pkg="quadcopter_ctrl" type="quadLRTA" args="1 $(arg input) 5.75 sim 0 1" output="screen"/>
+  <node name="quadLRTAstar_2" pkg="quadcopter_ctrl" type="quadLRTA" args="2 $(arg input) 6.5 sim 0 1" output="screen"/>
+  <node name="quadLRTAstar_3" pkg="quadcopter_ctrl" type="quadLRTA" args="3 $(arg input) 7.25 sim 0 1" output="screen"/>
 <!--  <node name="quadLRTAstar_4" pkg="quadcopter_ctrl" type="quadLRTA" args="4" output="screen"/>
   <node name="quadLRTAstar_5" pkg="quadcopter_ctrl" type="quadLRTA" args="5" output="screen"/>
   <node name="quadLRTAstar_6" pkg="quadcopter_ctrl" type="quadLRTA" args="6" output="screen"/>

@@ -3,7 +3,9 @@ project(quadcopter_ctrl)
 
 # WHEN BUILT IN RELEASE MODE THERE IS NO BOUNDS CHECK IN VECTORS !!!
 # SO TO DEBUNG AND FIND ERRORS COMMENT THE FOLLOWING "set" LINE  !!!
+
 #set(CMAKE_BUILD_TYPE Release)
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -95,6 +97,7 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
+
 ###########
 ## Build ##
 ###########
@@ -141,37 +144,53 @@ add_library(GraphAlgs src/GraphAlgs.cpp)
 
 
 add_executable(quadcopterRosCtrl src/quadcopterRosCtrl.cpp)
-target_link_libraries(quadcopterRosCtrl ${catkin_LIBRARIES})
+add_dependencies(quadcopterRosCtrl ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(quadcopterRosCtrl ${catkin_EXPORTED_TARGETS})
+target_link_libraries(quadcopterRosCtrl ${catkin_LIBRARIES})
 #add_dependencies(quadcopterRosCtrl quadcopter_ctrl_generate_messages_cpp)
 
 add_executable(kernelNode src/kernelNode.cpp)
-target_link_libraries(kernelNode ${catkin_LIBRARIES})
+add_dependencies(kernelNode ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(kernelNode ${catkin_EXPORTED_TARGETS})
+target_link_libraries(kernelNode ${catkin_LIBRARIES})
 
 add_executable(testVRPs src/testVRPs.cpp)
-target_link_libraries(testVRPs ${catkin_LIBRARIES})
+add_dependencies(testVRPs ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(testVRPs ${catkin_EXPORTED_TARGETS})
+target_link_libraries(testVRPs ${catkin_LIBRARIES})
 
 add_executable(quadNodeCount src/quadNodeCount.cpp)
-target_link_libraries(quadNodeCount ${catkin_LIBRARIES})
+add_dependencies(quadNodeCount ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(quadNodeCount ${catkin_EXPORTED_TARGETS})
+target_link_libraries(quadNodeCount ${catkin_LIBRARIES})
 
 add_executable(quadLRTA src/quadLRTA.cpp)
-target_link_libraries(quadLRTA ${catkin_LIBRARIES})
+add_dependencies(quadLRTA ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(quadLRTA ${catkin_EXPORTED_TARGETS})
+target_link_libraries(quadLRTA ${catkin_LIBRARIES})
 
 add_executable(OnlineSearchListener src/OnlineSearchListener.cpp)
-target_link_libraries(OnlineSearchListener ${catkin_LIBRARIES})
+add_dependencies(OnlineSearchListener ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(OnlineSearchListener ${catkin_EXPORTED_TARGETS})
+target_link_libraries(OnlineSearchListener ${catkin_LIBRARIES})
 
 add_executable(quadPatrolGRAPH src/quadPatrolGRAPH.cpp)
-target_link_libraries(quadPatrolGRAPH ${catkin_LIBRARIES})
+add_dependencies(quadPatrolGRAPH ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(quadPatrolGRAPH ${catkin_EXPORTED_TARGETS})
+target_link_libraries(quadPatrolGRAPH ${catkin_LIBRARIES})
 
 add_executable(graphAlgsTest src/graphAlgsTest.cpp)
-target_link_libraries(graphAlgsTest ${catkin_LIBRARIES})
+add_dependencies(graphAlgsTest ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(graphAlgsTest ${catkin_EXPORTED_TARGETS})
+target_link_libraries(graphAlgsTest ${catkin_LIBRARIES})
+
+
+add_dependencies(quadcopterRosCtrl ${catkin_EXPORTED_TARGETS}) #!!!!
+add_dependencies(kernelNode ${catkin_EXPORTED_TARGETS})
+add_dependencies(testVRPs ${catkin_EXPORTED_TARGETS})
+add_dependencies(quadNodeCount ${catkin_EXPORTED_TARGETS})
+add_dependencies(quadLRTA ${catkin_EXPORTED_TARGETS})
+add_dependencies(OnlineSearchListener ${catkin_EXPORTED_TARGETS})
 
 
 
@@ -214,13 +233,9 @@ target_link_libraries(quadPatrolGRAPH Utils)
 target_link_libraries(graphAlgsTest GraphAlgs)
 target_link_libraries(graphAlgsTest Utils)
 
-add_dependencies(quadcopterRosCtrl ${catkin_EXPORTED_TARGETS}) #!!!!
-add_dependencies(kernelNode ${catkin_EXPORTED_TARGETS})
-add_dependencies(testVRPs ${catkin_EXPORTED_TARGETS})
-add_dependencies(quadNodeCount ${catkin_EXPORTED_TARGETS})
-add_dependencies(quadLRTA ${catkin_EXPORTED_TARGETS})
-add_dependencies(OnlineSearchListener ${catkin_EXPORTED_TARGETS})
 
+#add_dependencies(NCmsg ${${PROJECT_NAME}_EXPORTED_TARGETS})
+#add_dependencies(your_program ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##

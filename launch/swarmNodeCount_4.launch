@@ -1,9 +1,9 @@
 <launch>
   <node name="OSListener" pkg="quadcopter_ctrl" type="OnlineSearchListener" args="4" output="screen"/>
-<node name="quadNodeCount_0" pkg="quadcopter_ctrl" type="quadNodeCount" args="0 $(arg input) 5.0 sim 0" output="screen"/>
-<node name="quadNodeCount_1" pkg="quadcopter_ctrl" type="quadNodeCount" args="1 $(arg input) 5.75 sim 0" output="screen"/>
-<node name="quadNodeCount_2" pkg="quadcopter_ctrl" type="quadNodeCount" args="2 $(arg input) 6.5 sim 0" output="screen"/>
-<node name="quadNodeCount_3" pkg="quadcopter_ctrl" type="quadNodeCount" args="3 $(arg input) 7.25 sim 0" output="screen"/>
+<node name="quadNodeCount_0" pkg="quadcopter_ctrl" type="quadNodeCount" args="0 $(arg input) 5.0 sim 0 1" output="screen"/>
+<node name="quadNodeCount_1" pkg="quadcopter_ctrl" type="quadNodeCount" args="1 $(arg input) 5.75 sim 0 1" output="screen"/>
+<node name="quadNodeCount_2" pkg="quadcopter_ctrl" type="quadNodeCount" args="2 $(arg input) 6.5 sim 0 1" output="screen"/>
+<node name="quadNodeCount_3" pkg="quadcopter_ctrl" type="quadNodeCount" args="3 $(arg input) 7.25 sim 0 1" output="screen"/>
 <!--  <node name="quadNodeCount_4" pkg="quadcopter_ctrl" type="quadNodeCount" args="4" output="screen"/>
   <node name="quadNodeCount_5" pkg="quadcopter_ctrl" type="quadNodeCount" args="5" output="screen"/>
   <node name="quadNodeCount_6" pkg="quadcopter_ctrl" type="quadNodeCount" args="6" output="screen"/>
